@@ -1,5 +1,4 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
@@ -20,7 +19,6 @@ import { UserResponse } from '../../../core/models/user.model';
 @Component({
   selector: 'app-user-list',
   imports: [
-    DatePipe,
     ReactiveFormsModule,
     RouterLink,
     MatTableModule,

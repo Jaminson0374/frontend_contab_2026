@@ -1,5 +1,5 @@
 import { Component, inject, viewChild, ElementRef, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser, CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
+import { isPlatformBrowser, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
@@ -45,7 +45,6 @@ Chart.register(
   selector: 'app-ventas-reportes',
   imports: [
     CurrencyPipe,
-    DatePipe,
     DecimalPipe,
     ReactiveFormsModule,
     MatTabsModule,

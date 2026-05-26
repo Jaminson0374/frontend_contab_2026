@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { DatePipe, SlicePipe } from '@angular/common';
+import { SlicePipe } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -13,7 +13,6 @@ import type { ProductionOrder } from '../../../core/models/production-order.mode
   selector: 'app-order-list',
   standalone: true,
   imports: [
-    DatePipe,
     SlicePipe,
     MatTableModule,
     MatButtonModule,

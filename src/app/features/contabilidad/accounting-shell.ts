@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { DatePipe, DecimalPipe, SlicePipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -16,9 +16,7 @@ import type { JournalEntry, TrialBalanceRow } from '../../core/models/journal-en
   selector: 'app-accounting-shell',
   standalone: true,
   imports: [
-    DatePipe,
     DecimalPipe,
-    SlicePipe,
     MatTableModule,
     MatButtonModule,
     MatIconModule,
