@@ -1,0 +1,225 @@
+<div class="page-header">
+  <h2 class="page-title">Cierre de caja</h2>
+  <div class="page-actions">
+    <button mat-stroked-button (click)="volver()"><mat-icon>arrow_back</mat-icon> Volver</button>
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="spinner-container">
+    <mat-spinner diameter="40" />
+  </div>
+}
+
+@if (error()) {
+  <p class="error-msg">{{ error() }}</p>
+}
+
+<!-- No active shift -->
+@if (!loading() && !activeShift() && !showResult()) {
+  <div class="form-container">
+    <mat-card>
+      <mat-card-content>
+        <div class="empty-state">
+          <mat-icon class="empty-icon">lock_open</mat-icon>
+          <p class="empty-text">No hay turno abierto</p>
+          <p class="empty-sub">
+            Abrí un turno desde la sección de Turnos antes de realizar el cierre de caja.
+          </p>
+        </div>
+      </mat-card-content>
+      <mat-card-actions class="actions-center">
+        <button mat-flat-button color="primary" routerLink="/pos/turnos/nuevo">
+          <mat-icon>add</mat-icon> Abrir turno
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+}
+
+<!-- Active shift: show cash count form -->
+@let shift = activeShift();
+
+@if (shift && !showResult()) {
+  <div class="form-container">
+    <mat-card>
+      <mat-card-content>
+        <!-- Shift info banner -->
+        <div class="shift-banner">
+          <div class="shift-info-row">
+            <span class="shift-label">Turno:</span>
+            <span class="shift-value">#{{ shift.id.substring(0, 8).toUpperCase() }}</span>
+            <span class="shift-label">Abierto:</span>
+            <span class="shift-value">{{ formatShiftTime(shift.openingTime) }}</span>
+          </div>
+        </div>
+
+        <mat-divider class="divider" />
+
+        <!-- Expected total -->
+        <div class="expected-section">
+          <span class="section-label">ESPERADO (según facturas)</span>
+          <span class="expected-value">{{
+            shift.closingAmount != null
+              ? (shift.closingAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO')
+              : '—'
+          }}</span>
+        </div>
+
+        <mat-divider class="divider" />
+
+        <!-- Cash count form -->
+        <h3 class="section-title">CONTEO DE EFECTIVO</h3>
+
+        <div class="form-grid">
+          <mat-form-field appearance="outline">
+            <mat-label>Efectivo</mat-label>
+            <input
+              matInput
+              type="number"
+              min="0"
+              step="100"
+              [formControl]="form.controls.totalCash"
+              placeholder="0"
+            />
+            <span matTextPrefix>$&nbsp;</span>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Tarjeta</mat-label>
+            <input
+              matInput
+              type="number"
+              min="0"
+              step="100"
+              [formControl]="form.controls.totalCard"
+              placeholder="0"
+            />
+            <span matTextPrefix>$&nbsp;</span>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Transferencia</mat-label>
+            <input
+              matInput
+              type="number"
+              min="0"
+              step="100"
+              [formControl]="form.controls.totalTransfer"
+              placeholder="0"
+            />
+            <span matTextPrefix>$&nbsp;</span>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Crédito</mat-label>
+            <input
+              matInput
+              type="number"
+              min="0"
+              step="100"
+              [formControl]="form.controls.totalCredit"
+              placeholder="0"
+            />
+            <span matTextPrefix>$&nbsp;</span>
+          </mat-form-field>
+        </div>
+
+        <mat-divider class="divider" />
+
+        <!-- Totals summary -->
+        <div class="totals-section">
+          <div class="total-row">
+            <span class="total-label">TOTAL CONTADO</span>
+            <span class="total-value">{{
+              actualTotal() | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO'
+            }}</span>
+          </div>
+          <div class="total-row">
+            <span class="total-label">DIFERENCIA</span>
+            <span class="total-value" [class]="differenceClass()">{{
+              difference() | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO'
+            }}</span>
+          </div>
+        </div>
+
+        <mat-divider class="divider" />
+
+        <!-- Notes -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Notas</mat-label>
+          <textarea
+            matInput
+            rows="2"
+            [formControl]="form.controls.notes"
+            placeholder="Observaciones opcionales..."
+          ></textarea>
+        </mat-form-field>
+      </mat-card-content>
+
+      <mat-card-actions align="end">
+        <button mat-flat-button color="warn" (click)="cerrarCaja()" [disabled]="saving()">
+          @if (saving()) {
+            <mat-spinner diameter="20" />
+          } @else {
+            <mat-icon>lock</mat-icon>
+          }
+          Cerrar caja
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+}
+
+<!-- Result panel after closing -->
+@if (showResult()) {
+  <div class="form-container">
+    <mat-card>
+      <mat-card-content>
+        <div class="result-header">
+          <mat-icon class="result-icon success">check_circle</mat-icon>
+          <h3 class="result-title">Caja cerrada</h3>
+        </div>
+
+        <mat-divider class="divider" />
+
+        <div class="result-grid">
+          <div class="result-item">
+            <span class="result-label">Total esperado</span>
+            <span class="result-value">{{
+              expectedTotal() | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO'
+            }}</span>
+          </div>
+          <div class="result-item">
+            <span class="result-label">Total contado</span>
+            <span class="result-value">{{
+              actualTotal() | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO'
+            }}</span>
+          </div>
+          <div class="result-item">
+            <span class="result-label">Diferencia</span>
+            <span class="result-value" [class]="differenceClass()">{{
+              difference() | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO'
+            }}</span>
+          </div>
+        </div>
+
+        @if (result()?.zReportUrl) {
+          <mat-divider class="divider" />
+          <div class="z-report-section">
+            <pre class="z-report-preview">{{ result()?.zReportUrl }}</pre>
+          </div>
+        }
+      </mat-card-content>
+
+      <mat-card-actions align="end">
+        <button mat-stroked-button (click)="downloadZReport()">
+          <mat-icon>download</mat-icon> Descargar Z-Report
+        </button>
+        <button mat-flat-button color="primary" routerLink="/pos/turnos">
+          <mat-icon>list</mat-icon> Ver turnos
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+}

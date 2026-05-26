@@ -1,0 +1,71 @@
+<div class="al-page">
+  <div class="al-header">
+    <h2 class="al-title">Ajustes de Inventario</h2>
+    <a mat-flat-button color="primary" routerLink="/inventario/ajustes/nuevo">
+      <mat-icon>add</mat-icon> Nuevo ajuste
+    </a>
+  </div>
+
+  @if (loading()) {
+    <div class="spinner-container"><mat-spinner diameter="32" /></div>
+  }
+  @if (error()) {
+    <p class="error-msg">{{ error() }}</p>
+  }
+  @if (data(); as pg) {
+    @if (pg.content.length === 0) {
+      <p class="empty-msg">No hay ajustes registrados.</p>
+    } @else {
+      <mat-table [dataSource]="pg.content" class="al-table">
+        <ng-container matColumnDef="createdAt">
+          <mat-header-cell *matHeaderCellDef>Fecha</mat-header-cell>
+          <mat-cell *matCellDef="let row">{{ row.createdAt | date: 'short' }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="adjustmentType">
+          <mat-header-cell *matHeaderCellDef>Tipo</mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            <mat-chip [class]="typeClass(row.adjustmentType)">{{
+              typeLabel(row.adjustmentType)
+            }}</mat-chip>
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="productId">
+          <mat-header-cell *matHeaderCellDef>Producto</mat-header-cell>
+          <mat-cell *matCellDef="let row" class="cell-mono">{{
+            row.productId | slice: 0 : 8
+          }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="warehouseId">
+          <mat-header-cell *matHeaderCellDef>Bodega</mat-header-cell>
+          <mat-cell *matCellDef="let row" class="cell-mono">{{
+            row.warehouseId | slice: 0 : 8
+          }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="quantityBefore">
+          <mat-header-cell *matHeaderCellDef>Antes</mat-header-cell>
+          <mat-cell *matCellDef="let row">{{ row.quantityBefore }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="quantityAfter">
+          <mat-header-cell *matHeaderCellDef>Después</mat-header-cell>
+          <mat-cell *matCellDef="let row">{{ row.quantityAfter }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="reason">
+          <mat-header-cell *matHeaderCellDef>Motivo</mat-header-cell>
+          <mat-cell *matCellDef="let row" class="cell-reason">{{
+            row.reason | slice: 0 : 60
+          }}</mat-cell>
+        </ng-container>
+        <mat-header-row *matHeaderRowDef="displayedColumns" />
+        <mat-row *matRowDef="let row; columns: displayedColumns" />
+      </mat-table>
+      <mat-paginator
+        [length]="pg.totalElements"
+        [pageSize]="size()"
+        [pageIndex]="page()"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="onPageChange($event)"
+        showFirstLastButtons
+      />
+    }
+  }
+</div>

@@ -1,0 +1,71 @@
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.supplier-filter {
+  flex: 1;
+  min-width: 220px;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.error-msg {
+  color: var(--mat-sys-error);
+  text-align: center;
+  padding: 1rem;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.chip-pending {
+  --mdc-chip-label-text-color: #92400e;
+  background: #fef3c7;
+}
+
+.chip-partial {
+  --mdc-chip-label-text-color: #1e40af;
+  background: #dbeafe;
+}
+
+.chip-received {
+  --mdc-chip-label-text-color: #15803d;
+  background: #dcfce7;
+}
+
+.chip-completed {
+  --mdc-chip-label-text-color: #15803d;
+  background: #dcfce7;
+}
+
+.chip-cancelled {
+  --mdc-chip-label-text-color: #991b1b;
+  background: #fee2e2;
+}
+
+.chip-paid {
+  --mdc-chip-label-text-color: #15803d;
+  background: #dcfce7;
+}

@@ -1,0 +1,146 @@
+<div class="of-page">
+  <!-- Toolbar -->
+  <div class="of-toolbar">
+    <div class="of-toolbar-left">
+      <button mat-icon-button (click)="cancel()" matTooltip="Volver">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <span class="of-breadcrumb">Nuevo pago a proveedor</span>
+    </div>
+
+    <div class="of-toolbar-actions">
+      <button mat-flat-button [disabled]="saving()" (click)="save()">
+        <mat-icon matButtonIcon>save</mat-icon>
+        @if (saving()) {
+          <mat-spinner diameter="18" />
+        } @else {
+          Registrar pago
+        }
+      </button>
+      <button mat-button (click)="cancel()" [disabled]="saving()">
+        <mat-icon>cancel</mat-icon> Cancelar
+      </button>
+    </div>
+  </div>
+
+  <!-- Error bar -->
+  @if (error()) {
+    <div class="of-error-bar"><mat-icon>error_outline</mat-icon> {{ error() }}</div>
+  }
+
+  <!-- Form -->
+  <form [formGroup]="form" class="of-form" autocomplete="off">
+    <div class="of-grid">
+      <!-- Supplier autocomplete -->
+      <mat-form-field appearance="outline">
+        <mat-label>Proveedor</mat-label>
+        <input
+          type="text"
+          matInput
+          [formControl]="supplierDisplay"
+          [matAutocomplete]="supplierAuto"
+          (blur)="syncSupplierDisplay()"
+        />
+        <mat-autocomplete
+          #supplierAuto="matAutocomplete"
+          (optionSelected)="onSupplierSelected($event)"
+        >
+          @if (thirdPartyService.supplierOptions.isLoading()) {
+            <mat-option disabled>Cargando...</mat-option>
+          }
+          @for (tp of suppliers(); track tp.id) {
+            <mat-option [value]="tp.id">{{ supplierLabel(tp) }}</mat-option>
+          }
+          <mat-option value="__create__" class="create-option">
+            <mat-icon>add</mat-icon> Crear nuevo proveedor
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <!-- Payment amount -->
+      <mat-form-field appearance="outline">
+        <mat-label>Monto del pago</mat-label>
+        <input matInput type="number" min="0.01" step="0.01" formControlName="amount" />
+        @if (paymentExceedsInvoices()) {
+          <mat-error>El monto excede la suma de facturas seleccionadas</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Payment date -->
+      <mat-form-field appearance="outline">
+        <mat-label>Fecha de pago</mat-label>
+        <input matInput [matDatepicker]="payPicker" formControlName="paymentDate" />
+        <mat-datepicker-toggle matIconSuffix [for]="payPicker" />
+        <mat-datepicker #payPicker />
+      </mat-form-field>
+
+      <!-- Method -->
+      <mat-form-field appearance="outline">
+        <mat-label>Método de pago</mat-label>
+        <mat-select formControlName="method">
+          @for (opt of methodOptions; track opt.value) {
+            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <!-- Reference -->
+      <mat-form-field appearance="outline">
+        <mat-label>Referencia</mat-label>
+        <input matInput formControlName="reference" />
+      </mat-form-field>
+    </div>
+
+    <!-- Outstanding invoices section -->
+    <mat-divider />
+
+    @if (form.controls.supplierId.getRawValue()) {
+      <h3 class="of-section-title">Facturas pendientes de pago</h3>
+
+      @if (loadingInvoices()) {
+        <div class="spinner-container">
+          <mat-spinner diameter="30" />
+        </div>
+      }
+
+      @if (!loadingInvoices() && outstandingInvoices().length === 0) {
+        <p class="empty-msg">
+          <mat-icon>info</mat-icon> No hay facturas conciliadas pendientes de pago para este
+          proveedor.
+        </p>
+      }
+
+      @if (!loadingInvoices() && outstandingInvoices().length > 0) {
+        <mat-card class="invoices-card">
+          <mat-card-content>
+            @for (inv of outstandingInvoices(); track inv.id) {
+              <div class="invoice-row">
+                <mat-checkbox
+                  [checked]="selectedInvoiceIds().has(inv.id)"
+                  (change)="toggleInvoice(inv.id)"
+                >
+                  <span class="inv-number">{{ inv.invoiceNumber }}</span>
+                  <span class="inv-date">{{ inv.issueDate | date: 'dd/MM/yyyy' }}</span>
+                  <span class="inv-total">{{ inv.total | currency: 'COP' }}</span>
+                </mat-checkbox>
+              </div>
+            }
+
+            <mat-divider />
+
+            <div class="invoices-summary">
+              <span
+                >{{ selectedCount() }} factura(s) seleccionada(s) —
+                {{ selectedTotalReceived() | currency: 'COP' }}</span
+              >
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+    } @else {
+      <p class="hint-msg">
+        <mat-icon>info</mat-icon> Seleccioná un proveedor para cargar sus facturas conciliadas.
+      </p>
+    }
+  </form>
+</div>

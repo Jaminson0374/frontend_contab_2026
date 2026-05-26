@@ -1,0 +1,31 @@
+.af-page {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+.af-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 1.5rem;
+}
+.af-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.af-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 1rem;
+}
+.af-error {
+  color: #dc2626;
+  font-size: 0.85rem;
+  margin: 0;
+}
+.af-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}

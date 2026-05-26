@@ -1,0 +1,74 @@
+<div class="rl-page">
+  <div class="rl-header">
+    <h2 class="rl-title">Recibos de Caja</h2>
+    <div class="rl-header-actions">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Buscar por cliente</mat-label>
+        <input matInput [formControl]="searchControl" />
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+      <a mat-flat-button color="primary" routerLink="/ventas/recibos/nuevo">
+        <mat-icon>add</mat-icon>
+        Nuevo recibo
+      </a>
+    </div>
+  </div>
+
+  @if (service.receipts.isLoading()) {
+    <div class="spinner-container"><mat-spinner diameter="32" /></div>
+  }
+  @if (service.receipts.error()) {
+    <p class="error-msg">Error al cargar recibos.</p>
+  }
+  @let data = service.receipts.value();
+  @if (data) {
+    @if (data.content.length === 0) {
+      <p class="empty-msg">No hay recibos registrados.</p>
+    } @else {
+      <mat-table [dataSource]="data.content" class="rl-table">
+        <ng-container matColumnDef="index">
+          <mat-header-cell *matHeaderCellDef>#</mat-header-cell>
+          <mat-cell *matCellDef="let row; let i = index">{{ page() * size() + i + 1 }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="clientName">
+          <mat-header-cell *matHeaderCellDef>Cliente</mat-header-cell>
+          <mat-cell *matCellDef="let row">{{ row.clientName }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="amount">
+          <mat-header-cell *matHeaderCellDef>Monto</mat-header-cell>
+          <mat-cell *matCellDef="let row">{{ row.amount | currency: 'COP' }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="paymentDate">
+          <mat-header-cell *matHeaderCellDef>Fecha</mat-header-cell>
+          <mat-cell *matCellDef="let row">{{ row.paymentDate | date: 'dd/MM/yyyy' }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="method">
+          <mat-header-cell *matHeaderCellDef>Método</mat-header-cell>
+          <mat-cell *matCellDef="let row">{{ methodLabel(row.method) }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="reference">
+          <mat-header-cell *matHeaderCellDef>Referencia</mat-header-cell>
+          <mat-cell *matCellDef="let row">{{ row.reference ?? '—' }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="createdAt">
+          <mat-header-cell *matHeaderCellDef>Creado</mat-header-cell>
+          <mat-cell *matCellDef="let row">{{ row.createdAt | date: 'short' }}</mat-cell>
+        </ng-container>
+        <mat-header-row *matHeaderRowDef="cols" />
+        <mat-row
+          *matRowDef="let row; columns: cols"
+          (click)="viewReceipt(row)"
+          class="rl-row-clickable"
+        />
+      </mat-table>
+      <mat-paginator
+        [length]="data.totalElements"
+        [pageSize]="data.size"
+        [pageIndex]="data.page"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="onPageChange($event)"
+        showFirstLastButtons
+      />
+    }
+  }
+</div>

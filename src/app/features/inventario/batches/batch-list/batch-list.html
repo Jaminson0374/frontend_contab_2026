@@ -1,0 +1,88 @@
+<div class="page-header">
+  <h2 class="page-title">Lotes de Entrada</h2>
+
+  <div class="page-actions">
+    <mat-select
+      [value]="service.status()"
+      (selectionChange)="onStatusChange($event.value)"
+      class="status-filter">
+      @for (opt of statusOptions; track opt.value) {
+        <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+      }
+    </mat-select>
+
+    <button mat-flat-button (click)="openForm()">
+      <mat-icon>add</mat-icon> Nuevo lote
+    </button>
+  </div>
+</div>
+
+@if (service.batches.isLoading()) {
+  <div class="spinner-container">
+    <mat-spinner diameter="40" />
+  </div>
+}
+
+@if (service.batches.error()) {
+  <p class="error-msg">Error cargando lotes. Intentá de nuevo.</p>
+}
+
+@let data = service.batches.value();
+
+@if (data) {
+  <mat-table [dataSource]="data.content" class="w-full">
+
+    <ng-container matColumnDef="entryDate">
+      <mat-header-cell *matHeaderCellDef>Fecha entrada</mat-header-cell>
+      <mat-cell *matCellDef="let row">{{ row.entryDate | date:'dd/MM/yyyy' }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="status">
+      <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
+      <mat-cell *matCellDef="let row">
+        <mat-chip [class]="'chip-status-' + row.status.toLowerCase()">
+          {{ getStatusLabel(row.status) }}
+        </mat-chip>
+      </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="initialWeight">
+      <mat-header-cell *matHeaderCellDef>Peso inicial (kg)</mat-header-cell>
+      <mat-cell *matCellDef="let row">{{ row.initialWeight | number:'1.2-2' }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="purchaseCost">
+      <mat-header-cell *matHeaderCellDef>Costo compra</mat-header-cell>
+      <mat-cell *matCellDef="let row">{{ row.purchaseCost | number:'1.0-0' }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="notes">
+      <mat-header-cell *matHeaderCellDef>Notas</mat-header-cell>
+      <mat-cell *matCellDef="let row">{{ row.notes ?? '—' }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <mat-header-cell *matHeaderCellDef></mat-header-cell>
+      <mat-cell *matCellDef="let row">
+        @if (row.status !== 'CLOSED') {
+          <button mat-icon-button color="warn" (click)="closeStatus(row.id)" aria-label="Cerrar lote">
+            <mat-icon>lock</mat-icon>
+          </button>
+        }
+      </mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedColumns" />
+    <mat-row *matRowDef="let row; columns: displayedColumns;" />
+  </mat-table>
+
+  <div class="pagination">
+    <button mat-icon-button [disabled]="data.page === 0" (click)="prevPage()">
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+    <span>{{ data.page + 1 }} / {{ data.totalPages }}</span>
+    <button mat-icon-button [disabled]="data.last" (click)="nextPage()">
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+  </div>
+}

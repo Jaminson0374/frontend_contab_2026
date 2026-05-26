@@ -1,0 +1,87 @@
+.of-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.of-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.of-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.of-breadcrumb {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.of-toolbar-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.of-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.of-filters mat-form-field {
+  min-width: 280px;
+}
+
+.of-error-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.empty-msg {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 0.875rem;
+  padding: 2rem 0;
+}
+
+.of-table-container {
+  overflow-x: auto;
+}
+
+.chip {
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.chip-debit {
+  background-color: #fed7aa;
+  color: #9a3412;
+}
+
+.chip-credit {
+  background-color: #dcfce7;
+  color: #166534;
+}

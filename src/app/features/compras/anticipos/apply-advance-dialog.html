@@ -1,0 +1,75 @@
+<h2 mat-dialog-title>Aplicar anticipo a factura</h2>
+
+<mat-dialog-content>
+  <!-- Advance info -->
+  <div class="advance-info">
+    <div class="info-row">
+      <span class="info-label">Proveedor:</span>
+      <span>{{ data.supplierName || data.supplierId }}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Monto anticipo:</span>
+      <span>{{ data.amount | currency: 'COP' }}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Saldo disponible:</span>
+      <span class="remaining-amount">{{ remaining | currency: 'COP' }}</span>
+    </div>
+  </div>
+
+  <!-- Error bar -->
+  @if (error()) {
+    <div class="of-error-bar"><mat-icon>error_outline</mat-icon> {{ error() }}</div>
+  }
+
+  @if (remaining <= 0) {
+    <div class="no-remaining">
+      <mat-icon>warning</mat-icon> Este anticipo está agotado, no tiene saldo disponible.
+    </div>
+  } @else {
+    <!-- Form -->
+    <form [formGroup]="form" class="dialog-form" autocomplete="off">
+      <!-- Invoice selector -->
+      <mat-form-field appearance="outline">
+        <mat-label>Factura</mat-label>
+        <mat-select formControlName="invoiceId" (selectionChange)="onInvoiceSelected($event.value)">
+          @if (loadingInvoices()) {
+            <mat-option disabled>Cargando facturas...</mat-option>
+          }
+          @for (inv of invoices(); track inv.id) {
+            <mat-option [value]="inv.id">
+              {{ inv.invoiceNumber }} — {{ inv.total | currency: 'COP' }} ({{
+                inv.issueDate | date: 'dd/MM/yyyy'
+              }})
+            </mat-option>
+          }
+        </mat-select>
+        @if (invoices().length === 0 && !loadingInvoices()) {
+          <mat-hint>No hay facturas conciliadas pendientes para este proveedor.</mat-hint>
+        }
+      </mat-form-field>
+
+      <!-- Amount to apply -->
+      <mat-form-field appearance="outline">
+        <mat-label>Monto a aplicar</mat-label>
+        <input matInput type="number" min="0.01" step="0.01" formControlName="appliedAmount" />
+        <mat-hint>Saldo disponible: {{ remaining | currency: 'COP' }}</mat-hint>
+      </mat-form-field>
+    </form>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()" [disabled]="loading()">Cancelar</button>
+  <button
+    mat-flat-button
+    (click)="apply()"
+    [disabled]="loading() || form.invalid || remaining <= 0 || invoices().length === 0"
+  >
+    @if (loading()) {
+      <mat-spinner diameter="18" />
+    } @else {
+      Aplicar
+    }
+  </button>
+</mat-dialog-actions>

@@ -1,0 +1,179 @@
+.recepcion-page {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.error-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  color: var(--mat-sys-error);
+  text-align: center;
+}
+
+/* ── OC Summary ──────────────────────────────── */
+
+.oc-summary {
+  margin-bottom: 1.5rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.info-label {
+  font-size: 0.75rem;
+  color: var(--mat-sys-outline);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.info-value {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* ── Receipt Form ────────────────────────────── */
+
+.receipt-form {
+  margin-bottom: 1rem;
+}
+
+.line-row {
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.line-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.75rem;
+}
+
+.line-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.line-subtitle {
+  font-size: 0.8rem;
+  color: var(--mat-sys-outline);
+}
+
+.line-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+}
+
+.empty-lines {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  color: var(--mat-sys-outline);
+  text-align: center;
+}
+
+/* ── Deviation styles ────────────────────────── */
+
+.deviation-warning {
+  color: #b91c1c;
+}
+
+.deviation-ok {
+  color: #15803d;
+}
+
+.deviation-hint {
+  color: #b91c1c;
+}
+
+/* ── Error & Success ─────────────────────────── */
+
+.error-msg {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  background: #fce4ec;
+  color: var(--mat-sys-error);
+  border-radius: 8px;
+  font-size: 0.875rem;
+}
+
+.success-card {
+  margin-bottom: 1rem;
+  border: 1px solid #15803d;
+}
+
+.success-icon {
+  color: #15803d;
+}
+
+.deviations-section {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #fff7ed;
+  border-radius: 8px;
+  border: 1px solid #fed7aa;
+}
+
+.deviation-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #9a3412;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.deviation-row {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.8rem;
+  color: var(--mat-sys-outline);
+  padding: 0.25rem 0;
+}
+
+/* ── Actions ─────────────────────────────────── */
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}

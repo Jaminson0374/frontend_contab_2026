@@ -1,0 +1,109 @@
+<div class="of-page">
+  <!-- Toolbar -->
+  <div class="of-toolbar">
+    <div class="of-toolbar-left">
+      <button mat-icon-button (click)="cancel()" matTooltip="Volver">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <span class="of-breadcrumb">Nuevo anticipo a proveedor</span>
+    </div>
+
+    <div class="of-toolbar-actions">
+      <button mat-flat-button [disabled]="saving()" (click)="save()">
+        <mat-icon matButtonIcon>save</mat-icon>
+        @if (saving()) {
+          <mat-spinner diameter="18" />
+        } @else {
+          Registrar anticipo
+        }
+      </button>
+      <button mat-button (click)="cancel()" [disabled]="saving()">
+        <mat-icon>cancel</mat-icon> Cancelar
+      </button>
+    </div>
+  </div>
+
+  <!-- Error bar -->
+  @if (error()) {
+    <div class="of-error-bar"><mat-icon>error_outline</mat-icon> {{ error() }}</div>
+  }
+
+  <!-- Form -->
+  <form [formGroup]="form" class="of-form" autocomplete="off">
+    <div class="of-grid">
+      <!-- Supplier autocomplete -->
+      <mat-form-field appearance="outline">
+        <mat-label>Proveedor</mat-label>
+        <input
+          type="text"
+          matInput
+          [formControl]="supplierDisplay"
+          [matAutocomplete]="supplierAuto"
+          (blur)="syncSupplierDisplay()"
+        />
+        <mat-autocomplete
+          #supplierAuto="matAutocomplete"
+          (optionSelected)="onSupplierSelected($event)"
+        >
+          @if (thirdPartyService.supplierOptions.isLoading()) {
+            <mat-option disabled>Cargando...</mat-option>
+          }
+          @for (tp of suppliers(); track tp.id) {
+            <mat-option [value]="tp.id">{{ supplierLabel(tp) }}</mat-option>
+          }
+          <mat-option value="__create__" class="create-option">
+            <mat-icon>add</mat-icon> Crear nuevo proveedor
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <!-- Advance amount -->
+      <mat-form-field appearance="outline">
+        <mat-label>Monto del anticipo</mat-label>
+        <input matInput type="number" min="0.01" step="0.01" formControlName="amount" />
+      </mat-form-field>
+
+      <!-- Payment date -->
+      <mat-form-field appearance="outline">
+        <mat-label>Fecha de pago</mat-label>
+        <input matInput [matDatepicker]="payPicker" formControlName="paymentDate" />
+        <mat-datepicker-toggle matIconSuffix [for]="payPicker" />
+        <mat-datepicker #payPicker />
+      </mat-form-field>
+
+      <!-- Method -->
+      <mat-form-field appearance="outline">
+        <mat-label>Método de pago</mat-label>
+        <mat-select formControlName="method">
+          @for (opt of methodOptions; track opt.value) {
+            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <!-- Reference -->
+      <mat-form-field appearance="outline">
+        <mat-label>Referencia</mat-label>
+        <input matInput formControlName="reference" />
+      </mat-form-field>
+
+      <!-- Notes -->
+      <mat-form-field appearance="outline">
+        <mat-label>Notas</mat-label>
+        <textarea matInput formControlName="notes" rows="3"></textarea>
+      </mat-form-field>
+    </div>
+
+    <mat-divider />
+
+    <mat-card class="info-card">
+      <mat-card-content>
+        <p>
+          <mat-icon>info</mat-icon>
+          El anticipo se registrará como un pago por adelantado al proveedor. Podrás aplicarlo a
+          facturas posteriormente desde la lista de anticipos.
+        </p>
+      </mat-card-content>
+    </mat-card>
+  </form>
+</div>

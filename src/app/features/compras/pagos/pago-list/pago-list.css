@@ -1,0 +1,66 @@
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.page-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.search-field {
+  width: 260px;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.error-msg {
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant);
+  padding: 2rem;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.chip-method-efectivo {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.chip-method-transferencia {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.chip-method-cheque {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.chip-method-tarjeta {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.chip-method-default {
+  background: #f3f4f6;
+  color: #374151;
+}

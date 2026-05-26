@@ -1,0 +1,120 @@
+<div class="cpf-page">
+  <div class="cpf-header">
+    <h2 class="cpf-title">
+      {{ isEdit() ? 'Editar precio por cliente' : 'Nuevo precio por cliente' }}
+    </h2>
+    <a mat-button [routerLink]="['/administracion/precios/cliente']">
+      <mat-icon>arrow_back</mat-icon>
+      Volver
+    </a>
+  </div>
+
+  @if (loading()) {
+    <div class="cpf-loading">
+      <mat-spinner diameter="40" />
+    </div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()" class="cpf-form">
+      @if (error()) {
+        <div class="cpf-error">{{ error() }}</div>
+      }
+
+      <!-- Client selector -->
+      <mat-form-field appearance="outline">
+        <mat-label>Cliente</mat-label>
+        <input
+          type="text"
+          matInput
+          [formControl]="clientSearch"
+          [matAutocomplete]="clientAuto"
+          placeholder="Buscar cliente..."
+        />
+        <mat-autocomplete
+          #clientAuto="matAutocomplete"
+          [displayWith]="displayClient"
+          (optionSelected)="onClientSelected($event.option.value)"
+        >
+          @for (client of filteredClients | async; track client.id) {
+            <mat-option [value]="client">
+              {{ client.name }} ({{ client.numIdentification }})
+            </mat-option>
+          }
+        </mat-autocomplete>
+        @if (form.controls.clientId.hasError('required') && form.controls.clientId.touched) {
+          <mat-error>Cliente requerido</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Product selector -->
+      <mat-form-field appearance="outline">
+        <mat-label>Producto</mat-label>
+        <input
+          type="text"
+          matInput
+          [formControl]="productSearch"
+          [matAutocomplete]="productAuto"
+          placeholder="Buscar producto..."
+        />
+        <mat-autocomplete
+          #productAuto="matAutocomplete"
+          [displayWith]="displayProduct"
+          (optionSelected)="onProductSelected($event.option.value)"
+        >
+          @for (product of filteredProducts | async; track product.id) {
+            <mat-option [value]="product">
+              {{ product.productCode }} - {{ product.name }}
+            </mat-option>
+          }
+        </mat-autocomplete>
+        @if (form.controls.productId.hasError('required') && form.controls.productId.touched) {
+          <mat-error>Producto requerido</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Price -->
+      <mat-form-field appearance="outline">
+        <mat-label>Precio</mat-label>
+        <input matInput type="number" formControlName="price" min="0" step="0.01" />
+        @if (form.controls.price.hasError('required')) {
+          <mat-error>Requerido</mat-error>
+        } @else if (form.controls.price.hasError('min')) {
+          <mat-error>Debe ser mayor a 0</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Tax type -->
+      <mat-form-field appearance="outline">
+        <mat-label>Tipo de impuesto</mat-label>
+        <mat-select formControlName="taxType" (selectionChange)="onTaxTypeChange($event.value)">
+          @for (t of taxTypes; track t.value) {
+            <mat-option [value]="t.value">{{ t.label }}</mat-option>
+          }
+        </mat-select>
+        @if (form.controls.taxType.hasError('required')) {
+          <mat-error>Requerido</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Tax rate -->
+      <mat-form-field appearance="outline">
+        <mat-label>Tarifa (%)</mat-label>
+        <input matInput type="number" formControlName="taxRate" min="0" step="0.01" />
+        @if (form.controls.taxRate.hasError('required')) {
+          <mat-error>Requerido</mat-error>
+        } @else if (form.controls.taxRate.hasError('min')) {
+          <mat-error>Debe ser mayor o igual a 0</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="cpf-actions">
+        <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
+          @if (saving()) {
+            <mat-spinner diameter="20" color="accent" />
+          } @else {
+            {{ isEdit() ? 'Guardar cambios' : 'Crear precio' }}
+          }
+        </button>
+      </div>
+    </form>
+  }
+</div>

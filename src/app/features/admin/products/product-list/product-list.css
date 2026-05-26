@@ -1,0 +1,87 @@
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.page-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.search-field {
+  width: 260px;
+}
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table-wrapper .mat-mdc-table {
+  min-width: 100%;
+}
+
+.col-index {
+  flex: 0 0 56px;
+  max-width: 56px;
+  justify-content: center;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+}
+
+.col-code {
+  flex: 0 0 120px;
+  max-width: 120px;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.error-msg {
+  color: #ef4444;
+  text-align: center;
+  padding: 24px;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 0;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.chip-active {
+  background: #dcfce7 !important;
+  color: #15803d !important;
+}
+.chip-inactive {
+  background: #fee2e2 !important;
+  color: #dc2626 !important;
+}
+.chip-tax-exento {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+}
+.chip-tax {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+}

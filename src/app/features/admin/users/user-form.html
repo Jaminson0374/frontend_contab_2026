@@ -1,0 +1,75 @@
+<div class="uf-page">
+  <div class="uf-header">
+    <h2 class="uf-title">{{ isEdit() ? 'Editar usuario' : 'Nuevo usuario' }}</h2>
+    <a mat-button [routerLink]="['/administracion/usuarios']">
+      <mat-icon>arrow_back</mat-icon>
+      Volver
+    </a>
+  </div>
+
+  @if (loading()) {
+    <div class="uf-loading">
+      <mat-spinner diameter="40" />
+    </div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()" class="uf-form">
+      @if (error()) {
+        <div class="uf-error">{{ error() }}</div>
+      }
+
+      <mat-form-field appearance="outline">
+        <mat-label>Nombre de usuario</mat-label>
+        <input matInput formControlName="username" maxlength="100" />
+        @if (form.controls.username.hasError('required')) {
+          <mat-error>Requerido</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Nombre completo</mat-label>
+        <input matInput formControlName="fullName" maxlength="200" />
+        @if (form.controls.fullName.hasError('required')) {
+          <mat-error>Requerido</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Email</mat-label>
+        <input matInput formControlName="email" type="email" maxlength="200" />
+        @if (form.controls.email.hasError('required')) {
+          <mat-error>Requerido</mat-error>
+        } @else if (form.controls.email.hasError('email')) {
+          <mat-error>Formato de email inválido</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Rol</mat-label>
+        <mat-select formControlName="roleId">
+          @for (role of roles(); track role.id) {
+            <mat-option [value]="role.id">{{ role.name }}</mat-option>
+          }
+        </mat-select>
+        @if (form.controls.roleId.hasError('required')) {
+          <mat-error>Requerido</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="uf-toggle">
+        <mat-slide-toggle formControlName="isActive">
+          {{ form.controls.isActive.value ? 'Activo' : 'Inactivo' }}
+        </mat-slide-toggle>
+      </div>
+
+      <div class="uf-actions">
+        <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
+          @if (saving()) {
+            <mat-spinner diameter="20" color="accent" />
+          } @else {
+            {{ isEdit() ? 'Guardar cambios' : 'Crear usuario' }}
+          }
+        </button>
+      </div>
+    </form>
+  }
+</div>

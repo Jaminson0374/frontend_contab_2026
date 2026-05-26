@@ -1,0 +1,167 @@
+<div class="prod-page">
+  <h2>
+    Producción —
+    {{
+      step() === 4
+        ? 'Resultado'
+        : step() === 3
+          ? 'Confirmar'
+          : step() === 2
+            ? 'Componentes'
+            : 'Seleccionar fórmula'
+    }}
+  </h2>
+
+  <!-- Step indicators -->
+  <div class="prod-steps">
+    @for (s of [1, 2, 3, 4]; track s) {
+      <div class="prod-step" [class.active]="step() >= s" [class.current]="step() === s">
+        {{ s === 1 ? 'Fórmula' : s === 2 ? 'Componentes' : s === 3 ? 'Datos' : 'Resultado' }}
+      </div>
+    }
+  </div>
+
+  <!-- Step 1: Select formula -->
+  @if (step() === 1) {
+    <div class="prod-card">
+      <mat-form-field appearance="outline" class="prod-full">
+        <mat-label>Producto (fórmula/combo)</mat-label>
+        <mat-select [(ngModel)]="selectedFormulaId" (selectionChange)="onFormulaSelected()">
+          @for (p of availableFormulas(); track p.id) {
+            <mat-option [value]="p.id">{{ p.name }} ({{ p.productCode }})</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <button class="tb-btn tb-btn--primary" (click)="nextStep()" [disabled]="!selectedFormulaId()">
+        Siguiente <mat-icon>arrow_forward</mat-icon>
+      </button>
+    </div>
+  }
+
+  <!-- Step 2: Show components -->
+  @if (step() === 2) {
+    <div class="prod-card">
+      @if (loading()) {
+        <mat-spinner diameter="24" />
+      }
+      @if (components().length > 0) {
+        <table class="prod-table">
+          <thead>
+            <tr>
+              <th>Componente</th>
+              <th>Cant. x unidad</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of components(); track c.id) {
+              <tr>
+                <td>{{ c.componentProductId }}</td>
+                <td class="prod-num">{{ c.quantity }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+      <div class="prod-actions">
+        <button class="tb-btn" (click)="prevStep()"><mat-icon>arrow_back</mat-icon> Atrás</button>
+        <button class="tb-btn tb-btn--primary" (click)="nextStep()">
+          Siguiente <mat-icon>arrow_forward</mat-icon>
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Step 3: Enter production data -->
+  @if (step() === 3) {
+    <div class="prod-card">
+      <mat-form-field appearance="outline" class="prod-half">
+        <mat-label>Cantidad a producir</mat-label>
+        <input matInput type="number" [(ngModel)]="quantity" min="0.0001" step="0.0001" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="prod-half">
+        <mat-label>Bodega</mat-label>
+        <mat-select [(ngModel)]="warehouseId">
+          @for (w of warehouseService.warehouses.value() ?? []; track w.id) {
+            <mat-option [value]="w.id">{{ w.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="prod-half">
+        <mat-label>Costo M.O.D.</mat-label>
+        <input matInput type="number" [(ngModel)]="laborCost" min="0" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="prod-half">
+        <mat-label>CIF (opcional)</mat-label>
+        <input matInput type="number" [(ngModel)]="overheadCost" min="0" />
+      </mat-form-field>
+      <div class="prod-actions">
+        <button class="tb-btn" (click)="prevStep()"><mat-icon>arrow_back</mat-icon> Atrás</button>
+        <button class="tb-btn tb-btn--primary" (click)="produce()" [disabled]="producing()">
+          @if (producing()) {
+            <mat-spinner diameter="16" />
+          }
+          Producir <mat-icon>factory</mat-icon>
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Step 4: Result -->
+  @if (step() === 4 && batchResult(); as br) {
+    <div class="prod-card">
+      <h3>Lote: {{ br.batchId }}</h3>
+      <div class="prod-cost-grid">
+        <div class="cost-item">
+          <span>Producto</span><strong>{{ br.productName }}</strong>
+        </div>
+        <div class="cost-item">
+          <span>Cantidad</span><strong>{{ br.quantityProduced }}</strong>
+        </div>
+        <div class="cost-item">
+          <span>M.P.D.</span><strong>${{ br.mpd | number: '1.2-2' }}</strong>
+        </div>
+        <div class="cost-item">
+          <span>M.O.D.</span><strong>${{ br.mod | number: '1.2-2' }}</strong>
+        </div>
+        <div class="cost-item">
+          <span>C.I.F.</span><strong>${{ br.cif | number: '1.2-2' }}</strong>
+        </div>
+        <div class="cost-item">
+          <span>Costo total</span><strong>${{ br.totalCost | number: '1.2-2' }}</strong>
+        </div>
+        <div class="cost-item">
+          <span>Costo unitario</span><strong>${{ br.unitCost | number: '1.4-4' }}</strong>
+        </div>
+        @if (br.shrinkage > 0) {
+          <div class="cost-item">
+            <span>Merma</span><strong>{{ br.shrinkage }}</strong>
+          </div>
+        }
+      </div>
+
+      @if (br.items.length > 0) {
+        <h4>Componentes consumidos</h4>
+        <table class="prod-table">
+          <thead>
+            <tr>
+              <th>Componente</th>
+              <th>Cant.</th>
+              <th>Costo unit.</th>
+              <th>Costo total</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of br.items; track item.componentId) {
+              <tr>
+                <td>{{ item.componentName }}</td>
+                <td class="prod-num">{{ item.actualQuantity }}</td>
+                <td class="prod-num">${{ item.unitCost | number: '1.4-4' }}</td>
+                <td class="prod-num">${{ item.totalCost | number: '1.2-2' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  }
+</div>

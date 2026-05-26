@@ -1,0 +1,40 @@
+<div class="rl-page">
+  <h2 class="rl-title">Roles del sistema</h2>
+  <p class="rl-subtitle">
+    Listado de solo lectura. Los roles y permisos se administran desde la base de datos.
+  </p>
+
+  @if (loading()) {
+    <div class="rl-loading">
+      <mat-spinner diameter="40" />
+    </div>
+  } @else if (error()) {
+    <p class="rl-error">{{ error() }}</p>
+  } @else if (roles().length === 0) {
+    <p class="rl-empty">No hay roles configurados.</p>
+  } @else {
+    <table mat-table [dataSource]="roles()" class="rl-table">
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Rol</th>
+        <td mat-cell *matCellDef="let row">
+          <mat-chip>{{ row.name }}</mat-chip>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="permissions">
+        <th mat-header-cell *matHeaderCellDef>Permisos</th>
+        <td mat-cell *matCellDef="let row">
+          <pre class="rl-permissions">{{ formatPermissions(row.permissions) }}</pre>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="createdAt">
+        <th mat-header-cell *matHeaderCellDef>Creado</th>
+        <td mat-cell *matCellDef="let row">{{ row.createdAt | date: 'medium' }}</td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+  }
+</div>

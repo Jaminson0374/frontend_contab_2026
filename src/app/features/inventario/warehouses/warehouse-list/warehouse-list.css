@@ -1,0 +1,53 @@
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 24px;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.error-msg {
+  color: #ef4444;
+  text-align: center;
+}
+
+.warehouses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.warehouse-card {
+  border-radius: 12px;
+  transition: box-shadow 0.2s;
+}
+
+.warehouse-card:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+.warehouse-card.inactive {
+  opacity: 0.55;
+}
+
+.warehouse-icon {
+  color: #38bdf8;
+  font-size: 32px;
+  width: 40px;
+  height: 40px;
+}
+
+mat-card-content {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 12px;
+}
+
+.type-chip   { background: #e0f2fe !important; color: #075985 !important; }
+.inactive-chip { background: #fee2e2 !important; color: #991b1b !important; }

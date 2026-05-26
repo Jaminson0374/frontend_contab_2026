@@ -1,0 +1,72 @@
+<h2 mat-dialog-title>Nuevo animal</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="form-grid">
+    <mat-form-field appearance="outline">
+      <mat-label>Proveedor</mat-label>
+      <input
+        type="text"
+        matInput
+        [formControl]="supplierDisplay"
+        [matAutocomplete]="supplierAuto"
+        (blur)="syncSupplierDisplay()"
+      />
+      <mat-autocomplete
+        #supplierAuto="matAutocomplete"
+        (optionSelected)="onSupplierSelected($event)"
+      >
+        @if (thirdPartyService.supplierOptions.isLoading()) {
+          <mat-option disabled>Cargando...</mat-option>
+        }
+        @for (tp of suppliers(); track tp.id) {
+          <mat-option [value]="tp.id">{{ tp.name }} ({{ tp.numIdentification }})</mat-option>
+        }
+        <mat-option value="__create__" class="create-option">
+          <mat-icon>add</mat-icon> Crear nuevo proveedor
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>ICA Lote</mat-label>
+      <input matInput formControlName="icaLotNumber" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Especie</mat-label>
+      <mat-select formControlName="species">
+        <mat-option value="PORCINO">Porcino</mat-option>
+        <mat-option value="BOVINO">Bovino</mat-option>
+        <mat-option value="OVINO">Ovino</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Peso vivo (kg)</mat-label>
+      <input matInput type="number" min="0.001" step="0.001" formControlName="liveWeight" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Fecha de recepción</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="entryDate" />
+      <mat-datepicker-toggle matIconSuffix [for]="picker" />
+      <mat-datepicker #picker />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Notas</mat-label>
+      <textarea matInput formControlName="notes" rows="3" maxlength="500"></textarea>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancelar</button>
+  <button mat-flat-button [disabled]="form.invalid || saving()" (click)="save()">
+    @if (saving()) {
+      <mat-spinner diameter="18" />
+    } @else {
+      Registrar animal
+    }
+  </button>
+</mat-dialog-actions>

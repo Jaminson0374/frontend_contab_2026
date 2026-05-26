@@ -1,0 +1,133 @@
+.prod-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px;
+}
+.prod-page h2 {
+  font-size: 18px;
+  color: #1e293b;
+  margin: 0 0 16px;
+}
+.prod-steps {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+}
+.prod-step {
+  flex: 1;
+  text-align: center;
+  padding: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+.prod-step.active {
+  background: #15803d;
+  color: #fff;
+}
+.prod-step.current {
+  background: #166534;
+  color: #fff;
+  transform: scale(1.05);
+}
+.prod-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 20px;
+}
+.prod-full {
+  width: 100%;
+}
+.prod-half {
+  width: calc(50% - 8px);
+  margin-right: 8px;
+}
+.prod-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 12px 0;
+}
+.prod-table th {
+  text-align: left;
+  font-weight: 600;
+  color: #64748b;
+  font-size: 11px;
+  text-transform: uppercase;
+  padding: 8px 6px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.prod-table td {
+  padding: 6px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.prod-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.prod-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+.prod-cost-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 12px 0;
+}
+.cost-item {
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-radius: 6px;
+}
+.cost-item span {
+  display: block;
+  font-size: 11px;
+  color: #94a3b8;
+}
+.cost-item strong {
+  font-size: 14px;
+  color: #1e293b;
+}
+h3 {
+  font-size: 14px;
+  margin: 0 0 8px;
+}
+h4 {
+  font-size: 13px;
+  margin: 16px 0 8px;
+  color: #475569;
+}
+.tb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.tb-btn:hover {
+  background: #f1f5f9;
+}
+.tb-btn--primary {
+  background: #15803d;
+  color: #fff;
+  border-color: #15803d;
+}
+.tb-btn--primary:hover {
+  background: #166534;
+}
+.tb-btn mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}

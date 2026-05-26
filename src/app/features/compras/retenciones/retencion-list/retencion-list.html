@@ -1,0 +1,101 @@
+<div class="page-header">
+  <h2 class="page-title">Retenciones</h2>
+</div>
+
+<!-- Note -->
+<div class="info-note">
+  <mat-icon>info</mat-icon>
+  <span>Retenciones son entrada manual. Cálculo automático próximamente.</span>
+</div>
+
+<!-- Filters -->
+<form [formGroup]="filterForm" class="filter-bar" autocomplete="off">
+  <mat-form-field appearance="outline" class="supplier-filter">
+    <mat-label>Proveedor</mat-label>
+    <input
+      type="text"
+      matInput
+      [formControl]="supplierDisplay"
+      [matAutocomplete]="supplierAuto"
+      (blur)="syncSupplierDisplay()"
+    />
+    <mat-autocomplete
+      #supplierAuto="matAutocomplete"
+      (optionSelected)="onSupplierSelected($event); loadData()"
+    >
+      @if (thirdPartyService.supplierOptions.isLoading()) {
+        <mat-option disabled>Cargando...</mat-option>
+      }
+      @for (tp of thirdPartyService.supplierOptions.value() ?? []; track tp.id) {
+        <mat-option [value]="tp.id">{{ supplierLabel(tp) }}</mat-option>
+      }
+    </mat-autocomplete>
+    @if (filterForm.controls.supplierId.getRawValue()) {
+      <button
+        matSuffix
+        mat-icon-button
+        aria-label="Limpiar proveedor"
+        (click)="clearSupplier(); loadData()"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    }
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Periodo (YYYY-MM)</mat-label>
+    <input matInput formControlName="period" placeholder="Ej: 2026-05" (change)="loadData()" />
+  </mat-form-field>
+
+  <button mat-stroked-button type="button" (click)="loadData()">
+    <mat-icon>search</mat-icon> Buscar
+  </button>
+</form>
+
+@if (loading()) {
+  <div class="spinner-container">
+    <mat-spinner diameter="40" />
+  </div>
+}
+
+@if (error()) {
+  <p class="error-msg">{{ error() }}</p>
+}
+
+@if (data(); as retencionData) {
+  <div class="table-wrapper">
+    <mat-table [dataSource]="retencionData.content" class="w-full">
+      <ng-container matColumnDef="supplierName">
+        <mat-header-cell *matHeaderCellDef>Proveedor</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.supplierName }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="invoiceCount">
+        <mat-header-cell *matHeaderCellDef>Facturas</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.invoiceCount }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="retentionTotal">
+        <mat-header-cell *matHeaderCellDef>Retención total</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.retentionTotal | currency: 'COP' }}</mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns" />
+      <mat-row *matRowDef="let row; columns: displayedColumns" />
+    </mat-table>
+  </div>
+
+  @if (!loading() && retencionData.content.length === 0) {
+    <p class="error-msg">No hay retenciones que coincidan con el filtro.</p>
+  }
+
+  <mat-paginator
+    [length]="retencionData.totalElements"
+    [pageSize]="retencionData.size"
+    [pageIndex]="retencionData.page"
+    [pageSizeOptions]="pageSizeOptions"
+    (page)="onPageChange($event)"
+    showFirstLastButtons
+  >
+  </mat-paginator>
+}

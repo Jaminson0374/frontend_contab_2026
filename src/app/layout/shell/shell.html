@@ -1,0 +1,82 @@
+<div class="shell-wrapper">
+
+  <!-- ── Barra superior ── -->
+  <mat-toolbar class="shell-topbar">
+
+    <span class="brand">PosInvent</span>
+
+    <div class="topbar-modules">
+      @for (mod of modules(); track mod.key) {
+        <button
+          mat-button
+          class="module-btn"
+          [class.module-btn--active]="activeModule()?.key === mod.key"
+          (click)="navigateToModule(mod)">
+          <mat-icon>{{ mod.icon }}</mat-icon>
+          <span>{{ mod.label }}</span>
+        </button>
+      }
+    </div>
+
+    <span class="topbar-spacer"></span>
+
+    <div class="topbar-user">
+      <div class="user-info">
+        <span class="user-name">{{ user()?.fullName }}</span>
+        <span class="user-role">{{ userRole() }}</span>
+      </div>
+      <button mat-icon-button matTooltip="Cerrar sesión" (click)="logout()">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
+
+  </mat-toolbar>
+
+  <!-- ── Área principal (sidebar + contenido) ── -->
+  <mat-sidenav-container class="shell-body">
+
+    <mat-sidenav [opened]="showSidenav()" mode="side" class="shell-sidenav">
+
+      <div class="sidenav-header">
+        <span class="sidenav-title">{{ activeModule()?.label }}</span>
+        <button mat-icon-button (click)="toggleSidenav()" matTooltip="Colapsar">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+      </div>
+
+      <mat-nav-list>
+        @for (child of sidenavChildren(); track child.route) {
+          <a
+            mat-list-item
+            [routerLink]="child.disabled ? null : child.route"
+            [routerLinkActive]="child.disabled ? '' : 'active-link'"
+            [class.nav-item--disabled]="child.disabled"
+            [disableRipple]="!!child.disabled">
+            <mat-icon matListItemIcon>{{ child.icon }}</mat-icon>
+            <span matListItemTitle>{{ child.label }}</span>
+            @if (child.disabled) {
+              <mat-icon matListItemMeta class="coming-soon-icon">lock</mat-icon>
+            }
+          </a>
+        }
+      </mat-nav-list>
+
+    </mat-sidenav>
+
+    <mat-sidenav-content class="shell-content">
+
+      @if (sidenavChildren().length > 0 && !sidenavExpanded()) {
+        <button class="sidenav-expand-btn" mat-icon-button (click)="toggleSidenav()" matTooltip="Expandir menú">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      }
+
+      <div class="content-area">
+        <router-outlet />
+      </div>
+
+    </mat-sidenav-content>
+
+  </mat-sidenav-container>
+
+</div>

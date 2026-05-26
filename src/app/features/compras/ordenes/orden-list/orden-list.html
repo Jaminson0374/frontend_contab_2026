@@ -1,0 +1,114 @@
+<div class="page-header">
+  <h2 class="page-title">Órdenes de Compra</h2>
+
+  <div class="page-actions">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Buscar</mat-label>
+      <input matInput [formControl]="searchControl" />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-select
+      [value]="service.status()"
+      (selectionChange)="onStatusChange($event.value)"
+      class="status-filter"
+    >
+      @for (opt of statusOptions; track opt.value) {
+        <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+      }
+    </mat-select>
+
+    <button mat-flat-button (click)="openNew()"><mat-icon>add</mat-icon> Nueva OC</button>
+  </div>
+</div>
+
+@if (service.ordenes.isLoading()) {
+  <div class="spinner-container">
+    <mat-spinner diameter="40" />
+  </div>
+}
+
+@if (service.ordenes.error()) {
+  <p class="error-msg">Error cargando órdenes. Intentá de nuevo.</p>
+}
+
+@let data = service.ordenes.value();
+
+@if (data) {
+  <div class="table-wrapper">
+    <mat-table [dataSource]="data.content" class="w-full">
+      <ng-container matColumnDef="index">
+        <mat-header-cell *matHeaderCellDef>#</mat-header-cell>
+        <mat-cell *matCellDef="let row; let i = index">{{
+          service.page() * service.pageSize() + i + 1
+        }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="documentNumber">
+        <mat-header-cell *matHeaderCellDef>N° Orden</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.documentNumber }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="orderDate">
+        <mat-header-cell *matHeaderCellDef>Fecha</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.orderDate | date: 'dd/MM/yyyy' }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="supplierName">
+        <mat-header-cell *matHeaderCellDef>Proveedor</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.supplierName }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <mat-chip [class]="getStatusClass(row.status)">
+            {{ getStatusLabel(row.status) }}
+          </mat-chip>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="totalLines">
+        <mat-header-cell *matHeaderCellDef>Líneas</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.lines?.length ?? 0 }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <mat-header-cell *matHeaderCellDef></mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <button mat-icon-button (click)="openEdit(row.id)" aria-label="Editar">
+            <mat-icon>edit</mat-icon>
+          </button>
+          @if (row.status === 'PENDING' || row.status === 'PARTIAL') {
+            <button
+              mat-icon-button
+              color="warn"
+              (click)="cancelOrder(row.id)"
+              aria-label="Cancelar OC"
+            >
+              <mat-icon>cancel</mat-icon>
+            </button>
+          }
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns" />
+      <mat-row *matRowDef="let row; columns: displayedColumns" />
+    </mat-table>
+  </div>
+
+  @if (!service.ordenes.isLoading() && data.content.length === 0) {
+    <p class="error-msg">No hay órdenes de compra que coincidan con el filtro.</p>
+  }
+
+  <mat-paginator
+    [length]="data.totalElements"
+    [pageSize]="data.size"
+    [pageIndex]="data.page"
+    [pageSizeOptions]="pageSizeOptions"
+    showFirstLastButtons
+    (page)="onPageChange($event)"
+    aria-label="Paginación de órdenes"
+  >
+  </mat-paginator>
+}

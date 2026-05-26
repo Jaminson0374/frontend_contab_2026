@@ -1,0 +1,158 @@
+<div class="of-page">
+  <!-- Toolbar -->
+  <div class="of-toolbar">
+    <div class="of-toolbar-left">
+      <button mat-icon-button (click)="cancel()" matTooltip="Volver a la lista">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <span class="of-breadcrumb">{{ isEditing() ? 'Editar OC' : 'Nueva Orden de Compra' }}</span>
+    </div>
+
+    <div class="of-toolbar-actions">
+      @if (isEditing() && (orderStatus() === 'PENDING' || orderStatus() === 'PARTIAL')) {
+        <button mat-flat-button color="accent" (click)="recibir()">
+          <mat-icon matButtonIcon>move_to_inbox</mat-icon> Recibir
+        </button>
+      }
+      <button mat-flat-button [disabled]="saving()" (click)="save()">
+        <mat-icon matButtonIcon>save</mat-icon>
+        @if (saving()) {
+          <mat-spinner diameter="18" />
+        } @else {
+          Guardar
+        }
+      </button>
+      <button mat-button (click)="cancel()" [disabled]="saving()">
+        <mat-icon>cancel</mat-icon> Cancelar
+      </button>
+    </div>
+  </div>
+
+  <!-- Error bar -->
+  @if (error()) {
+    <div class="of-error-bar"><mat-icon>error_outline</mat-icon> {{ error() }}</div>
+  }
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="spinner-container">
+      <mat-spinner diameter="40" />
+    </div>
+  }
+
+  <!-- Form -->
+  <form [formGroup]="form" class="of-form" autocomplete="off">
+    <div class="of-grid">
+      <!-- Supplier autocomplete -->
+      <mat-form-field appearance="outline">
+        <mat-label>Proveedor</mat-label>
+        <input
+          type="text"
+          matInput
+          [formControl]="supplierDisplay"
+          [matAutocomplete]="supplierAuto"
+          (blur)="syncSupplierDisplay()"
+        />
+        <mat-autocomplete
+          #supplierAuto="matAutocomplete"
+          (optionSelected)="onSupplierSelected($event)"
+        >
+          @if (thirdPartyService.supplierOptions.isLoading()) {
+            <mat-option disabled>Cargando...</mat-option>
+          }
+          @for (tp of suppliers(); track tp.id) {
+            <mat-option [value]="tp.id">{{ supplierLabel(tp) }}</mat-option>
+          }
+          <mat-option value="__create__" class="create-option">
+            <mat-icon>add</mat-icon> Crear nuevo proveedor
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <!-- Order date -->
+      <mat-form-field appearance="outline">
+        <mat-label>Fecha de orden</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="orderDate" />
+        <mat-datepicker-toggle matIconSuffix [for]="picker" />
+        <mat-datepicker #picker />
+      </mat-form-field>
+
+      <!-- Notes -->
+      <mat-form-field appearance="outline" class="of-full-width">
+        <mat-label>Notas</mat-label>
+        <textarea matInput formControlName="notes" rows="3" maxlength="500"></textarea>
+      </mat-form-field>
+    </div>
+
+    <!-- Lines section -->
+    <h3 class="of-section-title">Líneas de la orden</h3>
+
+    <div class="of-lines" formArrayName="linesArray">
+      @for (line of linesArray.controls; track $index; let i = $index) {
+        <div class="of-line-row" [formGroupName]="i">
+          <!-- Product autocomplete -->
+          <mat-form-field appearance="outline" class="of-line-product">
+            <mat-label>Producto</mat-label>
+            <input
+              type="text"
+              matInput
+              formControlName="productDisplay"
+              [matAutocomplete]="productAuto"
+              (input)="onProductSearch(i, $event)"
+              (blur)="syncLineProductDisplay(i)"
+            />
+            <mat-autocomplete
+              #productAuto="matAutocomplete"
+              (optionSelected)="onLineProductSelected(i, $event)"
+            >
+              @if (productService.products.isLoading()) {
+                <mat-option disabled>Cargando...</mat-option>
+              }
+              @for (p of filteredProducts(i); track p.id) {
+                <mat-option [value]="p.id">{{ p.productCode }} — {{ p.name }}</mat-option>
+              }
+            </mat-autocomplete>
+          </mat-form-field>
+
+          <!-- Warehouse select -->
+          <mat-form-field appearance="outline" class="of-line-warehouse">
+            <mat-label>Bodega</mat-label>
+            <mat-select formControlName="warehouseId">
+              @for (w of warehouses(); track w.id) {
+                <mat-option [value]="w.id">{{ w.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <!-- Ordered qty -->
+          <mat-form-field appearance="outline" class="of-line-qty">
+            <mat-label>Cantidad</mat-label>
+            <input matInput type="number" min="0.001" step="0.001" formControlName="orderedQty" />
+          </mat-form-field>
+
+          <!-- Unit cost -->
+          <mat-form-field appearance="outline" class="of-line-cost">
+            <mat-label>Costo unitario</mat-label>
+            <input matInput type="number" min="0" step="0.01" formControlName="unitCost" />
+          </mat-form-field>
+
+          <!-- Remove button -->
+          <button
+            mat-icon-button
+            color="warn"
+            type="button"
+            (click)="removeLine(i)"
+            [disabled]="linesArray.length <= 1"
+            aria-label="Quitar línea"
+          >
+            <mat-icon>remove_circle_outline</mat-icon>
+          </button>
+        </div>
+      }
+    </div>
+
+    <button mat-stroked-button type="button" (click)="addLine()" class="of-add-line">
+      <mat-icon>add</mat-icon> Agregar Item
+    </button>
+  </form>
+</div>

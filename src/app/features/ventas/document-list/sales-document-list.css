@@ -1,0 +1,124 @@
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.page-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.type-filter {
+  width: 160px;
+}
+
+.status-filter {
+  width: 180px;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.error-msg {
+  color: var(--mat-sys-error);
+  text-align: center;
+  padding: 1rem;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.clickable-row {
+  cursor: pointer;
+}
+
+.clickable-row:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.cell-mono {
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+/* Type chips */
+.chip-status-quote {
+  --mdc-chip-label-text-color: #7c3aed;
+  background: #ede9fe;
+}
+
+.chip-status-order {
+  --mdc-chip-label-text-color: #1e40af;
+  background: #dbeafe;
+}
+
+.chip-status-invoice {
+  --mdc-chip-label-text-color: #166534;
+  background: #dcfce7;
+}
+
+/* Status chips */
+.chip-status-draft {
+  --mdc-chip-label-text-color: #64748b;
+  background: #f1f5f9;
+}
+
+.chip-status-sent {
+  --mdc-chip-label-text-color: #1e40af;
+  background: #dbeafe;
+}
+
+.chip-status-accepted {
+  --mdc-chip-label-text-color: #15803d;
+  background: #dcfce7;
+}
+
+.chip-status-rejected {
+  --mdc-chip-label-text-color: #991b1b;
+  background: #fee2e2;
+}
+
+.chip-status-expired {
+  --mdc-chip-label-text-color: #92400e;
+  background: #fef3c7;
+}
+
+.chip-status-confirmed {
+  --mdc-chip-label-text-color: #0e7490;
+  background: #cffafe;
+}
+
+.chip-status-invoiced,
+.chip-status-partially_invoiced {
+  --mdc-chip-label-text-color: #4f46e5;
+  background: #e0e7ff;
+}
+
+.chip-status-issued {
+  --mdc-chip-label-text-color: #166534;
+  background: #bbf7d0;
+}
+
+.chip-status-paid {
+  --mdc-chip-label-text-color: #166534;
+  background: #dcfce7;
+}
+
+.chip-status-cancelled {
+  --mdc-chip-label-text-color: #991b1b;
+  background: #fee2e2;
+}

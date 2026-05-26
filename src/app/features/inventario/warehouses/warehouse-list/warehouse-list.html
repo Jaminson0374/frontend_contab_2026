@@ -1,0 +1,37 @@
+<h2 class="section-title">Bodegas</h2>
+
+@if (service.warehouses.isLoading()) {
+  <div class="spinner-container">
+    <mat-spinner diameter="40" />
+  </div>
+}
+
+@if (service.warehouses.error()) {
+  <p class="error-msg">Error cargando bodegas. Intentá de nuevo.</p>
+}
+
+@let warehouses = service.warehouses.value();
+
+@if (warehouses) {
+  <div class="warehouses-grid">
+    @for (wh of warehouses; track wh.id) {
+      <mat-card class="warehouse-card" [class.inactive]="!wh.active">
+        <mat-card-header>
+          <mat-icon mat-card-avatar class="warehouse-icon">
+            {{ warehouseIcons[wh.warehouseType] }}
+          </mat-icon>
+          <mat-card-title>{{ wh.name }}</mat-card-title>
+          <mat-card-subtitle>{{ wh.location }}</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <mat-chip class="type-chip">{{ typeLabels[wh.warehouseType] }}</mat-chip>
+
+          @if (!wh.active) {
+            <mat-chip class="inactive-chip">Inactiva</mat-chip>
+          }
+        </mat-card-content>
+      </mat-card>
+    }
+  </div>
+}

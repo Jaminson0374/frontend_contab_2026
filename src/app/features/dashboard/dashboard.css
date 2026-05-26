@@ -1,0 +1,33 @@
+:host {
+  display: block;
+  background-color: #f1f5f9;
+  min-height: calc(100vh - 64px);
+}
+
+.kpi-card {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 4px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+.chart-card {
+  min-height: 350px;
+}
+
+.chart-wrapper {
+  position: relative;
+  width: 100%;
+  height: 280px;
+}
+
+.chart-wrapper canvas {
+  width: 100% !important;
+  height: 100% !important;
+}

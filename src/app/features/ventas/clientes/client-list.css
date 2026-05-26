@@ -1,0 +1,45 @@
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.page-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.search-field {
+  width: 260px;
+}
+
+.col-index {
+  flex: 0 0 56px;
+  max-width: 56px;
+  justify-content: center;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.error-msg {
+  color: #ef4444;
+  text-align: center;
+  padding: 24px;
+}

@@ -1,0 +1,184 @@
+<div class="devolution-grid">
+  <!-- LEFT PANEL: Invoice search & details -->
+  <section class="zone-invoice">
+    <h2 class="zone-title">Factura original</h2>
+
+    @if (!invoice()) {
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Buscar factura por número</mat-label>
+        <input matInput [formControl]="searchControl" placeholder="Ej: INVOICE-20260523-..." />
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+    }
+
+    @if (searchLoading()) {
+      <div class="spinner-container">
+        <mat-spinner diameter="40" />
+      </div>
+    }
+
+    @if (invoiceError()) {
+      <p class="error-msg">{{ invoiceError() }}</p>
+    }
+
+    @if (invoice(); as inv) {
+      <div class="invoice-card">
+        <div class="invoice-header">
+          <h3>{{ inv.documentNumber }}</h3>
+          <button mat-icon-button class="clear-btn" (click)="clearInvoice()" aria-label="Limpiar">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="invoice-info">
+          <div class="info-row">
+            <span class="info-label">Cliente:</span>
+            <span>{{ inv.clientName ?? '—' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Fecha:</span>
+            <span>{{ inv.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Total:</span>
+            <span class="info-total">{{
+              inv.totalAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO'
+            }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Estado:</span>
+            <span>{{ inv.status }}</span>
+          </div>
+        </div>
+
+        <div class="invoice-items">
+          <h4>Ítems facturados</h4>
+          <mat-table [dataSource]="inv.items" class="items-table">
+            <ng-container matColumnDef="product">
+              <mat-header-cell *matHeaderCellDef>Producto</mat-header-cell>
+              <mat-cell *matCellDef="let item">{{ item.productName ?? item.productId }}</mat-cell>
+            </ng-container>
+            <ng-container matColumnDef="qty">
+              <mat-header-cell *matHeaderCellDef>Cant</mat-header-cell>
+              <mat-cell *matCellDef="let item">{{ item.quantity }}</mat-cell>
+            </ng-container>
+            <ng-container matColumnDef="price">
+              <mat-header-cell *matHeaderCellDef>Precio</mat-header-cell>
+              <mat-cell *matCellDef="let item">{{
+                item.unitPrice | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO'
+              }}</mat-cell>
+            </ng-container>
+            <mat-header-row *matHeaderRowDef="['product', 'qty', 'price']; sticky: true" />
+            <mat-row *matRowDef="let row; columns: ['product', 'qty', 'price']" />
+          </mat-table>
+        </div>
+      </div>
+    }
+  </section>
+
+  <!-- RIGHT PANEL: Return items -->
+  <section class="zone-return">
+    <h2 class="zone-title">Devolución</h2>
+
+    @if (!invoice()) {
+      <div class="empty-state">
+        <mat-icon>search</mat-icon>
+        <p>Buscá una factura para iniciar la devolución.</p>
+      </div>
+    } @else {
+      <div class="return-table-wrapper">
+        <mat-table [dataSource]="returnLines()" class="return-table">
+          <ng-container matColumnDef="product">
+            <mat-header-cell *matHeaderCellDef class="col-product">Producto</mat-header-cell>
+            <mat-cell *matCellDef="let line" class="col-product">
+              {{ line.productName }}
+            </mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="qty">
+            <mat-header-cell *matHeaderCellDef class="col-qty">Cant</mat-header-cell>
+            <mat-cell *matCellDef="let line; let i = index" class="col-qty">
+              <div class="qty-controls">
+                <button
+                  mat-icon-button
+                  class="qty-btn dec"
+                  (click)="decrementReturn(i)"
+                  [disabled]="line.returnQty <= 0"
+                  aria-label="Restar"
+                >
+                  <mat-icon>remove</mat-icon>
+                </button>
+                <span class="qty-value">{{ line.returnQty }}</span>
+                <button
+                  mat-icon-button
+                  class="qty-btn inc"
+                  (click)="incrementReturn(i)"
+                  [disabled]="line.returnQty >= line.maxQty"
+                  aria-label="Sumar"
+                >
+                  <mat-icon>add</mat-icon>
+                </button>
+              </div>
+              <span class="qty-max">/ {{ line.maxQty }}</span>
+            </mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="price">
+            <mat-header-cell *matHeaderCellDef class="col-price">Precio</mat-header-cell>
+            <mat-cell *matCellDef="let line" class="col-price">
+              {{ line.unitPrice | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO' }}
+            </mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <mat-header-cell *matHeaderCellDef class="col-actions"></mat-header-cell>
+            <mat-cell *matCellDef="let line" class="col-actions">
+              @if (line.returnQty > 0) {
+                <span class="line-subtotal">
+                  {{ line.subtotal | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO' }}
+                </span>
+              }
+            </mat-cell>
+          </ng-container>
+
+          <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true" />
+          <mat-row *matRowDef="let row; columns: displayedColumns" />
+        </mat-table>
+      </div>
+
+      <!-- Reason -->
+      <mat-form-field appearance="outline" class="reason-field">
+        <mat-label>Motivo de la devolución</mat-label>
+        <textarea
+          matInput
+          [formControl]="reasonControl"
+          rows="2"
+          placeholder="Ej: Producto defectuoso..."
+        ></textarea>
+      </mat-form-field>
+
+      <!-- Totals & Submit -->
+      <div class="return-totals">
+        <div class="totals-line">
+          <span>Total a devolver</span>
+          <span class="totals-value">{{ totalReturnedFormatted() }}</span>
+        </div>
+      </div>
+
+      <div class="return-actions">
+        <button
+          mat-flat-button
+          class="btn-devolution"
+          (click)="processDevolution()"
+          [disabled]="processing()"
+        >
+          @if (processing()) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            <mat-icon>assignment_return</mat-icon>
+          }
+          PROCESAR DEVOLUCIÓN
+        </button>
+      </div>
+    }
+  </section>
+</div>

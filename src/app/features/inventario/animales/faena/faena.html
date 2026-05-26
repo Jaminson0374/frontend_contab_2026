@@ -1,0 +1,140 @@
+<div class="faena-page">
+  <div class="page-header">
+    <button mat-icon-button (click)="goBack()" aria-label="Volver">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h2 class="page-title">Registrar Faena</h2>
+  </div>
+
+  @if (animal.isLoading()) {
+    <div class="spinner-container">
+      <mat-spinner diameter="40" />
+    </div>
+  }
+
+  @if (animal.error()) {
+    <div class="error-card">
+      <mat-icon>error_outline</mat-icon>
+      <p>Error cargando la información del animal. Intentá de nuevo.</p>
+      <button mat-button (click)="goBack()">Volver al listado</button>
+    </div>
+  }
+
+  @if (animal.value(); as anim) {
+    <mat-card class="animal-info">
+      <mat-card-content>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">ICA Lote</span>
+            <span class="info-value">{{ anim.icaLotNumber }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Especie</span>
+            <span class="info-value">{{ speciesLabel() }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Peso vivo</span>
+            <span class="info-value">{{ anim.liveWeight | number: '1.2-2' }} kg</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Proveedor</span>
+            <span class="info-value">{{ anim.supplierId | slice: 0 : 8 }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    @if (!allowedToSubmit()) {
+      <div class="permission-warning">
+        <mat-icon>block</mat-icon>
+        <span>No tenés permisos para registrar faenas (requiere rol ADMIN o CARNICERO).</span>
+      </div>
+    }
+
+    <mat-card class="faena-form">
+      <mat-card-content>
+        <form [formGroup]="form" class="form-grid">
+          <mat-form-field appearance="outline">
+            <mat-label>Peso en canal (kg)</mat-label>
+            <input
+              matInput
+              type="number"
+              min="0.001"
+              step="0.001"
+              formControlName="carcassWeight"
+            />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Rendimiento estimado</mat-label>
+            <input
+              matInput
+              [value]="yieldPct() | number: '1.2-2'"
+              readonly
+              [class]="yieldClass()"
+            />
+            <mat-icon matSuffix [class]="yieldClass()">
+              {{ yieldWarning() ? 'warning' : 'check_circle' }}
+            </mat-icon>
+            @if (yieldWarning()) {
+              <mat-hint class="yield-hint"> Rendimiento atípico (fuera del rango 50-70%) </mat-hint>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Costo de compra ($)</mat-label>
+            <input matInput type="number" min="0.001" step="1" formControlName="purchaseCost" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Justificación</mat-label>
+            <textarea
+              matInput
+              formControlName="manualJustification"
+              rows="3"
+              maxlength="500"
+            ></textarea>
+            <mat-hint align="end">
+              {{ form.controls.manualJustification.getRawValue().length }} / 500
+            </mat-hint>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Notas</mat-label>
+            <textarea matInput formControlName="notes" rows="2" maxlength="500"></textarea>
+          </mat-form-field>
+        </form>
+      </mat-card-content>
+    </mat-card>
+
+    @if (submitError()) {
+      <div class="error-msg">
+        <mat-icon>error</mat-icon>
+        <span>{{ submitError() }}</span>
+      </div>
+    }
+
+    @if (submitSuccess()) {
+      <div class="success-msg">
+        <mat-icon>check_circle</mat-icon>
+        <span>{{ submitSuccess() }}</span>
+      </div>
+    }
+
+    <div class="form-actions">
+      <button mat-button (click)="goBack()" [disabled]="submitting()">Cancelar</button>
+      <button
+        mat-flat-button
+        color="warn"
+        [disabled]="form.invalid || submitting() || !allowedToSubmit()"
+        (click)="submit()"
+      >
+        @if (submitting()) {
+          <mat-spinner diameter="18" color="accent" />
+        } @else {
+          Registrar faena
+        }
+      </button>
+    </div>
+  }
+</div>

@@ -1,0 +1,135 @@
+<div class="kl-page">
+  <h2 class="page-title">Kardex — Historial de Movimientos</h2>
+
+  <div class="kl-filters">
+    <app-product-search
+      class="kl-filter-product"
+      label="Producto"
+      placeholder="Buscar por código o nombre..."
+      (selected)="onProductSelected($event)"
+      (cleared)="onProductCleared()"
+    />
+
+    <app-warehouse-picker
+      class="kl-filter-warehouse"
+      label="Bodega"
+      placeholder="Buscar bodega..."
+      (selected)="onWarehouseSelected($event)"
+      (cleared)="onWarehouseCleared()"
+    />
+
+    <app-batch-picker class="kl-filter-batch" label="Lote" (selected)="onBatchSelected($event)" />
+
+    <mat-form-field appearance="outline" class="kl-filter-type">
+      <mat-label>Tipo movimiento</mat-label>
+      <mat-select [formControl]="filterType" (selectionChange)="onTypeChange()">
+        @for (opt of movementTypeOptions; track opt.value) {
+          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="kl-filter-date">
+      <mat-label>Desde</mat-label>
+      <input matInput [matDatepicker]="fromPicker" (dateChange)="onDateFromChange($event.value)" />
+      <mat-datepicker-toggle matSuffix [for]="fromPicker" />
+      <mat-datepicker #fromPicker />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="kl-filter-date">
+      <mat-label>Hasta</mat-label>
+      <input matInput [matDatepicker]="toPicker" (dateChange)="onDateToChange($event.value)" />
+      <mat-datepicker-toggle matSuffix [for]="toPicker" />
+      <mat-datepicker #toPicker />
+    </mat-form-field>
+  </div>
+
+  @if (loading()) {
+    <div class="spinner-container">
+      <mat-spinner diameter="40" />
+    </div>
+  }
+
+  @if (error()) {
+    <p class="error-msg">{{ error() }}</p>
+  }
+
+  @if (data(); as pg) {
+    @if (pg.content.length === 0) {
+      <p class="empty-msg">No se encontraron movimientos.</p>
+    } @else {
+      <mat-table [dataSource]="pg.content" class="kl-table">
+        <ng-container matColumnDef="createdAt">
+          <mat-header-cell *matHeaderCellDef>Fecha</mat-header-cell>
+          <mat-cell *matCellDef="let row">{{ row.createdAt | date: 'short' }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="movementType">
+          <mat-header-cell *matHeaderCellDef>Tipo</mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            <span [class]="'chip ' + typeClass(row.movementType)">
+              {{ typeLabel(row.movementType) }}
+            </span>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="productId">
+          <mat-header-cell *matHeaderCellDef>Producto</mat-header-cell>
+          <mat-cell *matCellDef="let row" class="cell-mono">{{
+            row.productId | slice: 0 : 8
+          }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="quantity">
+          <mat-header-cell *matHeaderCellDef>Cantidad</mat-header-cell>
+          <mat-cell *matCellDef="let row">{{ row.quantity }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="previousQty">
+          <mat-header-cell *matHeaderCellDef>Stock ant.</mat-header-cell>
+          <mat-cell *matCellDef="let row">{{ row.previousQty }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="newQty">
+          <mat-header-cell *matHeaderCellDef>Stock nuevo</mat-header-cell>
+          <mat-cell *matCellDef="let row">{{ row.newQty }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="unitCost">
+          <mat-header-cell *matHeaderCellDef>Costo unit.</mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            {{ row.unitCost | currency: 'COP' : 'symbol-narrow' : '1.0-2' : 'es-CO' }}
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="warehouseId">
+          <mat-header-cell *matHeaderCellDef>Bodega</mat-header-cell>
+          <mat-cell *matCellDef="let row" class="cell-mono">{{
+            row.warehouseId | slice: 0 : 8
+          }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="referenceType">
+          <mat-header-cell *matHeaderCellDef>Referencia</mat-header-cell>
+          <mat-cell *matCellDef="let row">{{ row.referenceType ?? '—' }}</mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true" />
+        <mat-row
+          *matRowDef="let row; columns: displayedColumns"
+          (click)="viewSourceDocument(row)"
+          class="kl-row-clickable"
+        />
+      </mat-table>
+
+      <mat-paginator
+        [length]="pg.totalElements"
+        [pageSize]="size()"
+        [pageIndex]="page()"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="onPageChange($event)"
+        showFirstLastButtons
+      />
+    }
+  }
+</div>

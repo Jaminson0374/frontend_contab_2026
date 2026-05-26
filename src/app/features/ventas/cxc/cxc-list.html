@@ -1,0 +1,176 @@
+<div class="cxc-page">
+  <h2 class="page-title">Cuentas por Cobrar</h2>
+
+  <!-- Aging Summary Cards -->
+  @if (aging(); as a) {
+    <div class="aging-cards">
+      @for (bucket of agingBuckets(); track bucket.label) {
+        <mat-card class="aging-card" [style.borderTopColor]="bucket.color">
+          <mat-card-content>
+            <div class="aging-label">{{ bucket.label }}</div>
+            <div class="aging-count">{{ bucket.bucket.count }} docs</div>
+            <div class="aging-total">
+              {{ bucket.bucket.total | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO' }}
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+      <mat-card class="aging-card aging-card-total">
+        <mat-card-content>
+          <div class="aging-label">Total pendiente</div>
+          <div class="aging-count">&nbsp;</div>
+          <div class="aging-total aging-total-bold">
+            {{ a.totalOutstanding | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO' }}
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  }
+
+  <!-- Filters -->
+  <div class="cxc-filters">
+    <mat-form-field appearance="outline" class="cxc-filter-search">
+      <mat-label>Buscar por cliente</mat-label>
+      <input matInput [formControl]="searchControl" placeholder="Nombre del cliente..." />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="cxc-filter-status">
+      <mat-label>Estado</mat-label>
+      <mat-select
+        [value]="service.statusFilter()"
+        (selectionChange)="service.statusFilter.set($event.value); onStatusChange()"
+      >
+        @for (opt of statusOptions; track opt.value) {
+          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <button
+      mat-flat-button
+      class="btn-calculate-interest"
+      (click)="calculateInterest()"
+      [disabled]="calculatingInterest()"
+    >
+      @if (calculatingInterest()) {
+        <mat-spinner diameter="20"></mat-spinner>
+      } @else {
+        <mat-icon>percent</mat-icon>
+      }
+      Calcular intereses
+    </button>
+  </div>
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="spinner-container">
+      <mat-spinner diameter="40" />
+    </div>
+  }
+
+  <!-- Error -->
+  @if (error()) {
+    <p class="error-msg">{{ error() }}</p>
+  }
+
+  <!-- Table -->
+  @if (data(); as pg) {
+    @if (pg.content.length === 0) {
+      <p class="empty-msg">No se encontraron cuentas por cobrar.</p>
+    } @else {
+      <mat-table [dataSource]="pg.content" class="cxc-table">
+        <ng-container matColumnDef="documentNumber">
+          <mat-header-cell *matHeaderCellDef>Documento</mat-header-cell>
+          <mat-cell *matCellDef="let row">{{ row.documentNumber ?? '—' }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="clientName">
+          <mat-header-cell *matHeaderCellDef>Cliente</mat-header-cell>
+          <mat-cell *matCellDef="let row">{{
+            row.clientName ?? row.clientId | slice: 0 : 8
+          }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="totalAmount">
+          <mat-header-cell *matHeaderCellDef>Total</mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            {{ row.totalAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO' }}
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="paidAmount">
+          <mat-header-cell *matHeaderCellDef>Pagado</mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            {{ row.paidAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO' }}
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="outstanding">
+          <mat-header-cell *matHeaderCellDef>Pendiente</mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            <strong>{{
+              row.outstanding | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO'
+            }}</strong>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="intereses">
+          <mat-header-cell *matHeaderCellDef>Intereses</mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            @if (row.interestAmount > 0) {
+              <span class="interest-value">{{
+                row.interestAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO'
+              }}</span>
+            } @else {
+              <span class="interest-zero">—</span>
+            }
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="dueDate">
+          <mat-header-cell *matHeaderCellDef>Vencimiento</mat-header-cell>
+          <mat-cell *matCellDef="let row">{{ row.dueDate | date: 'dd/MM/yyyy' }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            <mat-chip [class]="statusClass(row.status)">{{ statusLabel(row.status) }}</mat-chip>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <mat-header-cell *matHeaderCellDef></mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            <button
+              mat-icon-button
+              color="accent"
+              (click)="createReceipt(row); $event.stopPropagation()"
+              matTooltip="Crear recibo"
+              aria-label="Crear recibo"
+            >
+              <mat-icon>receipt</mat-icon>
+            </button>
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true" />
+        <mat-row
+          *matRowDef="let row; columns: displayedColumns"
+          (click)="openDocument(row)"
+          class="cxc-row-clickable"
+        />
+      </mat-table>
+
+      <mat-paginator
+        [length]="pg.totalElements"
+        [pageSize]="service.pageSize()"
+        [pageIndex]="service.page()"
+        [pageSizeOptions]="pageSizeOptions"
+        (page)="onPageChange($event)"
+        showFirstLastButtons
+      />
+    }
+  }
+</div>

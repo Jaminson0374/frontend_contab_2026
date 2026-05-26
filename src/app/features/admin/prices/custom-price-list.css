@@ -1,0 +1,45 @@
+.cpl-page {
+  padding: 1rem;
+}
+
+.cpl-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.cpl-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.cpl-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.cpl-loading {
+  display: flex;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.cpl-error {
+  color: #ef4444;
+  text-align: center;
+  padding: 1.5rem;
+}
+
+.cpl-empty {
+  text-align: center;
+  color: #64748b;
+  padding: 2rem;
+}
+
+.cpl-table {
+  width: 100%;
+}

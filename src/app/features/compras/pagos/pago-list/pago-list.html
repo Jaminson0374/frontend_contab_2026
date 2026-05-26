@@ -1,0 +1,83 @@
+<div class="page-header">
+  <h2 class="page-title">Pagos a proveedores</h2>
+
+  <div class="page-actions">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Buscar</mat-label>
+      <input matInput [formControl]="searchControl" />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <button mat-flat-button (click)="openNew()"><mat-icon>add</mat-icon> Nuevo pago</button>
+  </div>
+</div>
+
+@if (service.pagos.isLoading()) {
+  <div class="spinner-container">
+    <mat-spinner diameter="40" />
+  </div>
+}
+
+@if (service.pagos.error()) {
+  <p class="error-msg">Error cargando pagos. Intentá de nuevo.</p>
+}
+
+@let data = service.pagos.value();
+
+@if (data) {
+  <div class="table-wrapper">
+    <mat-table [dataSource]="data.content" class="w-full">
+      <ng-container matColumnDef="supplierName">
+        <mat-header-cell *matHeaderCellDef>Proveedor</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.supplierName }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="amount">
+        <mat-header-cell *matHeaderCellDef>Monto</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.amount | currency: 'COP' }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="paymentDate">
+        <mat-header-cell *matHeaderCellDef>Fecha de pago</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.paymentDate | date: 'dd/MM/yyyy' }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="method">
+        <mat-header-cell *matHeaderCellDef>Método</mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <mat-chip [class]="getMethodClass(row.method)">
+            {{ getMethodLabel(row.method) }}
+          </mat-chip>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="reference">
+        <mat-header-cell *matHeaderCellDef>Referencia</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.reference || '—' }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="createdAt">
+        <mat-header-cell *matHeaderCellDef>Registrado</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.createdAt | date: 'dd/MM/yyyy HH:mm' }}</mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns" />
+      <mat-row *matRowDef="let row; columns: displayedColumns" />
+    </mat-table>
+  </div>
+
+  @if (!service.pagos.isLoading() && data.content.length === 0) {
+    <p class="error-msg">No hay pagos que coincidan con el filtro.</p>
+  }
+
+  <mat-paginator
+    [length]="data.totalElements"
+    [pageSize]="data.size"
+    [pageIndex]="data.page"
+    [pageSizeOptions]="pageSizeOptions"
+    showFirstLastButtons
+    (page)="onPageChange($event)"
+    aria-label="Paginación de pagos"
+  >
+  </mat-paginator>
+}

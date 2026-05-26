@@ -1,0 +1,113 @@
+<div class="cl-page">
+  <!-- Toolbar -->
+  <div class="cl-toolbar">
+    <div class="cl-toolbar-left">
+      <button mat-icon-button (click)="goBack()" matTooltip="Volver a la lista">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <span class="cl-breadcrumb">{{ pageTitle() }}</span>
+    </div>
+
+    <div class="cl-toolbar-actions">
+      <button class="tb-btn tb-btn--primary" [disabled]="!canGuardar()" (click)="save()">
+        @if (saving()) {
+          <mat-spinner diameter="16" />
+        } @else {
+          <mat-icon>save</mat-icon> Guardar
+        }
+      </button>
+      <button class="tb-btn" [disabled]="!canCancelar()" (click)="cancelar()">
+        <mat-icon>cancel</mat-icon> Cancelar
+      </button>
+    </div>
+  </div>
+
+  <!-- Error bar -->
+  @if (error()) {
+    <div class="cl-error-bar"><mat-icon>error_outline</mat-icon> {{ error() }}</div>
+  }
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="cl-loading"><mat-spinner diameter="40" /></div>
+  } @else {
+    <form [formGroup]="form" class="cl-form-wrapper">
+      <div class="tab-content">
+        <p class="section-title">DATOS DEL CLIENTE</p>
+
+        <div class="form-two-col">
+          <div class="form-left">
+            <!-- Identificación -->
+            <mat-form-field appearance="outline">
+              <mat-label>*Identificación (NIT)</mat-label>
+              <input maxlength="20" matInput formControlName="numIdentification" />
+              @if (
+                form.get('numIdentification')?.invalid && form.get('numIdentification')?.touched
+              ) {
+                <mat-error>La identificación es requerida</mat-error>
+              }
+            </mat-form-field>
+
+            <!-- Nombre -->
+            <mat-form-field appearance="outline">
+              <mat-label>*Nombre</mat-label>
+              <input maxlength="200" matInput formControlName="name" />
+              @if (form.get('name')?.invalid && form.get('name')?.touched) {
+                <mat-error>El nombre es requerido</mat-error>
+              }
+            </mat-form-field>
+
+            <!-- Apellido -->
+            <mat-form-field appearance="outline">
+              <mat-label>Apellido</mat-label>
+              <input maxlength="150" matInput formControlName="lastName" />
+            </mat-form-field>
+
+            <!-- Email -->
+            <mat-form-field appearance="outline">
+              <mat-label>Email</mat-label>
+              <input
+                maxlength="200"
+                matInput
+                formControlName="email"
+                placeholder="email@cliente.com"
+              />
+              @if (form.get('email')?.invalid && form.get('email')?.touched) {
+                <mat-error>Email inválido</mat-error>
+              }
+            </mat-form-field>
+
+            <!-- Teléfono -->
+            <mat-form-field appearance="outline">
+              <mat-label>Teléfono</mat-label>
+              <input maxlength="50" matInput formControlName="phone" />
+            </mat-form-field>
+
+            <!-- Dirección -->
+            <mat-form-field appearance="outline">
+              <mat-label>Dirección</mat-label>
+              <input maxlength="255" matInput formControlName="address" />
+            </mat-form-field>
+          </div>
+
+          <div class="form-right">
+            <!-- Plazo en días -->
+            <mat-form-field appearance="outline">
+              <mat-label>Plazo en días</mat-label>
+              <input matInput type="number" formControlName="creditDays" min="0" />
+            </mat-form-field>
+
+            <!-- Cupo de crédito -->
+            <mat-form-field appearance="outline">
+              <mat-label>Cupo de crédito ($)</mat-label>
+              <input matInput type="number" formControlName="creditLimit" min="0" />
+              @if (form.get('creditLimit')?.invalid && form.get('creditLimit')?.touched) {
+                <mat-error>El cupo de crédito es requerido</mat-error>
+              }
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+    </form>
+  }
+</div>

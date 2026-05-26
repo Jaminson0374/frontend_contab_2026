@@ -1,0 +1,542 @@
+/* ── Page container ── */
+.pf-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  font-size: 13px;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Arial,
+    sans-serif;
+}
+
+/* ── Font family override ── */
+::ng-deep .pf-page,
+::ng-deep .pf-page *:not(mat-icon):not(.material-icons) {
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Arial,
+    sans-serif !important;
+}
+
+/* ── Compact form fields ── */
+::ng-deep .pf-page .mat-mdc-form-field-infix {
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+  min-height: 36px !important;
+}
+
+::ng-deep .pf-page .mdc-text-field--outlined {
+  height: 38px !important;
+}
+
+::ng-deep .pf-page .mdc-floating-label {
+  font-size: 12px !important;
+  top: 19px !important;
+}
+
+::ng-deep .pf-page .mdc-floating-label--float-above {
+  transform: translateY(-24px) scale(0.85) !important;
+}
+
+::ng-deep .pf-page .mdc-notched-outline__notch {
+  max-width: calc(100% - 48px);
+}
+
+/* ── Textarea overrides (multi-line fields need natural height) ── */
+::ng-deep .pf-page .mat-mdc-form-field:has(textarea) .mdc-text-field--outlined {
+  height: auto !important;
+}
+
+::ng-deep .pf-page .mat-mdc-form-field:has(textarea) .mat-mdc-form-field-infix {
+  min-height: 60px !important;
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+}
+
+/* ── Toolbar ── */
+.pf-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px 6px 4px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.pf-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pf-breadcrumb {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pf-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.tb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.tb-btn mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.tb-btn:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.tb-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tb-btn--primary {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #fff;
+}
+
+.tb-btn--primary:hover:not(:disabled) {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+/* ── Error bar ── */
+.pf-error-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  background: #fef2f2;
+  border-bottom: 1px solid #fecaca;
+  color: #dc2626;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.pf-error-bar mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+/* ── Search panel ── */
+.pf-search-panel {
+  padding: 10px 16px 12px;
+  background: #eff6ff;
+  border-bottom: 1px solid #bfdbfe;
+  flex-shrink: 0;
+}
+
+.pf-search-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pf-search-field {
+  flex: 1;
+}
+
+.pf-search-loading {
+  padding: 8px;
+}
+
+.pf-search-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.pf-search-table th {
+  padding: 6px 8px;
+  text-align: left;
+  background: #dbeafe;
+  font-weight: 600;
+  color: #1e40af;
+}
+
+.pf-search-row {
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.pf-search-row:hover {
+  background: #eff6ff;
+}
+.pf-search-row td {
+  padding: 5px 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.pf-search-empty {
+  font-size: 12px;
+  color: #64748b;
+  padding: 8px 0 0;
+  margin: 0;
+}
+
+/* ── Loading ── */
+.pf-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+}
+
+/* ── Form wrapper ── */
+.pf-form-wrapper {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Tabs ── */
+::ng-deep .pf-tabs {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+::ng-deep .pf-tabs .mat-mdc-tab-header {
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+
+::ng-deep .pf-tabs .mat-mdc-tab-label-container {
+  padding: 0 12px;
+}
+
+::ng-deep .pf-tabs .mat-mdc-tab-body-wrapper {
+  flex: 1;
+  overflow: hidden;
+}
+
+::ng-deep .pf-tabs .mat-mdc-tab-body {
+  overflow: hidden;
+}
+
+/* ── Tab content ── */
+.tab-content {
+  padding: 16px 20px;
+  overflow-y: auto;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Font sizes ── */
+::ng-deep .pf-page .mat-mdc-form-field,
+::ng-deep .pf-page .mat-mdc-form-field input,
+::ng-deep .pf-page .mat-mdc-form-field textarea,
+::ng-deep .pf-page .mat-mdc-form-field .mat-mdc-select-value-text,
+::ng-deep .pf-page .mat-mdc-option {
+  font-size: 13px !important;
+}
+
+::ng-deep .pf-page .mat-mdc-form-field-subscript-wrapper {
+  margin-bottom: 2px;
+}
+
+/* ── Section titles ── */
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #3b82f6;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin: 12px 0 8px;
+  text-align: center;
+}
+
+/* ── Form rows ── */
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0 12px;
+  margin-bottom: 0;
+}
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 12px;
+}
+
+.form-row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0 12px;
+}
+
+.form-row-4 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0 12px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+/* ── Checkboxes grid ── */
+.checkboxes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 6px;
+  margin: 8px 0 4px;
+}
+
+::ng-deep .pf-page .mat-mdc-checkbox .mdc-label {
+  font-size: 13px;
+}
+
+/* ── Sale price display ── */
+.sale-price-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: #f0fdf4;
+  border-radius: 8px;
+  border: 1px solid #bbf7d0;
+  margin: 4px 0 8px;
+}
+
+.sale-price-label {
+  font-size: 0.875rem;
+  color: #15803d;
+  font-weight: 500;
+}
+
+.sale-price-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #15803d;
+}
+
+/* ── Sub-table (warehouses, suppliers, images, promotions) ── */
+.sub-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.sub-table-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  background: #f8fafc;
+  border-radius: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.sub-table-row mat-form-field {
+  flex: 1;
+  min-width: 160px;
+}
+
+.sub-table-row--image {
+  align-items: stretch;
+}
+
+.sub-table-row--image .product-image-preview {
+  flex: 3 1 0;
+  min-width: 280px;
+}
+
+.sub-table-row--image .product-image-url-field {
+  flex: 1 1 0;
+  min-width: 180px;
+}
+
+.sub-table-row--image .display-order-badge,
+.sub-table-row--image button[mat-icon-button] {
+  flex: 0 0 auto;
+  align-self: center;
+}
+
+.product-image-dropzone {
+  border: 1px dashed #93c5fd;
+  border-radius: 10px;
+  background: #eff6ff;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.product-image-dropzone--disabled {
+  opacity: 0.7;
+}
+
+.product-image-dropzone__content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.product-image-dropzone__content mat-icon {
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+  color: #2563eb;
+}
+
+.product-image-dropzone__content p {
+  margin: 0 0 8px;
+  color: #1e3a8a;
+  font-size: 12px;
+}
+
+.product-image-dropzone__button {
+  pointer-events: auto;
+}
+
+.product-image-dropzone__hint {
+  margin: 10px 0 0;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.product-image-upload-status,
+.product-image-upload-error {
+  margin: 0 0 12px;
+  font-size: 12px;
+}
+
+.product-image-upload-status {
+  color: #2563eb;
+}
+
+.product-image-upload-error {
+  color: #dc2626;
+}
+
+.product-image-preview {
+  min-height: 180px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
+
+.product-image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.product-image-preview mat-icon {
+  color: #94a3b8;
+  width: 36px;
+  height: 36px;
+  font-size: 36px;
+}
+
+.price-entry-row {
+  align-items: flex-start;
+}
+
+.price-entry-search-row {
+  margin-bottom: 10px;
+}
+
+.price-entry-search-field {
+  flex: 1 1 320px;
+}
+
+.price-entry-list-name {
+  flex: 1.5;
+}
+
+.price-entry-row button {
+  margin-top: 8px;
+}
+
+.sub-table-empty {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 12px;
+  padding: 12px 0 18px;
+  margin: 0;
+}
+
+/* ── Display order badge ── */
+.display-order-badge {
+  font-size: 0.75rem;
+  color: #64748b;
+  white-space: nowrap;
+  padding: 0 4px;
+}
+
+/* ── Divider spacing ── */
+::ng-deep .pf-page mat-divider {
+  margin: 8px 0 4px !important;
+}
+
+/* ── Quick-create autocomplete option ── */
+.qc-create-option {
+  color: #3b82f6 !important;
+  font-weight: 500 !important;
+  border-top: 1px solid #e2e8f0;
+}
+
+.qc-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  vertical-align: middle;
+  margin-right: 4px;
+  color: #3b82f6;
+}

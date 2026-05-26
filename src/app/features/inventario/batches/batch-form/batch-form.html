@@ -1,0 +1,68 @@
+<h2 mat-dialog-title>Nuevo lote de entrada</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="form-grid">
+    <mat-form-field appearance="outline">
+      <mat-label>Proveedor</mat-label>
+      <mat-select formControlName="supplierId">
+        @if (thirdPartyService.supplierOptions.isLoading()) {
+          <mat-option disabled>Cargando...</mat-option>
+        }
+        @for (tp of suppliers(); track tp.id) {
+          <mat-option [value]="tp.id">{{ tp.name }} ({{ tp.numIdentification }})</mat-option>
+        }
+        @if (!thirdPartyService.supplierOptions.isLoading() && suppliers().length === 0) {
+          <mat-option disabled>No hay proveedores disponibles</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Bodega (tipo CANAL)</mat-label>
+      <mat-select formControlName="warehouseId">
+        @if (warehouseService.warehouses.isLoading()) {
+          <mat-option disabled>Cargando...</mat-option>
+        }
+        @for (w of canalWarehouses(); track w.id) {
+          <mat-option [value]="w.id">{{ w.name }}</mat-option>
+        }
+        @if (!warehouseService.warehouses.isLoading() && canalWarehouses().length === 0) {
+          <mat-option disabled>No hay bodegas tipo CANAL activas</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Fecha de entrada</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="entryDate" />
+      <mat-datepicker-toggle matIconSuffix [for]="picker" />
+      <mat-datepicker #picker />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Peso inicial (kg)</mat-label>
+      <input matInput type="number" min="0.001" step="0.001" formControlName="initialWeight" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Costo de compra ($)</mat-label>
+      <input matInput type="number" min="0" step="1" formControlName="purchaseCost" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Notas</mat-label>
+      <textarea matInput formControlName="notes" rows="3" maxlength="500"></textarea>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancelar</button>
+  <button mat-flat-button [disabled]="form.invalid || saving()" (click)="save()">
+    @if (saving()) {
+      <mat-spinner diameter="18" />
+    } @else {
+      Registrar lote
+    }
+  </button>
+</mat-dialog-actions>

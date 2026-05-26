@@ -1,0 +1,67 @@
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.page-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.search-field {
+  width: 240px;
+}
+
+.status-filter {
+  width: 160px;
+}
+
+.supplier-filter-field {
+  width: 200px;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.error-msg {
+  color: var(--mat-sys-error);
+  text-align: center;
+  padding: 1rem;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.chip-status-pending {
+  --mdc-chip-label-text-color: #92400e;
+  background: #fef3c7;
+}
+
+.chip-status-reconciled {
+  --mdc-chip-label-text-color: #1e40af;
+  background: #dbeafe;
+}
+
+.chip-status-paid {
+  --mdc-chip-label-text-color: #15803d;
+  background: #dcfce7;
+}
+
+.chip-status-disputed {
+  --mdc-chip-label-text-color: #991b1b;
+  background: #fee2e2;
+}

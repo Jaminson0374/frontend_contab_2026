@@ -1,0 +1,94 @@
+<div class="page-header">
+  <h2 class="page-title">Terceros</h2>
+
+  <div class="page-actions">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Buscar por NIT o nombre</mat-label>
+      <input matInput [formControl]="searchControl" />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <button mat-flat-button (click)="openNew()">
+      <mat-icon>add</mat-icon> Nuevo tercero
+    </button>
+  </div>
+</div>
+
+@if (service.thirdParties.isLoading()) {
+  <div class="spinner-container">
+    <mat-spinner diameter="40" />
+  </div>
+}
+
+@if (service.thirdParties.error()) {
+  <p class="error-msg">Error cargando terceros. Intentá de nuevo.</p>
+}
+
+@let data = service.thirdParties.value();
+
+@if (data) {
+  <mat-table [dataSource]="data.content" class="w-full">
+
+    <ng-container matColumnDef="index">
+      <mat-header-cell *matHeaderCellDef class="col-index">#</mat-header-cell>
+      <mat-cell *matCellDef="let row; let i = index" class="col-index">
+        {{ data.page * data.size + i + 1 }}
+      </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="numIdentification">
+      <mat-header-cell *matHeaderCellDef>Identificación</mat-header-cell>
+      <mat-cell *matCellDef="let row">
+        {{ row.numIdentification }}{{ row.dv ? '-' + row.dv : '' }}
+      </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="name">
+      <mat-header-cell *matHeaderCellDef>Nombre / Razón social</mat-header-cell>
+      <mat-cell *matCellDef="let row">
+        {{ row.name }}{{ row.lastName ? ' ' + row.lastName : '' }}
+      </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="category">
+      <mat-header-cell *matHeaderCellDef>Tipo de tercero</mat-header-cell>
+      <mat-cell *matCellDef="let row">
+        <mat-chip>{{ getCategoryName(row.thirdPartyCategoryId) || row.type }}</mat-chip>
+      </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="personType">
+      <mat-header-cell *matHeaderCellDef>Persona</mat-header-cell>
+      <mat-cell *matCellDef="let row">
+        {{ row.personType === 'NATURAL' ? 'Natural' : 'Jurídica' }}
+      </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="creditLimit">
+      <mat-header-cell *matHeaderCellDef>Cupo crédito</mat-header-cell>
+      <mat-cell *matCellDef="let row">{{ row.creditLimit | number:'1.0-0' }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <mat-header-cell *matHeaderCellDef></mat-header-cell>
+      <mat-cell *matCellDef="let row">
+        <button mat-icon-button (click)="openEdit(row.id)" aria-label="Editar">
+          <mat-icon>edit</mat-icon>
+        </button>
+      </mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedColumns" />
+    <mat-row *matRowDef="let row; columns: displayedColumns;" />
+  </mat-table>
+
+  <mat-paginator
+    [length]="data.totalElements"
+    [pageSize]="data.size"
+    [pageIndex]="data.page"
+    [pageSizeOptions]="pageSizeOptions"
+    showFirstLastButtons
+    (page)="onPageChange($event)"
+    aria-label="Paginación de terceros">
+  </mat-paginator>
+}

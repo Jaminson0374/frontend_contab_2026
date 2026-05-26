@@ -1,0 +1,232 @@
+<div class="qf-page">
+  <!-- Toolbar -->
+  <div class="qf-toolbar">
+    <div class="qf-toolbar-left">
+      <button mat-icon-button (click)="volver()" matTooltip="Volver a la lista">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <span class="qf-breadcrumb">
+        @if (mode() === 'new') {
+          Nueva cotización
+        } @else {
+          @let doc = documentData();
+          {{ doc?.documentNumber ?? 'Documento' }}
+        }
+      </span>
+      @if (documentData(); as doc) {
+        <mat-chip [class]="statusClass(doc.status)">{{ statusLabel(doc.status) }}</mat-chip>
+      }
+    </div>
+
+    <div class="qf-toolbar-actions">
+      @if (mode() === 'new') {
+        <button mat-flat-button [disabled]="saving()" (click)="save()">
+          <mat-icon>save</mat-icon>
+          @if (saving()) {
+            <mat-spinner diameter="18" />
+          } @else {
+            Guardar
+          }
+        </button>
+      }
+      @if (mode() === 'edit') {
+        @for (t of availableTransitions(); track t.status) {
+          <button mat-flat-button [disabled]="saving()" (click)="transition(t.status)">
+            <mat-icon>swap_horiz</mat-icon>
+            {{ t.label }}
+          </button>
+        }
+      }
+      <button mat-button (click)="volver()" [disabled]="saving()">
+        <mat-icon>cancel</mat-icon> Cancelar
+      </button>
+    </div>
+  </div>
+
+  <!-- Error bar -->
+  @if (error()) {
+    <div class="qf-error-bar"><mat-icon>error_outline</mat-icon> {{ error() }}</div>
+  }
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="spinner-container">
+      <mat-spinner diameter="40" />
+    </div>
+  }
+
+  <!-- Form -->
+  <form [formGroup]="form" class="qf-form" autocomplete="off">
+    <div class="qf-grid">
+      <!-- Client autocomplete -->
+      <mat-form-field appearance="outline">
+        <mat-label>Cliente</mat-label>
+        <input
+          type="text"
+          matInput
+          [formControl]="clientDisplay"
+          [matAutocomplete]="clientAuto"
+          (blur)="syncClientDisplay()"
+        />
+        <mat-icon matSuffix>person</mat-icon>
+        <mat-autocomplete #clientAuto="matAutocomplete" (optionSelected)="onClientSelected($event)">
+          @if (clientLoading()) {
+            <mat-option disabled>Buscando...</mat-option>
+          }
+          @for (tp of clientOptions(); track tp.id) {
+            <mat-option [value]="tp.id">
+              {{ clientLabel(tp) }}
+            </mat-option>
+          }
+          @if (!clientLoading() && clientDisplay.value.length >= 2) {
+            <mat-option value="__create__" class="create-option">
+              <mat-icon matOptionIcon>add</mat-icon> Crear nuevo cliente
+            </mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <!-- Document type -->
+      <mat-form-field appearance="outline">
+        <mat-label>Tipo de documento</mat-label>
+        <mat-select formControlName="type">
+          @for (opt of typeOptions; track opt.value) {
+            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <!-- Lines section -->
+    <h3 class="qf-section-title">Productos</h3>
+
+    <div class="qf-lines" formArrayName="linesArray">
+      @for (line of linesArray.controls; track $index; let i = $index) {
+        <div class="qf-line-row" [formGroupName]="i">
+          <!-- Product autocomplete -->
+          <mat-form-field appearance="outline" class="qf-line-product">
+            <mat-label>Producto</mat-label>
+            <input
+              type="text"
+              matInput
+              formControlName="productDisplay"
+              [matAutocomplete]="productAuto"
+              (input)="onProductSearchInput($event)"
+              (blur)="syncLineProductDisplay(i)"
+            />
+            <mat-autocomplete
+              #productAuto="matAutocomplete"
+              (optionSelected)="onLineProductSelected(i, $event)"
+            >
+              @if (productService.products.isLoading()) {
+                <mat-option disabled>Cargando...</mat-option>
+              }
+              @for (p of filteredProducts(); track p.id) {
+                <mat-option [value]="p.id"> {{ p.productCode }} — {{ p.name }} </mat-option>
+              }
+            </mat-autocomplete>
+          </mat-form-field>
+
+          <!-- Quantity -->
+          <mat-form-field appearance="outline" class="qf-line-qty">
+            <mat-label>Cantidad</mat-label>
+            <input matInput type="number" min="0.001" step="0.001" formControlName="quantity" />
+          </mat-form-field>
+
+          <!-- Unit price -->
+          <mat-form-field appearance="outline" class="qf-line-price">
+            <mat-label>Precio unit.</mat-label>
+            <input matInput type="number" min="0" step="0.01" formControlName="unitPrice" />
+            <span matTextPrefix>$&nbsp;</span>
+          </mat-form-field>
+
+          <!-- Tax type -->
+          <mat-form-field appearance="outline" class="qf-line-tax">
+            <mat-label>IVA</mat-label>
+            <mat-select formControlName="taxType">
+              @for (opt of taxTypeOptions; track opt.value) {
+                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <!-- Subtotal (computed, read-only) -->
+          <mat-form-field appearance="outline" class="qf-line-subtotal">
+            <mat-label>Subtotal</mat-label>
+            <input
+              matInput
+              type="text"
+              [value]="
+                line.controls.quantity.value * line.controls.unitPrice.value
+                  | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO'
+              "
+              readonly
+            />
+          </mat-form-field>
+
+          <!-- Remove -->
+          <button
+            mat-icon-button
+            color="warn"
+            type="button"
+            (click)="removeLine(i)"
+            [disabled]="linesArray.length <= 1"
+            aria-label="Quitar línea"
+          >
+            <mat-icon>remove_circle_outline</mat-icon>
+          </button>
+        </div>
+      }
+    </div>
+
+    <button mat-stroked-button type="button" (click)="addLine()" class="qf-add-line">
+      <mat-icon>add</mat-icon> Agregar producto
+    </button>
+
+    <!-- Totals card -->
+    <mat-card class="qf-totals">
+      <mat-card-content>
+        <div class="qf-totals-grid">
+          <span class="qf-total-label">Subtotal</span>
+          <span class="qf-total-value">{{
+            subtotal() | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO'
+          }}</span>
+
+          @let taxes = taxTotals();
+          @if (taxes.tax0 > 0) {
+            <span class="qf-total-label">IVA 0%</span>
+            <span class="qf-total-value">{{
+              taxes.tax0 | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO'
+            }}</span>
+          }
+          @if (taxes.tax5 > 0) {
+            <span class="qf-total-label">IVA 5%</span>
+            <span class="qf-total-value">{{
+              taxes.tax5 | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO'
+            }}</span>
+          }
+          @if (taxes.tax8 > 0) {
+            <span class="qf-total-label">IVA 8%</span>
+            <span class="qf-total-value">{{
+              taxes.tax8 | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO'
+            }}</span>
+          }
+          @if (taxes.tax19 > 0) {
+            <span class="qf-total-label">IVA 19%</span>
+            <span class="qf-total-value">{{
+              taxes.tax19 | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO'
+            }}</span>
+          }
+
+          <mat-divider class="qf-totals-divider" />
+          <mat-divider class="qf-totals-divider" />
+
+          <span class="qf-total-label qf-grand-label">Total</span>
+          <span class="qf-total-value qf-grand-value">{{
+            grandTotal() | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO'
+          }}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </form>
+</div>

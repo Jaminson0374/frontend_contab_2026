@@ -1,0 +1,112 @@
+<div class="of-page">
+  <!-- Toolbar -->
+  <div class="of-toolbar">
+    <div class="of-toolbar-left">
+      <span class="of-breadcrumb">Anticipos a proveedores</span>
+    </div>
+    <div class="of-toolbar-actions">
+      <button mat-flat-button (click)="openNewAdvance()">
+        <mat-icon matButtonIcon>add</mat-icon>
+        Nuevo anticipo
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="of-filters">
+    <mat-form-field appearance="outline">
+      <mat-label>Proveedor</mat-label>
+      <mat-select (selectionChange)="onSupplierChange($event.value)">
+        <mat-option [value]="null">Todos</mat-option>
+        @for (s of suppliers(); track s.id) {
+          <mat-option [value]="s.id">{{ s.name }} ({{ s.numIdentification }})</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- Loading -->
+  @if (service.advances.isLoading()) {
+    <div class="spinner-container">
+      <mat-spinner diameter="40" />
+    </div>
+  }
+
+  <!-- Error -->
+  @if (service.advances.error(); as err) {
+    <div class="of-error-bar">
+      <mat-icon>error_outline</mat-icon> Error al cargar los anticipos.
+    </div>
+  }
+
+  <!-- Empty state -->
+  @if (!service.advances.isLoading() && (!advanceData() || advanceData()?.content?.length === 0)) {
+    <div class="empty-msg"><mat-icon>info</mat-icon> No hay anticipos registrados.</div>
+  }
+
+  <!-- Table -->
+  @if (advanceData() && advanceData()!.content.length > 0) {
+    <div class="of-table-container">
+      <table mat-table [dataSource]="advanceData()!.content">
+        <ng-container matColumnDef="supplierName">
+          <th mat-header-cell *matHeaderCellDef>Proveedor</th>
+          <td mat-cell *matCellDef="let row">{{ row.supplierName || row.supplierId }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef>Monto</th>
+          <td mat-cell *matCellDef="let row">{{ row.amount | currency: 'COP' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="remainingAdvance">
+          <th mat-header-cell *matHeaderCellDef>Saldo disponible</th>
+          <td mat-cell *matCellDef="let row">
+            <span [class]="'chip ' + remainingClass(row.remainingAdvance ?? 0)">
+              {{ row.remainingAdvance ?? 0 | currency: 'COP' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="method">
+          <th mat-header-cell *matHeaderCellDef>Método</th>
+          <td mat-cell *matCellDef="let row">{{ methodLabel(row.method) }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="reference">
+          <th mat-header-cell *matHeaderCellDef>Referencia</th>
+          <td mat-cell *matCellDef="let row">{{ row.reference || '—' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="createdAt">
+          <th mat-header-cell *matHeaderCellDef>Fecha</th>
+          <td mat-cell *matCellDef="let row">{{ row.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let row">
+            <button
+              mat-icon-button
+              matTooltip="Aplicar a factura"
+              [disabled]="!row.remainingAdvance || row.remainingAdvance <= 0"
+              (click)="openApplyDialog(row)"
+            >
+              <mat-icon>attach_money</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+
+      <mat-paginator
+        [length]="advanceData()!.totalElements"
+        [pageIndex]="advanceData()!.page"
+        [pageSize]="advanceData()!.size"
+        [pageSizeOptions]="pageSizeOptions"
+        (page)="onPageChange($event)"
+      />
+    </div>
+  }
+</div>

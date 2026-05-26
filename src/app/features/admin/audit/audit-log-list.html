@@ -1,0 +1,128 @@
+<div class="al-page">
+  <div class="al-header">
+    <h2 class="al-title">Auditoría</h2>
+    <button mat-stroked-button color="warn" (click)="clearFilters()">
+      <mat-icon>clear_all</mat-icon>
+      Limpiar filtros
+    </button>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="al-filters">
+    <mat-form-field appearance="outline" class="al-filter-field">
+      <mat-label>Entidad</mat-label>
+      <mat-select [formControl]="entityTypeControl" (selectionChange)="onFilterChange()">
+        @for (opt of entityTypeOptions; track opt.value) {
+          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="al-filter-field">
+      <mat-label>Usuario (UUID)</mat-label>
+      <input matInput [formControl]="userIdControl" placeholder="UUID del usuario" />
+      <mat-icon matSuffix>person</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="al-filter-field">
+      <mat-label>Acción</mat-label>
+      <mat-select [formControl]="actionControl" (selectionChange)="onFilterChange()">
+        @for (opt of actionOptions; track opt.value) {
+          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="al-filter-field">
+      <mat-label>Desde</mat-label>
+      <input matInput [matDatepicker]="fromPicker" [formControl]="fromDateControl" />
+      <mat-datepicker-toggle matSuffix [for]="fromPicker" />
+      <mat-datepicker #fromPicker />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="al-filter-field">
+      <mat-label>Hasta</mat-label>
+      <input matInput [matDatepicker]="toPicker" [formControl]="toDateControl" />
+      <mat-datepicker-toggle matSuffix [for]="toPicker" />
+      <mat-datepicker #toPicker />
+    </mat-form-field>
+
+    <button mat-flat-button color="primary" class="al-filter-apply" (click)="onFilterChange()">
+      <mat-icon>filter_list</mat-icon>
+      Aplicar
+    </button>
+  </div>
+
+  <!-- Loading / Empty / Table -->
+  @let logs = service.auditLogs.value();
+  @if (logs === undefined) {
+    <div class="al-loading">
+      <mat-spinner diameter="40" />
+    </div>
+  } @else if (logs.content.length === 0) {
+    <p class="al-empty">No se encontraron registros de auditoría.</p>
+  } @else {
+    <div class="al-table-container">
+      <table mat-table [dataSource]="logs.content" class="al-table">
+        <ng-container matColumnDef="entityType">
+          <th mat-header-cell *matHeaderCellDef>Entidad</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="al-entity-tag">{{ row.entityType }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="entityId">
+          <th mat-header-cell *matHeaderCellDef>ID Entidad</th>
+          <td mat-cell *matCellDef="let row" [matTooltip]="row.entityId ?? '-'">
+            <code class="al-mono">{{ truncateId(row.entityId) }}</code>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef>Acción</th>
+          <td mat-cell *matCellDef="let row">
+            <mat-chip [class]="actionChipClass(row.action)" class="al-action-chip">
+              {{ actionLabel(row.action) }}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="fieldName">
+          <th mat-header-cell *matHeaderCellDef>Campo</th>
+          <td mat-cell *matCellDef="let row">{{ row.fieldName ?? '-' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="userId">
+          <th mat-header-cell *matHeaderCellDef>Usuario</th>
+          <td mat-cell *matCellDef="let row">
+            <code class="al-mono">{{ truncateId(row.userId) }}</code>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="ipAddress">
+          <th mat-header-cell *matHeaderCellDef>IP</th>
+          <td mat-cell *matCellDef="let row">
+            <code class="al-mono">{{ row.ipAddress ?? '-' }}</code>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="createdAt">
+          <th mat-header-cell *matHeaderCellDef>Fecha</th>
+          <td mat-cell *matCellDef="let row">{{ row.createdAt | date: 'medium' }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    </div>
+
+    <mat-paginator
+      [length]="logs.totalElements"
+      [pageSize]="logs.size"
+      [pageIndex]="logs.page"
+      [pageSizeOptions]="pageSizeOptions"
+      (page)="onPageChange($event)"
+      showFirstLastButtons
+    />
+  }
+</div>

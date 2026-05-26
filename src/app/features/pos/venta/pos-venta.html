@@ -1,0 +1,291 @@
+<div class="pos-venta-grid">
+  <!-- ZONE 1: CATEGORÍAS -->
+  <aside class="zone-categories">
+    <mat-chip-listbox
+      class="category-chips"
+      [multiple]="false"
+      [formControl]="selectedCategoryCtrl"
+    >
+      @for (cat of categoryOptions(); track cat.id) {
+        <mat-chip-option [value]="cat.id">{{ cat.name }}</mat-chip-option>
+      }
+    </mat-chip-listbox>
+  </aside>
+
+  <!-- ZONE 2: PRODUCT GRID -->
+  <section class="zone-products">
+    @if (searchLoading()) {
+      <div class="spinner-container">
+        <mat-spinner diameter="40" />
+      </div>
+    }
+
+    @let prods = filteredProducts();
+    @if (prods.length > 0) {
+      <div class="product-grid">
+        @for (product of prods; track product.id) {
+          <button class="product-card" (click)="addToOrder(product)">
+            @if (mainImage(product); as imgUrl) {
+              <img [src]="imgUrl" [alt]="product.name" class="product-card-img" />
+            }
+            <span class="product-card-name">{{ product.name }}</span>
+            <span class="product-card-price">
+              {{ product.salePrice | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO' }}
+            </span>
+            <span class="product-card-tax">{{ formatTaxLabel(product.taxType) }}</span>
+          </button>
+        }
+      </div>
+    } @else {
+      <div class="empty-products">
+        @if (selectedCategory() === null) {
+          <p>Seleccioná una categoría o usá la barra de búsqueda.</p>
+        } @else if (
+          typeof searchControl.value === 'string' && searchControl.value.trim().length >= 2
+        ) {
+          <p>No se encontraron productos.</p>
+        } @else {
+          <p>No hay productos en esta categoría.</p>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- ZONE 3: ORDER -->
+  <section class="zone-order">
+    <!-- Customer -->
+    <div class="order-customer">
+      @if (selectedCustomer(); as cust) {
+        <div class="customer-chip">
+          <mat-icon>person</mat-icon>
+          <span>{{ cust.name }}{{ cust.lastName ? ' ' + cust.lastName : '' }}</span>
+          <button
+            mat-icon-button
+            class="customer-clear"
+            (click)="clearCustomer()"
+            aria-label="Quitar cliente"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      } @else {
+        <mat-form-field appearance="outline" class="customer-search-field">
+          <mat-label>Cliente</mat-label>
+          <input matInput [formControl]="customerSearchControl" [matAutocomplete]="customerAuto" />
+          <mat-icon matSuffix>person_search</mat-icon>
+          <mat-autocomplete
+            #customerAuto="matAutocomplete"
+            [displayWith]="displayCustomer"
+            (optionSelected)="onCustomerSelected($event)"
+          >
+            @if (customerLoading()) {
+              <mat-option disabled>
+                <mat-spinner diameter="20" class="inline-spinner" />
+              </mat-option>
+            }
+            @for (c of customerOptions(); track c.id) {
+              <mat-option [value]="c">
+                <span>{{ c.name }}{{ c.lastName ? ' ' + c.lastName : '' }}</span>
+                <span class="customer-id"> — {{ c.numIdentification }}</span>
+              </mat-option>
+            }
+            @if (
+              typeof customerSearchControl.value === 'string' &&
+              !customerLoading() &&
+              customerSearchControl.value.length >= 2
+            ) {
+              <mat-option value="__create__" class="create-option">
+                <mat-icon matOptionIcon>add</mat-icon> Crear nuevo cliente
+              </mat-option>
+            }
+          </mat-autocomplete>
+        </mat-form-field>
+      }
+    </div>
+
+    <!-- Order table -->
+    <div class="order-table-wrapper">
+      <mat-table [dataSource]="orderLines()" class="order-table">
+        <ng-container matColumnDef="product">
+          <mat-header-cell *matHeaderCellDef class="col-product">Producto</mat-header-cell>
+          <mat-cell *matCellDef="let line" class="col-product">
+            {{ line.productName }}
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="qty">
+          <mat-header-cell *matHeaderCellDef class="col-qty">Cant</mat-header-cell>
+          <mat-cell *matCellDef="let line; let i = index" class="col-qty">
+            <div class="qty-controls">
+              <button
+                mat-icon-button
+                class="qty-btn dec"
+                (click)="decrementLine(i)"
+                aria-label="Restar"
+              >
+                <mat-icon>remove</mat-icon>
+              </button>
+              <span class="qty-value">{{ line.quantity }}</span>
+              <button
+                mat-icon-button
+                class="qty-btn inc"
+                (click)="incrementLine(i)"
+                aria-label="Sumar"
+              >
+                <mat-icon>add</mat-icon>
+              </button>
+            </div>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="price">
+          <mat-header-cell *matHeaderCellDef class="col-price">Precio</mat-header-cell>
+          <mat-cell *matCellDef="let line" class="col-price">
+            {{ line.unitPrice | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO' }}
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="subtotal">
+          <mat-header-cell *matHeaderCellDef class="col-subtotal">Subtotal</mat-header-cell>
+          <mat-cell *matCellDef="let line" class="col-subtotal">
+            {{ line.subtotal | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO' }}
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <mat-header-cell *matHeaderCellDef class="col-actions"></mat-header-cell>
+          <mat-cell *matCellDef="let line; let i = index" class="col-actions">
+            <button mat-icon-button color="warn" (click)="removeLine(i)" aria-label="Eliminar">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true" />
+        <mat-row *matRowDef="let row; columns: displayedColumns" />
+      </mat-table>
+    </div>
+
+    <!-- Totals -->
+    <div class="order-totals">
+      @let tax = taxTotals();
+      <div class="totals-line">
+        <span>Subtotal</span>
+        <span class="totals-subtotal">{{
+          subtotal() | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO'
+        }}</span>
+      </div>
+      @if (tax.tax0 > 0) {
+        <div class="totals-line">
+          <span>IVA 0%</span>
+          <span>{{ tax.tax0 | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO' }}</span>
+        </div>
+      }
+      @if (tax.tax5 > 0) {
+        <div class="totals-line">
+          <span>IVA 5%</span>
+          <span>{{ tax.tax5 | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO' }}</span>
+        </div>
+      }
+      @if (tax.tax8 > 0) {
+        <div class="totals-line">
+          <span>IVA 8%</span>
+          <span>{{ tax.tax8 | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO' }}</span>
+        </div>
+      }
+      @if (tax.tax19 > 0) {
+        <div class="totals-line">
+          <span>IVA 19%</span>
+          <span>{{ tax.tax19 | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO' }}</span>
+        </div>
+      }
+      <div class="totals-line totals-grand">
+        <span>TOTAL</span>
+        <span class="totals-grand-value">{{
+          grandTotal() | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO'
+        }}</span>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="order-actions">
+      <button mat-flat-button class="btn-cobrar" (click)="cobrar()">
+        <mat-icon>payments</mat-icon> COBRAR
+      </button>
+    </div>
+  </section>
+
+  <!-- ZONE 4: BOTTOM BAR -->
+  <footer class="zone-bottom">
+    <!-- Left column: Search + Refresh -->
+    <div class="bottom-left">
+      <mat-form-field appearance="outline" class="bottom-search">
+        <mat-label>Buscar producto</mat-label>
+        <input matInput [formControl]="searchControl" [matAutocomplete]="searchAuto" />
+        <mat-icon matSuffix>search</mat-icon>
+        <mat-autocomplete
+          #searchAuto="matAutocomplete"
+          [displayWith]="displayProduct"
+          (optionSelected)="addToOrder($event.option.value)"
+        >
+          @if (searchLoading()) {
+            <mat-option disabled>
+              <mat-spinner diameter="20" class="inline-spinner" />
+            </mat-option>
+          }
+          @for (p of products(); track p.id) {
+            <mat-option [value]="p" class="search-option-multi">
+              <div class="som-grid">
+                <span class="som-code">{{ p.productCode }}</span>
+                <span class="som-name">{{ p.name }}</span>
+                <span class="som-price">
+                  {{ p.salePrice | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO' }}
+                </span>
+                <span class="som-stock">{{ p.totalStock || 0 }}</span>
+              </div>
+            </mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <button
+        mat-icon-button
+        class="refresh-btn"
+        (click)="reloadVisibleData()"
+        aria-label="Refrescar productos y categorías"
+        matTooltip="Refrescar"
+      >
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+
+    <!-- Right column: Functional buttons -->
+    <div class="bottom-right">
+      <button mat-stroked-button class="func-btn" (click)="cotizar()">
+        <mat-icon>request_quote</mat-icon> Cotizar
+      </button>
+      <button class="scale-btn" [class.scale-active]="isScaleActive()" (click)="toggleScale()">
+        <mat-icon>scale</mat-icon>
+        <span>Pesar</span>
+      </button>
+      <button mat-stroked-button class="func-btn" (click)="openDrawer()">
+        <mat-icon>point_of_sale</mat-icon> Abrir cajón
+      </button>
+      <button mat-stroked-button class="func-btn" (click)="printTicket()">
+        <mat-icon>print</mat-icon> Imp. Ticket
+      </button>
+      <button mat-stroked-button class="func-btn" (click)="cancelTicket()">
+        <mat-icon>cancel</mat-icon> Anular
+      </button>
+      <button mat-stroked-button class="func-btn" (click)="lastTicket()">
+        <mat-icon>history</mat-icon> Último Ticket
+      </button>
+      <button mat-stroked-button class="func-btn" (click)="preTicket()">
+        <mat-icon>receipt</mat-icon> Pre-ticket
+      </button>
+      <button mat-stroked-button class="func-btn" (click)="calculadora()">
+        <mat-icon>calculate</mat-icon>
+      </button>
+    </div>
+  </footer>
+</div>

@@ -1,0 +1,19 @@
+:host {
+  display: block;
+}
+.chip-pending {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+}
+.chip-sent {
+  background: #dbeafe !important;
+  color: #1e40af !important;
+}
+.chip-accepted {
+  background: #dcfce7 !important;
+  color: #166534 !important;
+}
+.chip-rejected {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+}

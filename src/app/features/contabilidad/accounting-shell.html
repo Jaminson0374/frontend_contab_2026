@@ -1,0 +1,99 @@
+<div class="ac-page">
+  <h2 class="ac-title">Contabilidad</h2>
+
+  <mat-tab-group>
+    <mat-tab label="Asientos">
+      @if (loading()) {
+        <div class="spinner-container"><mat-spinner diameter="32" /></div>
+      }
+      @if (entries(); as list) {
+        @if (list.length === 0) {
+          <p style="text-align: center; color: #94a3b8; padding: 24px">
+            No hay asientos registrados.
+          </p>
+        } @else {
+          <mat-table [dataSource]="list" class="ac-table">
+            <ng-container matColumnDef="entryNumber"
+              ><mat-header-cell *matHeaderCellDef>N° Asiento</mat-header-cell
+              ><mat-cell *matCellDef="let r">{{ r.entryNumber }}</mat-cell></ng-container
+            >
+            <ng-container matColumnDef="entryDate"
+              ><mat-header-cell *matHeaderCellDef>Fecha</mat-header-cell
+              ><mat-cell *matCellDef="let r">{{ r.entryDate }}</mat-cell></ng-container
+            >
+            <ng-container matColumnDef="description"
+              ><mat-header-cell *matHeaderCellDef>Descripción</mat-header-cell
+              ><mat-cell *matCellDef="let r">{{ r.description ?? '—' }}</mat-cell></ng-container
+            >
+            <ng-container matColumnDef="sourceType"
+              ><mat-header-cell *matHeaderCellDef>Origen</mat-header-cell
+              ><mat-cell *matCellDef="let r"
+                ><span [class]="'ac-chip ' + sourceClass(r.sourceType)">{{
+                  sourceLabel(r.sourceType)
+                }}</span></mat-cell
+              ></ng-container
+            >
+            <ng-container matColumnDef="lines"
+              ><mat-header-cell *matHeaderCellDef>Líneas</mat-header-cell
+              ><mat-cell *matCellDef="let r">{{ lineCount(r) }}</mat-cell></ng-container
+            >
+            <ng-container matColumnDef="actions"
+              ><mat-header-cell *matHeaderCellDef></mat-header-cell
+              ><mat-cell *matCellDef="let r"
+                ><button mat-icon-button><mat-icon>visibility</mat-icon></button></mat-cell
+              ></ng-container
+            >
+            <mat-header-row *matHeaderRowDef="entriesCols" /><mat-row
+              *matRowDef="let r; columns: entriesCols"
+            />
+          </mat-table>
+        }
+      }
+    </mat-tab>
+
+    <mat-tab label="Balance de Prueba">
+      @if (loading()) {
+        <div class="spinner-container"><mat-spinner diameter="32" /></div>
+      }
+      @if (trialBalance(); as tb) {
+        @if (tb.length === 0) {
+          <p style="text-align: center; color: #94a3b8; padding: 24px">Sin datos.</p>
+        } @else {
+          <mat-table [dataSource]="tb" class="ac-table">
+            <ng-container matColumnDef="accountCode"
+              ><mat-header-cell *matHeaderCellDef>Código</mat-header-cell
+              ><mat-cell *matCellDef="let r">{{ r.accountCode }}</mat-cell></ng-container
+            >
+            <ng-container matColumnDef="accountName"
+              ><mat-header-cell *matHeaderCellDef>Cuenta</mat-header-cell
+              ><mat-cell *matCellDef="let r">{{ r.accountName }}</mat-cell></ng-container
+            >
+            <ng-container matColumnDef="totalDebit"
+              ><mat-header-cell *matHeaderCellDef>Débitos</mat-header-cell
+              ><mat-cell *matCellDef="let r"
+                ><span class="debit">{{ r.totalDebit | number: '1.0-2' }}</span></mat-cell
+              ></ng-container
+            >
+            <ng-container matColumnDef="totalCredit"
+              ><mat-header-cell *matHeaderCellDef>Créditos</mat-header-cell
+              ><mat-cell *matCellDef="let r"
+                ><span class="credit">{{ r.totalCredit | number: '1.0-2' }}</span></mat-cell
+              ></ng-container
+            >
+            <ng-container matColumnDef="balance"
+              ><mat-header-cell *matHeaderCellDef>Saldo</mat-header-cell
+              ><mat-cell *matCellDef="let r"
+                ><span [class.debit]="balance(r) >= 0" [class.credit]="balance(r) < 0">{{
+                  balance(r) | number: '1.0-2'
+                }}</span></mat-cell
+              ></ng-container
+            >
+            <mat-header-row *matHeaderRowDef="balanceCols" /><mat-row
+              *matRowDef="let r; columns: balanceCols"
+            />
+          </mat-table>
+        }
+      }
+    </mat-tab>
+  </mat-tab-group>
+</div>

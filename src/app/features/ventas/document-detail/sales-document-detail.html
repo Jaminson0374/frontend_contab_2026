@@ -1,0 +1,210 @@
+<div class="detail-container">
+  @if (loading()) {
+    <div class="spinner-container">
+      <mat-spinner diameter="40" />
+    </div>
+  }
+
+  @if (error()) {
+    <p class="error-msg">{{ error() }}</p>
+  }
+
+  @let doc = document();
+  @if (doc) {
+    <!-- Header -->
+    <div class="detail-header">
+      <button mat-icon-button (click)="goBack()" aria-label="Volver">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-info">
+        <h2 class="doc-title">
+          {{ typeLabels[doc.type] || doc.type }} —
+          <span class="doc-number">{{ doc.documentNumber }}</span>
+        </h2>
+        <div class="header-meta">
+          <mat-chip [class]="getStatusClass(doc.status)">
+            {{ statusLabels[doc.status] || doc.status }}
+          </mat-chip>
+          @let ei = electronicInvoice();
+          @if (ei) {
+            <mat-chip
+              [ngStyle]="{
+                'background-color':
+                  ei.status === 'ACCEPTED_BY_DIAN'
+                    ? '#dcfce7'
+                    : ei.status === 'REJECTED_BY_DIAN'
+                      ? '#fee2e2'
+                      : '#dbeafe',
+                color:
+                  ei.status === 'ACCEPTED_BY_DIAN'
+                    ? '#166534'
+                    : ei.status === 'REJECTED_BY_DIAN'
+                      ? '#991b1b'
+                      : '#1e40af',
+              }"
+            >
+              DIAN:
+              {{
+                ei.status === 'PENDING_SEND'
+                  ? 'Pendiente'
+                  : ei.status === 'SENT'
+                    ? 'Enviado'
+                    : ei.status === 'ACCEPTED_BY_DIAN'
+                      ? 'Aceptado'
+                      : 'Rechazado'
+              }}
+            </mat-chip>
+            @if (ei.qrCode) {
+              <button
+                mat-icon-button
+                (click)="showDianQr()"
+                matTooltip="Ver QR DIAN"
+                class="!w-8 !h-8"
+              >
+                <mat-icon class="!text-lg">qr_code</mat-icon>
+              </button>
+            }
+            @if (ei.status === 'PENDING_SEND' || ei.status === 'REJECTED_BY_DIAN') {
+              <button
+                mat-icon-button
+                (click)="retryDian()"
+                matTooltip="Reintentar envío DIAN"
+                class="!w-8 !h-8"
+              >
+                <mat-icon class="!text-lg text-blue-600">refresh</mat-icon>
+              </button>
+            }
+          }
+          <span class="meta-client">{{ doc.clientName || 'Sin cliente' }}</span>
+          <span class="meta-date">{{ doc.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+          @if (doc.isCreditSale) {
+            <mat-chip class="chip-credit">Crédito</mat-chip>
+          }
+          @if (doc.dueDate) {
+            <span class="meta-due">Vence: {{ doc.dueDate | date: 'dd/MM/yyyy' }}</span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Transition buttons -->
+    @if (availableTransitions().length > 0 || doc.isCreditSale) {
+      <div class="transition-bar">
+        @for (t of availableTransitions(); track t.target) {
+          <button
+            mat-raised-button
+            [color]="t.color"
+            [disabled]="transitioning()"
+            (click)="transition(t.target)"
+          >
+            <mat-icon>{{ t.icon }}</mat-icon>
+            {{ t.label }}
+          </button>
+        }
+        @if (doc.isCreditSale) {
+          <button mat-stroked-button (click)="viewCxc()">
+            <mat-icon>receipt_long</mat-icon> Ver CxC
+          </button>
+          <button mat-stroked-button color="accent" (click)="createReceipt()">
+            <mat-icon>payments</mat-icon> Generar recibo
+          </button>
+        }
+        @if (transitioning()) {
+          <mat-spinner diameter="24" />
+        }
+      </div>
+    }
+
+    <!-- Items table -->
+    <div class="section">
+      <h3 class="section-title">Ítems</h3>
+      <div class="table-wrapper">
+        <mat-table [dataSource]="doc.items" class="w-full">
+          <ng-container matColumnDef="lineNumber">
+            <mat-header-cell *matHeaderCellDef>#</mat-header-cell>
+            <mat-cell *matCellDef="let item">{{ item.lineNumber }}</mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="productName">
+            <mat-header-cell *matHeaderCellDef>Producto</mat-header-cell>
+            <mat-cell *matCellDef="let item">{{ item.productName || item.productId }}</mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="quantity">
+            <mat-header-cell *matHeaderCellDef>Cant.</mat-header-cell>
+            <mat-cell *matCellDef="let item">{{ item.quantity | number: '1.1-3' }}</mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="unitPrice">
+            <mat-header-cell *matHeaderCellDef>Precio Unit.</mat-header-cell>
+            <mat-cell *matCellDef="let item">{{ item.unitPrice | currency }}</mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="taxType">
+            <mat-header-cell *matHeaderCellDef>IVA</mat-header-cell>
+            <mat-cell *matCellDef="let item">{{ item.taxType || '0%' }}</mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="taxAmount">
+            <mat-header-cell *matHeaderCellDef>Impuesto</mat-header-cell>
+            <mat-cell *matCellDef="let item">{{ item.taxAmount | currency }}</mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="subtotal">
+            <mat-header-cell *matHeaderCellDef>Subtotal</mat-header-cell>
+            <mat-cell *matCellDef="let item">{{ item.subtotal | currency }}</mat-cell>
+          </ng-container>
+
+          <mat-header-row *matHeaderRowDef="displayedColumns" />
+          <mat-row *matRowDef="let row; columns: displayedColumns" />
+        </mat-table>
+      </div>
+    </div>
+
+    <!-- Totals -->
+    <div class="totals-panel">
+      <div class="totals-title">Totales</div>
+      <div class="totals-grid">
+        <div class="totals-row">
+          <span>Neto</span>
+          <span>{{ doc.totalNet | currency }}</span>
+        </div>
+        <div class="totals-row totals-tax">
+          <span>IVA</span>
+          <span>{{ totalIVA() | currency }}</span>
+        </div>
+        <mat-divider />
+        <div class="totals-row totals-grand">
+          <span>Total</span>
+          <span>{{ doc.totalAmount | currency }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Metadata card -->
+    <mat-card class="meta-card">
+      <mat-card-content>
+        <div class="meta-grid">
+          <div class="meta-item">
+            <span class="meta-label">ID</span>
+            <span class="cell-mono">{{ doc.id }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Creado por</span>
+            <span class="cell-mono">{{ doc.createdBy }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Creado</span>
+            <span>{{ doc.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          @if (doc.updatedAt) {
+            <div class="meta-item">
+              <span class="meta-label">Actualizado</span>
+              <span>{{ doc.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

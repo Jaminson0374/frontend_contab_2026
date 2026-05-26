@@ -1,0 +1,13 @@
+<div class="inventario-container">
+  <nav mat-tab-nav-bar [tabPanel]="tabPanel" class="inventario-tabs">
+    <a mat-tab-link routerLink="bodegas"  routerLinkActive #rla1="routerLinkActive" [active]="rla1.isActive">Bodegas</a>
+    <a mat-tab-link routerLink="lotes"    routerLinkActive #rla2="routerLinkActive" [active]="rla2.isActive">Lotes de entrada</a>
+    <a mat-tab-link routerLink="stock"    routerLinkActive #rla3="routerLinkActive" [active]="rla3.isActive">Stock</a>
+  </nav>
+
+  <mat-tab-nav-panel #tabPanel>
+    <div class="inventario-content">
+      <router-outlet />
+    </div>
+  </mat-tab-nav-panel>
+</div>

@@ -1,0 +1,147 @@
+<div class="company-config-container">
+  <h1 class="page-title">Configuración de Empresa</h1>
+
+  @if (loading()) {
+    <div class="loading-spinner">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="error-banner">
+      <mat-icon>error</mat-icon>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="company-form">
+    <mat-form-field appearance="outline">
+      <mat-label>Nombre de la empresa</mat-label>
+      <input matInput formControlName="companyName" placeholder="Ej: Carnes del Valle S.A.S." />
+      @if (form.controls.companyName.invalid && form.controls.companyName.touched) {
+        <mat-error>El nombre de la empresa es requerido.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>NIT</mat-label>
+      <input matInput formControlName="nit" placeholder="Ej: 900.123.456-7" />
+      @if (form.controls.nit.invalid && form.controls.nit.touched) {
+        <mat-error>El NIT es requerido.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Dirección</mat-label>
+      <input matInput formControlName="address" placeholder="Ej: Calle 123 #45-67" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Teléfono</mat-label>
+      <input matInput formControlName="phone" placeholder="Ej: +57 300 123 4567" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Correo electrónico</mat-label>
+      <input matInput formControlName="email" placeholder="Ej: contacto@empresa.com" type="email" />
+      @if (form.controls.email.invalid && form.controls.email.touched) {
+        <mat-error>Ingrese un correo electrónico válido.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Actividad económica</mat-label>
+      <input
+        matInput
+        formControlName="economicActivity"
+        placeholder="Ej: Comercio al por mayor de carne"
+      />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Régimen tributario</mat-label>
+      <input matInput formControlName="taxRegime" placeholder="Ej: Régimen común" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Moneda</mat-label>
+      <input matInput formControlName="currency" placeholder="COP" />
+      @if (form.controls.currency.invalid && form.controls.currency.touched) {
+        <mat-error>La moneda es requerida.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Bodega principal</mat-label>
+      <mat-select formControlName="mainWarehouseId">
+        <mat-option [value]="''">— Sin bodega —</mat-option>
+        @for (wh of warehouses(); track wh.id) {
+          <mat-option [value]="wh.id">{{ wh.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>URL del logo</mat-label>
+      <input matInput formControlName="logoUrl" placeholder="Ej: https://empresa.com/logo.png" />
+    </mat-form-field>
+
+    <h3 class="section-title">Intereses de mora</h3>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Tasa interés moratorio (%)</mat-label>
+      <input matInput type="number" formControlName="moratoryInterestRate" step="0.1" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Días de gracia</mat-label>
+      <input matInput type="number" formControlName="interestGraceDays" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Frecuencia de interés compuesto</mat-label>
+      <mat-select formControlName="interestCompoundFrequency">
+        <mat-option value="MONTHLY">Mensual</mat-option>
+        <mat-option value="NONE">Sin compuesto</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <h3 class="section-title">Facturación Electrónica DIAN</h3>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Resolución DIAN</mat-label>
+      <mat-select formControlName="dianResolutionId">
+        <mat-option [value]="''">— Sin resolución —</mat-option>
+        @for (res of dianResolutions(); track res.id) {
+          <mat-option [value]="res.id">{{ res.resolutionNumber }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>PIN Software</mat-label>
+      <input matInput formControlName="softwarePin" placeholder="PIN del software ante DIAN" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Certificado Digital</mat-label>
+      <mat-select formControlName="certificateId">
+        <mat-option [value]="''">— Sin certificado —</mat-option>
+        @for (cert of certificates(); track cert.id) {
+          <mat-option [value]="cert.id">{{ cert.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <div class="form-actions">
+      <button mat-flat-button color="primary" type="submit" [disabled]="saving() || loading()">
+        @if (saving()) {
+          <mat-spinner diameter="20"></mat-spinner>
+        } @else {
+          <mat-icon>save</mat-icon>
+        }
+        Guardar configuración
+      </button>
+    </div>
+  </form>
+</div>

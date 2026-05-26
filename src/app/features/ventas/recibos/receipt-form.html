@@ -1,0 +1,115 @@
+<div class="rf-page">
+  <h2 class="rf-title">Nuevo Recibo de Caja</h2>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="rf-form">
+    <mat-form-field appearance="outline">
+      <mat-label>Cliente</mat-label>
+      <input
+        type="text"
+        matInput
+        [matAutocomplete]="clientAuto"
+        (input)="clientSearch.set($any($event.target).value)"
+        placeholder="Buscar cliente..."
+        [value]="clientSearch()"
+      />
+      <mat-autocomplete #clientAuto="matAutocomplete" (optionSelected)="onClientSelected($event)">
+        @if (clients.isLoading()) {
+          <mat-option disabled>Cargando...</mat-option>
+        }
+        @for (tp of clients.value(); track tp.id) {
+          <mat-option [value]="tp.id">{{ clientLabel(tp) }}</mat-option>
+        }
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <div class="rf-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Monto</mat-label>
+        <input matInput type="number" min="0.01" step="0.01" formControlName="amount" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Fecha de pago</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="paymentDate" />
+        <mat-datepicker-toggle matIconSuffix [for]="picker" />
+        <mat-datepicker #picker />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Método de pago</mat-label>
+        <mat-select formControlName="method">
+          @for (opt of methodOptions; track opt.value) {
+            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Referencia</mat-label>
+        <input matInput formControlName="reference" maxlength="100" />
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Notas</mat-label>
+      <textarea matInput formControlName="notes" rows="2" maxlength="500"></textarea>
+    </mat-form-field>
+
+    @if (openItems().length > 0) {
+      <div class="rf-section">
+        <h3 class="rf-section-title">Aplicar a cuentas por cobrar</h3>
+        <div class="rf-ar-header">
+          <span>Documento</span>
+          <span>Pendiente</span>
+          <span>Vence</span>
+          <span>Aplicar</span>
+        </div>
+        <form [formGroup]="appForm">
+          @for (ar of openItems(); track ar.id; let i = $index) {
+            <div class="rf-ar-row">
+              <span>{{ ar.documentNumber }}</span>
+              <span>{{ ar.outstanding | currency: 'COP' }}</span>
+              <span>{{ ar.dueDate | date: 'dd/MM/yyyy' }}</span>
+              <span>
+                <input
+                  type="number"
+                  min="0"
+                  [max]="ar.outstanding"
+                  step="0.01"
+                  [formControlName]="'app_' + i"
+                />
+              </span>
+            </div>
+          }
+        </form>
+        <div class="rf-ar-total">
+          Aplicado: {{ appliedTotal() | currency: 'COP' }}
+          @if (remaining() !== 0) {
+            | Pendiente: {{ remaining() | currency: 'COP' }}
+          }
+        </div>
+      </div>
+    }
+
+    @if (loadingCxc()) {
+      <div style="display: flex; justify-content: center">
+        <mat-spinner diameter="24" />
+      </div>
+    }
+
+    @if (error()) {
+      <p class="rf-error">{{ error() }}</p>
+    }
+
+    <div class="rf-actions">
+      <button mat-flat-button color="primary" type="submit" [disabled]="saving() || form.invalid">
+        @if (saving()) {
+          <mat-spinner diameter="18" />
+        } @else {
+          <mat-icon>check</mat-icon>
+        }
+        Crear recibo
+      </button>
+    </div>
+  </form>
+</div>

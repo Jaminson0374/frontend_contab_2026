@@ -1,0 +1,49 @@
+.uf-page {
+  padding: 1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.uf-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.uf-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.uf-loading {
+  display: flex;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.uf-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.uf-error {
+  color: #ef4444;
+  font-size: 0.875rem;
+  padding: 0.5rem;
+  background: #fef2f2;
+  border-radius: 4px;
+}
+
+.uf-toggle {
+  padding: 0.5rem 0;
+}
+
+.uf-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}

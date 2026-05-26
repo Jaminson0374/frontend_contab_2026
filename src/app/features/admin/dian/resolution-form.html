@@ -1,0 +1,75 @@
+<div class="p-6 max-w-xl mx-auto">
+  <h1 class="text-xl font-semibold text-slate-800 mb-4">
+    {{ isEdit() ? 'Editar resolución' : 'Nueva resolución DIAN' }}
+  </h1>
+
+  @if (loading()) {
+    <div class="flex justify-center py-8">
+      <mat-spinner diameter="40" />
+    </div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-3">
+    <mat-form-field appearance="outline">
+      <mat-label>Número de resolución</mat-label>
+      <input matInput formControlName="resolutionNumber" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Fecha de resolución</mat-label>
+      <input matInput [matDatepicker]="resDate" formControlName="resolutionDate" />
+      <mat-datepicker-toggle matSuffix [for]="resDate" />
+      <mat-datepicker #resDate />
+    </mat-form-field>
+
+    <div class="grid grid-cols-2 gap-3">
+      <mat-form-field appearance="outline">
+        <mat-label>Válido desde</mat-label>
+        <input matInput [matDatepicker]="fromPicker" formControlName="validFrom" />
+        <mat-datepicker-toggle matSuffix [for]="fromPicker" />
+        <mat-datepicker #fromPicker />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Válido hasta</mat-label>
+        <input matInput [matDatepicker]="toPicker" formControlName="validTo" />
+        <mat-datepicker-toggle matSuffix [for]="toPicker" />
+        <mat-datepicker #toPicker />
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Prefijo</mat-label>
+      <input matInput formControlName="prefix" placeholder="Ej: SETP" />
+    </mat-form-field>
+
+    <div class="grid grid-cols-2 gap-3">
+      <mat-form-field appearance="outline">
+        <mat-label>Rango desde</mat-label>
+        <input matInput type="number" formControlName="rangeFrom" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Rango hasta</mat-label>
+        <input matInput type="number" formControlName="rangeTo" />
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline">
+      <mat-label>PIN Software</mat-label>
+      <input matInput formControlName="softwarePin" />
+    </mat-form-field>
+
+    <div class="flex items-center gap-4">
+      <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
+        @if (saving()) {
+          <mat-spinner diameter="20" />
+        } @else {
+          <mat-icon>save</mat-icon>
+        }
+        Guardar
+      </button>
+      <a mat-stroked-button routerLink="/administracion/dian/resoluciones">Cancelar</a>
+    </div>
+  </form>
+</div>

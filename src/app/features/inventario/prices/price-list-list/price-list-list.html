@@ -1,0 +1,81 @@
+<div class="page-header">
+  <h2 class="page-title">Listas de precios</h2>
+
+  <div class="page-actions">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Buscar...</mat-label>
+      <input matInput [formControl]="searchControl" />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <button mat-flat-button type="button" (click)="openCreateDialog()">
+      <mat-icon>add</mat-icon>
+      Nueva lista
+    </button>
+  </div>
+</div>
+
+@if (service.priceLists.isLoading()) {
+  <div class="spinner-container">
+    <mat-spinner diameter="40" />
+  </div>
+}
+
+@if (service.priceLists.error()) {
+  <p class="error-msg">Error cargando listas de precios. Intentá de nuevo.</p>
+}
+
+@if (!service.priceLists.isLoading() && !service.priceLists.error()) {
+  @let rows = filteredPriceLists();
+
+  @if (rows.length > 0) {
+    <mat-table [dataSource]="rows" class="w-full">
+      <ng-container matColumnDef="index">
+        <mat-header-cell *matHeaderCellDef class="col-index">#</mat-header-cell>
+        <mat-cell *matCellDef="let row; let i = index" class="col-index">{{ i + 1 }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="code">
+        <mat-header-cell *matHeaderCellDef class="col-code">Código</mat-header-cell>
+        <mat-cell *matCellDef="let row" class="col-code">{{ row.code }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="name">
+        <mat-header-cell *matHeaderCellDef>Nombre</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.name }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="description">
+        <mat-header-cell *matHeaderCellDef>Descripción</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.description || '—' }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="active">
+        <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <mat-chip [class]="row.active ? 'chip-active' : 'chip-inactive'">
+            {{ row.active ? 'Activa' : 'Inactiva' }}
+          </mat-chip>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <mat-header-cell *matHeaderCellDef></mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <button mat-icon-button type="button" (click)="openEditDialog(row)" aria-label="Editar">
+            <mat-icon>edit</mat-icon>
+          </button>
+
+          <button mat-icon-button type="button" (click)="delete(row)" aria-label="Eliminar">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns" />
+      <mat-row *matRowDef="let row; columns: displayedColumns" />
+    </mat-table>
+  } @else {
+    <div class="empty-state">No hay listas de precios para mostrar.</div>
+  }
+}

@@ -1,0 +1,131 @@
+<div class="page-header">
+  <h2 class="page-title">Historial de Compras</h2>
+</div>
+
+<!-- Filters -->
+<form [formGroup]="filterForm" class="filter-bar" autocomplete="off">
+  <mat-form-field appearance="outline">
+    <mat-label>Desde</mat-label>
+    <input matInput [matDatepicker]="fromPicker" formControlName="from" (dateChange)="loadData()" />
+    <mat-datepicker-toggle matIconSuffix [for]="fromPicker" />
+    <mat-datepicker #fromPicker />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Hasta</mat-label>
+    <input matInput [matDatepicker]="toPicker" formControlName="to" (dateChange)="loadData()" />
+    <mat-datepicker-toggle matIconSuffix [for]="toPicker" />
+    <mat-datepicker #toPicker />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="supplier-filter">
+    <mat-label>Proveedor</mat-label>
+    <input
+      type="text"
+      matInput
+      [formControl]="supplierDisplay"
+      [matAutocomplete]="supplierAuto"
+      (blur)="syncSupplierDisplay()"
+    />
+    <mat-autocomplete
+      #supplierAuto="matAutocomplete"
+      (optionSelected)="onSupplierSelected($event); loadData()"
+    >
+      @if (thirdPartyService.supplierOptions.isLoading()) {
+        <mat-option disabled>Cargando...</mat-option>
+      }
+      @for (tp of thirdPartyService.supplierOptions.value() ?? []; track tp.id) {
+        <mat-option [value]="tp.id">{{ supplierLabel(tp) }}</mat-option>
+      }
+    </mat-autocomplete>
+    @if (filterForm.controls.supplierId.getRawValue()) {
+      <button
+        matSuffix
+        mat-icon-button
+        aria-label="Limpiar proveedor"
+        (click)="clearSupplier(); loadData()"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    }
+  </mat-form-field>
+
+  <button mat-stroked-button type="button" (click)="loadData()">
+    <mat-icon>search</mat-icon> Buscar
+  </button>
+</form>
+
+@if (loading()) {
+  <div class="spinner-container">
+    <mat-spinner diameter="40" />
+  </div>
+}
+
+@if (error()) {
+  <p class="error-msg">{{ error() }}</p>
+}
+
+@if (data(); as historyData) {
+  <div class="table-wrapper">
+    <mat-table [dataSource]="historyData.content" class="w-full">
+      <ng-container matColumnDef="ocId">
+        <mat-header-cell *matHeaderCellDef>OC</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.ocId?.slice(0, 8) ?? '—' }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="supplier">
+        <mat-header-cell *matHeaderCellDef>Proveedor</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.supplier }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="orderDate">
+        <mat-header-cell *matHeaderCellDef>Fecha OC</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.orderDate | date: 'dd/MM/yyyy' }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="receiptDate">
+        <mat-header-cell *matHeaderCellDef>Fecha recepción</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{
+          row.receiptDate ? (row.receiptDate | date: 'dd/MM/yyyy') : '—'
+        }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="invoiceNumber">
+        <mat-header-cell *matHeaderCellDef>Factura</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.invoiceNumber || '—' }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="total">
+        <mat-header-cell *matHeaderCellDef>Total</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.total | currency: 'COP' }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <mat-chip [class]="'chip-' + row.status?.toLowerCase()">{{
+            row.status || row.entryType
+          }}</mat-chip>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns" />
+      <mat-row *matRowDef="let row; columns: displayedColumns" />
+    </mat-table>
+  </div>
+
+  @if (!loading() && historyData.content.length === 0) {
+    <p class="error-msg">No hay registros en el historial para los filtros seleccionados.</p>
+  }
+
+  <mat-paginator
+    [length]="historyData.totalElements"
+    [pageSize]="historyData.size"
+    [pageIndex]="historyData.page"
+    [pageSizeOptions]="pageSizeOptions"
+    showFirstLastButtons
+    (page)="onPageChange($event)"
+    aria-label="Paginación de historial"
+  >
+  </mat-paginator>
+}

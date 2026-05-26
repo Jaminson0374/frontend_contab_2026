@@ -1,0 +1,114 @@
+.formula-tab {
+  padding: 8px 0;
+}
+.sub-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.sub-table-header-actions {
+  display: flex;
+  gap: 8px;
+}
+.sub-table-empty {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 12px;
+  padding: 24px 0;
+}
+.section-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.formula-edit-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+.formula-field-sm {
+  max-width: 100px;
+  min-width: 80px;
+}
+.formula-field-md {
+  max-width: 160px;
+  min-width: 120px;
+}
+.formula-field-lg {
+  max-width: 250px;
+  min-width: 180px;
+}
+.formula-inline {
+  width: 100%;
+}
+.search-result {
+  padding: 6px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 13px;
+}
+.search-result:hover {
+  background: #f0f9ff;
+}
+.formula-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.formula-table th {
+  text-align: left;
+  font-weight: 600;
+  color: #64748b;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 8px 6px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.formula-table td {
+  padding: 6px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+.formula-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.tb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tb-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+.tb-btn--primary {
+  background: #15803d;
+  color: #fff;
+  border-color: #15803d;
+}
+.tb-btn--primary:hover {
+  background: #166534;
+}
+.tb-btn mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}

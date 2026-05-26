@@ -1,0 +1,89 @@
+<div class="tl-page">
+  <div class="tl-header">
+    <h2 class="tl-title">Traslados entre Bodegas</h2>
+    <a mat-flat-button color="primary" routerLink="/inventario/traslados/nuevo">
+      <mat-icon>add</mat-icon>
+      Nuevo traslado
+    </a>
+  </div>
+  @if (loading()) {
+    <div class="spinner-container"><mat-spinner diameter="32" /></div>
+  }
+  @if (error()) {
+    <p class="error-msg">{{ error() }}</p>
+  }
+  @if (data(); as pg) {
+    @if (pg.content.length === 0) {
+      <p class="empty-msg">No hay traslados.</p>
+    } @else {
+      <mat-table [dataSource]="pg.content" class="tl-table">
+        <ng-container matColumnDef="createdAt"
+          ><mat-header-cell *matHeaderCellDef>Fecha</mat-header-cell
+          ><mat-cell *matCellDef="let r">{{ r.createdAt | date: 'short' }}</mat-cell></ng-container
+        >
+        <ng-container matColumnDef="status"
+          ><mat-header-cell *matHeaderCellDef>Estado</mat-header-cell
+          ><mat-cell *matCellDef="let r"
+            ><mat-chip [class]="statusClass(r.status)">{{
+              statusLabel(r.status)
+            }}</mat-chip></mat-cell
+          ></ng-container
+        >
+        <ng-container matColumnDef="sourceWarehouseId"
+          ><mat-header-cell *matHeaderCellDef>Origen</mat-header-cell
+          ><mat-cell *matCellDef="let r" class="cell-mono">{{
+            r.sourceWarehouseId | slice: 0 : 8
+          }}</mat-cell></ng-container
+        >
+        <ng-container matColumnDef="targetWarehouseId"
+          ><mat-header-cell *matHeaderCellDef>Destino</mat-header-cell
+          ><mat-cell *matCellDef="let r" class="cell-mono">{{
+            r.targetWarehouseId | slice: 0 : 8
+          }}</mat-cell></ng-container
+        >
+        <ng-container matColumnDef="items"
+          ><mat-header-cell *matHeaderCellDef>Ítems</mat-header-cell
+          ><mat-cell *matCellDef="let r">{{ itemCount(r.items) }}</mat-cell></ng-container
+        >
+        <ng-container matColumnDef="notes"
+          ><mat-header-cell *matHeaderCellDef>Notas</mat-header-cell
+          ><mat-cell *matCellDef="let r">{{
+            r.notes ?? '—' | slice: 0 : 40
+          }}</mat-cell></ng-container
+        >
+        <ng-container matColumnDef="actions"
+          ><mat-header-cell *matHeaderCellDef></mat-header-cell>
+          <mat-cell *matCellDef="let r">
+            @if (r.status === 'DRAFT') {
+              <button
+                mat-icon-button
+                color="primary"
+                (click)="confirm(r.id)"
+                matTooltip="Confirmar"
+              >
+                <mat-icon>check_circle</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="cancel(r.id)" matTooltip="Cancelar">
+                <mat-icon>cancel</mat-icon>
+              </button>
+            }
+          </mat-cell>
+        </ng-container>
+        <mat-header-row *matHeaderRowDef="cols" />
+        <mat-row
+          *matRowDef="let r; columns: cols"
+          (click)="viewDetail(r.id)"
+          style="cursor: pointer"
+        />
+      </mat-table>
+      <mat-paginator
+        [length]="pg.totalElements"
+        [pageSize]="size()"
+        [pageIndex]="page()"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="onPageChange($event)"
+        showFirstLastButtons
+      />
+    }
+  }
+</div>

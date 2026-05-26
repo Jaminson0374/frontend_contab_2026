@@ -1,0 +1,132 @@
+.cxc-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 1rem;
+}
+
+/* ── Aging Cards ──────────────────────────────────────────── */
+
+.aging-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.aging-card {
+  border-top: 4px solid transparent;
+}
+
+.aging-card-total {
+  background: #f8fafc;
+  border-top-color: #475569;
+}
+
+.aging-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.aging-count {
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.aging-total {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-top: 4px;
+}
+
+.aging-total-bold {
+  font-size: 1.25rem;
+}
+
+/* ── Filters ──────────────────────────────────────────────── */
+
+.cxc-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.cxc-filter-search {
+  flex: 1;
+  min-width: 260px;
+}
+
+.cxc-filter-status {
+  width: 180px;
+}
+
+/* ── Table ────────────────────────────────────────────────── */
+
+.cxc-table {
+  width: 100%;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+/* ── Common ───────────────────────────────────────────────── */
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.error-msg {
+  color: #ef4444;
+  text-align: center;
+  padding: 24px;
+}
+
+.empty-msg {
+  text-align: center;
+  color: #94a3b8;
+  padding: 24px;
+}
+
+/* ── Status Chips ──────────────────────────────────────────── */
+
+.chip-open {
+  background: #dbeafe !important;
+  color: #1d4ed8 !important;
+}
+
+.chip-partial {
+  background: #fef3c7 !important;
+  color: #d97706 !important;
+}
+
+.chip-overdue {
+  background: #fee2e2 !important;
+  color: #dc2626 !important;
+}
+
+.chip-paid {
+  background: #dcfce7 !important;
+  color: #15803d !important;
+}
+
+.cxc-row-clickable {
+  cursor: pointer;
+}
+
+.cxc-row-clickable:hover {
+  background: #f0f9ff;
+}

@@ -1,0 +1,130 @@
+<div class="of-page">
+  <!-- Toolbar -->
+  <div class="of-toolbar">
+    <div class="of-toolbar-left">
+      <span class="of-breadcrumb">Notas débito/crédito</span>
+    </div>
+    <div class="of-toolbar-actions">
+      <button mat-flat-button (click)="openNewNote()">
+        <mat-icon matButtonIcon>add</mat-icon>
+        Nueva nota
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="of-filters">
+    <mat-form-field appearance="outline">
+      <mat-label>Tipo</mat-label>
+      <mat-select [formControl]="typeFilter" (selectionChange)="onTypeChange($event.value)">
+        @for (opt of typeOptions; track opt.value) {
+          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Proveedor</mat-label>
+      <mat-select (selectionChange)="onSupplierChange($event.value)">
+        <mat-option [value]="null">Todos</mat-option>
+        @for (s of suppliers(); track s.id) {
+          <mat-option [value]="s.id">{{ s.name }} ({{ s.numIdentification }})</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- Loading -->
+  @if (service.notes.isLoading()) {
+    <div class="spinner-container">
+      <mat-spinner diameter="40" />
+    </div>
+  }
+
+  <!-- Error -->
+  @if (service.notes.error(); as err) {
+    <div class="of-error-bar"><mat-icon>error_outline</mat-icon> Error al cargar las notas.</div>
+  }
+
+  <!-- Empty state -->
+  @if (!service.notes.isLoading() && (!noteData() || noteData()?.content?.length === 0)) {
+    <div class="empty-msg"><mat-icon>info</mat-icon> No hay notas registradas.</div>
+  }
+
+  <!-- Table -->
+  @if (noteData() && noteData()!.content.length > 0) {
+    <div class="of-table-container">
+      <table mat-table [dataSource]="noteData()!.content">
+        <ng-container matColumnDef="type">
+          <th mat-header-cell *matHeaderCellDef>Tipo</th>
+          <td mat-cell *matCellDef="let row">
+            <span [class]="'chip ' + typeChipClass(row.type)">
+              {{ typeLabel(row.type) }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="documentNumber">
+          <th mat-header-cell *matHeaderCellDef>Documento</th>
+          <td mat-cell *matCellDef="let row">{{ row.documentNumber }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="supplierName">
+          <th mat-header-cell *matHeaderCellDef>Proveedor</th>
+          <td mat-cell *matCellDef="let row">{{ row.supplierName || row.supplierId }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef>Monto</th>
+          <td mat-cell *matCellDef="let row">{{ row.amount | currency: 'COP' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="reason">
+          <th mat-header-cell *matHeaderCellDef>Motivo</th>
+          <td mat-cell *matCellDef="let row">
+            {{
+              row.reason
+                ? row.reason.length > 60
+                  ? (row.reason | slice: 0 : 60) + '…'
+                  : row.reason
+                : '—'
+            }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="reference">
+          <th mat-header-cell *matHeaderCellDef>Referencia</th>
+          <td mat-cell *matCellDef="let row">{{ row.reference || '—' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="createdAt">
+          <th mat-header-cell *matHeaderCellDef>Fecha</th>
+          <td mat-cell *matCellDef="let row">{{ row.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let row">
+            <button mat-icon-button matTooltip="Editar" (click)="editNote(row)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button matTooltip="Eliminar" (click)="deleteNote(row)">
+              <mat-icon color="warn">delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+
+      <mat-paginator
+        [length]="noteData()!.totalElements"
+        [pageIndex]="noteData()!.page"
+        [pageSize]="noteData()!.size"
+        [pageSizeOptions]="pageSizeOptions"
+        (page)="onPageChange($event)"
+      />
+    </div>
+  }
+</div>

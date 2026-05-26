@@ -1,0 +1,74 @@
+<div class="page-header">
+  <h2 class="page-title">Stock por Bodega</h2>
+
+  <mat-select
+    [value]="stockService.selectedWarehouseId()"
+    (selectionChange)="onWarehouseChange($event.value)"
+    class="warehouse-filter"
+    placeholder="Seleccioná una bodega">
+    @for (w of activeWarehouses(); track w.id) {
+      <mat-option [value]="w.id">{{ w.name }}</mat-option>
+    }
+  </mat-select>
+</div>
+
+@if (stockService.selectedWarehouseId() === null) {
+  <div class="empty-state">
+    <mat-icon>inventory_2</mat-icon>
+    <p>Seleccioná una bodega para ver su stock.</p>
+  </div>
+}
+
+@if (stockService.stockByWarehouse.isLoading()) {
+  <div class="spinner-container">
+    <mat-spinner diameter="40" />
+  </div>
+}
+
+@if (stockService.stockByWarehouse.error()) {
+  <p class="error-msg">Error cargando stock. Intentá de nuevo.</p>
+}
+
+@let stock = stockService.stockByWarehouse.value();
+
+@if (stock && stock.length > 0) {
+  <mat-table [dataSource]="stock" class="w-full">
+
+    <ng-container matColumnDef="productId">
+      <mat-header-cell *matHeaderCellDef>Producto (ID)</mat-header-cell>
+      <mat-cell *matCellDef="let row">{{ row.productId }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="batchId">
+      <mat-header-cell *matHeaderCellDef>Lote (ID)</mat-header-cell>
+      <mat-cell *matCellDef="let row">{{ row.batchId }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="currentQuantity">
+      <mat-header-cell *matHeaderCellDef>Stock actual (kg)</mat-header-cell>
+      <mat-cell *matCellDef="let row">{{ row.currentQuantity | number:'1.2-2' }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="availableQuantity">
+      <mat-header-cell *matHeaderCellDef>Disponible (kg)</mat-header-cell>
+      <mat-cell *matCellDef="let row" [class.low-stock]="row.availableQuantity < 10">
+        {{ row.availableQuantity | number:'1.2-2' }}
+      </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="unitCost">
+      <mat-header-cell *matHeaderCellDef>Costo unitario ($)</mat-header-cell>
+      <mat-cell *matCellDef="let row">{{ row.unitCost | number:'1.2-2' }}</mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedColumns" />
+    <mat-row *matRowDef="let row; columns: displayedColumns;" />
+  </mat-table>
+}
+
+@if (stock && stock.length === 0) {
+  <div class="empty-state">
+    <mat-icon>inbox</mat-icon>
+    <p>No hay stock registrado en esta bodega.</p>
+  </div>
+}

@@ -1,0 +1,200 @@
+/* ── Page container ── */
+.cl-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  font-size: 13px;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Arial,
+    sans-serif;
+}
+
+::ng-deep .cl-page,
+::ng-deep .cl-page *:not(mat-icon):not(.material-icons) {
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Arial,
+    sans-serif !important;
+}
+
+/* ── Compact form fields ── */
+::ng-deep .cl-page .mat-mdc-form-field-infix {
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+  min-height: 36px !important;
+}
+
+::ng-deep .cl-page .mdc-text-field--outlined {
+  height: 38px !important;
+}
+
+::ng-deep .cl-page .mdc-floating-label {
+  font-size: 12px !important;
+  top: 19px !important;
+}
+
+::ng-deep .cl-page .mdc-floating-label--float-above {
+  transform: translateY(-24px) scale(0.85) !important;
+}
+
+::ng-deep .cl-page .mat-mdc-form-field,
+::ng-deep .cl-page .mat-mdc-form-field input {
+  font-size: 13px !important;
+}
+
+/* ── Toolbar ── */
+.cl-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px 6px 4px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.cl-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.cl-breadcrumb {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cl-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.tb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.tb-btn mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.tb-btn:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.tb-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tb-btn--primary {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #fff;
+}
+
+.tb-btn--primary:hover:not(:disabled) {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+/* ── Error bar ── */
+.cl-error-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  background: #fef2f2;
+  border-bottom: 1px solid #fecaca;
+  color: #dc2626;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.cl-error-bar mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+/* ── Loading ── */
+.cl-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+}
+
+/* ── Form wrapper ── */
+.cl-form-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Tab content ── */
+.tab-content {
+  padding: 16px 20px;
+  overflow-y: auto;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* ── Section title ── */
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #3b82f6;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin: 0 0 12px;
+  text-align: center;
+}
+
+/* ── Two-column layout ── */
+.form-two-col {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 0 12px;
+}
+
+.form-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-right {
+  display: flex;
+  flex-direction: column;
+}

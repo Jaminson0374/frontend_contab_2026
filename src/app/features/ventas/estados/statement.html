@@ -1,0 +1,86 @@
+<div class="st-page">
+  <h2 class="st-title">Estado de Cuenta</h2>
+
+  <form [formGroup]="form" (ngSubmit)="generate()" class="st-controls" autocomplete="off">
+    <mat-form-field appearance="outline">
+      <mat-label>Cliente</mat-label>
+      <input
+        type="text"
+        matInput
+        [matAutocomplete]="clientAuto"
+        (input)="clientSearch.set($any($event.target).value)"
+        [value]="clientSearch()"
+        placeholder="Buscar cliente..."
+      />
+      <mat-autocomplete #clientAuto="matAutocomplete" (optionSelected)="onClientSelected($event)">
+        @if (thirdPartyService.supplierOptions.isLoading()) {
+          <mat-option disabled>Cargando...</mat-option>
+        }
+        @for (tp of thirdPartyService.supplierOptions.value(); track tp.id) {
+          <mat-option [value]="tp.id">{{ clientLabel(tp) }}</mat-option>
+        }
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Desde</mat-label>
+      <input matInput [matDatepicker]="fromPicker" formControlName="from" />
+      <mat-datepicker-toggle matIconSuffix [for]="fromPicker" />
+      <mat-datepicker #fromPicker />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Hasta</mat-label>
+      <input matInput [matDatepicker]="toPicker" formControlName="to" />
+      <mat-datepicker-toggle matIconSuffix [for]="toPicker" />
+      <mat-datepicker #toPicker />
+    </mat-form-field>
+
+    <button mat-flat-button color="primary" type="submit" [disabled]="loading() || form.invalid">
+      <mat-icon>search</mat-icon> Generar
+    </button>
+  </form>
+
+  @if (loading()) {
+    <div class="spinner-container"><mat-spinner diameter="32" /></div>
+  }
+  @if (error()) {
+    <p class="error-msg">{{ error() }}</p>
+  }
+  @if (statement(); as st) {
+    <div class="st-result">
+      <div class="st-header">
+        <strong>{{ st.clientName }}</strong>
+        <span>{{ st.fromDate | date: 'dd/MM/yyyy' }} — {{ st.toDate | date: 'dd/MM/yyyy' }}</span>
+      </div>
+
+      <div class="st-table">
+        <div class="st-row st-row-header">
+          <span>Fecha</span>
+          <span>Documento</span>
+          <span>Tipo</span>
+          <span>Descripción</span>
+          <span>Débito</span>
+          <span>Crédito</span>
+          <span>Saldo</span>
+        </div>
+        @for (e of st.entries; track $index) {
+          <div class="st-row" [class]="entryClass(e)">
+            <span>{{ e.date | date: 'dd/MM/yyyy' }}</span>
+            <span>{{ e.documentNumber }}</span>
+            <span>{{ e.type === 'INVOICE' ? 'Factura' : 'Recibo' }}</span>
+            <span>{{ e.description }}</span>
+            <span>{{ e.debit ? (e.debit | currency: 'COP') : '' }}</span>
+            <span class="st-row-credit">{{ e.credit ? (e.credit | currency: 'COP') : '' }}</span>
+            <span>{{ e.balance | currency: 'COP' }}</span>
+          </div>
+        }
+      </div>
+
+      <div class="st-totals">
+        <span>Saldo final</span>
+        <span>{{ st.closingBalance | currency: 'COP' }}</span>
+      </div>
+    </div>
+  }
+</div>

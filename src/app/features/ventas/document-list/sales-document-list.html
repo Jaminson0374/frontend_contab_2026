@@ -1,0 +1,127 @@
+<div class="page-header">
+  <h2 class="page-title">Documentos de Venta</h2>
+
+  <div class="page-actions">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Buscar por n° o cliente</mat-label>
+      <input matInput [formControl]="searchControl" />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-select
+      [value]="service.typeFilter() || null"
+      (selectionChange)="onTypeChange($event.value)"
+      class="type-filter"
+    >
+      @for (opt of typeOptions; track opt.value) {
+        <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+      }
+    </mat-select>
+
+    <mat-select
+      [value]="service.statusFilter() || null"
+      (selectionChange)="onStatusChange($event.value)"
+      class="status-filter"
+    >
+      @for (opt of statusOptions; track opt.value) {
+        <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+      }
+    </mat-select>
+
+    <button mat-flat-button (click)="openNew()"><mat-icon>add</mat-icon> Nuevo</button>
+  </div>
+</div>
+
+@if (service.documents.isLoading()) {
+  <div class="spinner-container">
+    <mat-spinner diameter="40" />
+  </div>
+}
+
+@if (service.documents.error()) {
+  <p class="error-msg">Error cargando documentos. Intentá de nuevo.</p>
+}
+
+@let data = service.documents.value();
+
+@if (data) {
+  <div class="table-wrapper">
+    <mat-table [dataSource]="data.content" class="w-full">
+      <ng-container matColumnDef="index">
+        <mat-header-cell *matHeaderCellDef>#</mat-header-cell>
+        <mat-cell *matCellDef="let row; let i = index">{{
+          service.page() * service.pageSize() + i + 1
+        }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="documentNumber">
+        <mat-header-cell *matHeaderCellDef>N° Documento</mat-header-cell>
+        <mat-cell *matCellDef="let row" class="cell-mono">{{ row.documentNumber }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="clientName">
+        <mat-header-cell *matHeaderCellDef>Cliente</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.clientName || '—' }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="type">
+        <mat-header-cell *matHeaderCellDef>Tipo</mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <mat-chip [class]="getStatusClass(row.type)">{{ getTypeLabel(row.type) }}</mat-chip>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <mat-chip [class]="getStatusClass(row.status)">
+            {{ getStatusLabel(row.status) }}
+          </mat-chip>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="totalAmount">
+        <mat-header-cell *matHeaderCellDef>Total</mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          {{ row.totalAmount | number: '1.0-0' }}
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="createdAt">
+        <mat-header-cell *matHeaderCellDef>Fecha</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.createdAt | date: 'dd/MM/yyyy' }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <mat-header-cell *matHeaderCellDef></mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <button mat-icon-button (click)="openDetail(row.id)" aria-label="Ver detalle">
+            <mat-icon>visibility</mat-icon>
+          </button>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns" />
+      <mat-row
+        *matRowDef="let row; columns: displayedColumns"
+        class="clickable-row"
+        (click)="openDetail(row.id)"
+      />
+    </mat-table>
+  </div>
+
+  @if (!service.documents.isLoading() && data.content.length === 0) {
+    <p class="error-msg">No hay documentos que coincidan con el filtro.</p>
+  }
+
+  <mat-paginator
+    [length]="data.totalElements"
+    [pageSize]="data.size"
+    [pageIndex]="data.page"
+    [pageSizeOptions]="pageSizeOptions"
+    showFirstLastButtons
+    (page)="onPageChange($event)"
+    aria-label="Paginación de documentos"
+  >
+  </mat-paginator>
+}

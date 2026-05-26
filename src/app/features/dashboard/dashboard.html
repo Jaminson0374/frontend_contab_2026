@@ -1,0 +1,314 @@
+<div class="dashboard-container p-6 max-w-7xl mx-auto">
+  <!-- ==================== ROW 1: KPI CARDS ==================== -->
+  @let summaryData = summary.value();
+  @let todaySales = summaryData?.todaySales ?? 0;
+  @let overdue = summaryData?.overdueReceivables ?? 0;
+  @let lowStock = summaryData?.lowStockCount ?? 0;
+  @let margin = summaryData?.currentMonthMargin ?? 0;
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <!-- Card 1: Ventas Hoy -->
+    <mat-card class="kpi-card border-l-4 border-emerald-500 !rounded-lg">
+      <div class="flex items-center justify-between p-4">
+        <div>
+          <p class="text-xs text-slate-500 uppercase tracking-wider font-medium">Ventas Hoy</p>
+          <p class="text-2xl font-bold text-slate-800 mt-1">
+            {{ todaySales | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+          </p>
+        </div>
+        <div class="w-12 h-12 rounded-lg bg-emerald-50 flex items-center justify-center">
+          <mat-icon class="text-emerald-500 !w-7 !h-7 !text-3xl !leading-7">trending_up</mat-icon>
+        </div>
+      </div>
+    </mat-card>
+
+    <!-- Card 2: CxC Vencida -->
+    <mat-card
+      class="kpi-card border-l-4 !rounded-lg"
+      [class.border-red-500]="overdue > 0"
+      [class.border-emerald-500]="overdue === 0"
+    >
+      <div class="flex items-center justify-between p-4">
+        <div>
+          <p class="text-xs text-slate-500 uppercase tracking-wider font-medium">CxC Vencida</p>
+          <p class="text-2xl font-bold text-slate-800 mt-1">
+            {{ overdue | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+          </p>
+        </div>
+        <div
+          class="w-12 h-12 rounded-lg flex items-center justify-center"
+          [class.bg-red-50]="overdue > 0"
+          [class.bg-emerald-50]="overdue === 0"
+        >
+          @if (overdue > 0) {
+            <mat-icon class="text-red-500 !w-7 !h-7 !text-3xl !leading-7">warning</mat-icon>
+          } @else {
+            <mat-icon class="text-emerald-500 !w-7 !h-7 !text-3xl !leading-7"
+              >check_circle</mat-icon
+            >
+          }
+        </div>
+      </div>
+    </mat-card>
+
+    <!-- Card 3: Stock Bajo -->
+    <mat-card
+      class="kpi-card border-l-4 !rounded-lg"
+      [class.border-orange-500]="lowStock > 0"
+      [class.border-emerald-500]="lowStock === 0"
+    >
+      <div class="flex items-center justify-between p-4">
+        <div>
+          <p class="text-xs text-slate-500 uppercase tracking-wider font-medium">Stock Bajo</p>
+          <p class="text-2xl font-bold text-slate-800 mt-1">{{ lowStock | number }}</p>
+        </div>
+        <div
+          class="w-12 h-12 rounded-lg flex items-center justify-center"
+          [class.bg-orange-50]="lowStock > 0"
+          [class.bg-emerald-50]="lowStock === 0"
+        >
+          @if (lowStock > 0) {
+            <mat-icon class="text-orange-500 !w-7 !h-7 !text-3xl !leading-7">inventory_2</mat-icon>
+          } @else {
+            <mat-icon class="text-emerald-500 !w-7 !h-7 !text-3xl !leading-7"
+              >check_circle</mat-icon
+            >
+          }
+        </div>
+      </div>
+    </mat-card>
+
+    <!-- Card 4: Margen del Mes -->
+    <mat-card
+      class="kpi-card border-l-4 !rounded-lg"
+      [class.border-emerald-500]="margin >= 0"
+      [class.border-red-500]="margin < 0"
+    >
+      <div class="flex items-center justify-between p-4">
+        <div>
+          <p class="text-xs text-slate-500 uppercase tracking-wider font-medium">Margen del Mes</p>
+          <p class="text-2xl font-bold text-slate-800 mt-1">
+            {{ margin | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+          </p>
+        </div>
+        <div
+          class="w-12 h-12 rounded-lg flex items-center justify-center"
+          [class.bg-emerald-50]="margin >= 0"
+          [class.bg-red-50]="margin < 0"
+        >
+          @if (margin >= 0) {
+            <mat-icon class="text-emerald-500 !w-7 !h-7 !text-3xl !leading-7">trending_up</mat-icon>
+          } @else {
+            <mat-icon class="text-red-500 !w-7 !h-7 !text-3xl !leading-7">trending_down</mat-icon>
+          }
+        </div>
+      </div>
+    </mat-card>
+  </div>
+
+  <!-- ==================== ROW 1.5: DIAN KPI CARDS ==================== -->
+  @let dianData = dianService.dianDashboard.value();
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <mat-card class="kpi-card border-l-4 border-blue-500 !rounded-lg">
+      <div class="flex items-center justify-between p-4">
+        <div>
+          <p class="text-xs text-slate-500 uppercase tracking-wider font-medium">
+            Facturas electrónicas HOY
+          </p>
+          <p class="text-2xl font-bold text-slate-800 mt-1">
+            {{ dianData?.todayEmitted ?? 0 | number }}
+          </p>
+        </div>
+        <div class="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center">
+          <mat-icon class="text-blue-500 !w-7 !h-7 !text-3xl !leading-7">receipt_long</mat-icon>
+        </div>
+      </div>
+    </mat-card>
+    <mat-card class="kpi-card border-l-4 border-yellow-500 !rounded-lg">
+      <div class="flex items-center justify-between p-4">
+        <div>
+          <p class="text-xs text-slate-500 uppercase tracking-wider font-medium">
+            Pendientes envío
+          </p>
+          <p class="text-2xl font-bold text-slate-800 mt-1">
+            {{ dianData?.pendingCount ?? 0 | number }}
+          </p>
+        </div>
+        <div class="w-12 h-12 rounded-lg bg-yellow-50 flex items-center justify-center">
+          <mat-icon class="text-yellow-600 !w-7 !h-7 !text-3xl !leading-7">schedule</mat-icon>
+        </div>
+      </div>
+    </mat-card>
+    <mat-card class="kpi-card border-l-4 border-red-500 !rounded-lg">
+      <div class="flex items-center justify-between p-4">
+        <div>
+          <p class="text-xs text-slate-500 uppercase tracking-wider font-medium">Rechazadas</p>
+          <p class="text-2xl font-bold text-slate-800 mt-1">
+            {{ dianData?.rejectedCount ?? 0 | number }}
+          </p>
+        </div>
+        <div class="w-12 h-12 rounded-lg bg-red-50 flex items-center justify-center">
+          <mat-icon class="text-red-500 !w-7 !h-7 !text-3xl !leading-7">gpp_bad</mat-icon>
+        </div>
+      </div>
+    </mat-card>
+  </div>
+
+  <!-- ==================== ROW 2: CHARTS ==================== -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+    <!-- Sales Chart -->
+    <mat-card class="chart-card !rounded-lg">
+      <mat-card-header class="!pb-1">
+        <mat-card-title class="!text-base !font-semibold text-slate-700">
+          Ventas &uacute;ltimos 30 d&iacute;as
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="!pt-2 flex items-center justify-center">
+        <div class="chart-wrapper">
+          <canvas #salesChart></canvas>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Products Chart -->
+    <mat-card class="chart-card !rounded-lg">
+      <mat-card-header class="!pb-1">
+        <mat-card-title class="!text-base !font-semibold text-slate-700">
+          Top 10 Productos
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="!pt-2 flex items-center justify-center">
+        <div class="chart-wrapper">
+          <canvas #productsChart></canvas>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- ==================== ROW 3: ACTIONS + ACTIVITY ==================== -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <!-- Quick Actions -->
+    <mat-card class="!rounded-lg">
+      <mat-card-header class="!pb-1">
+        <mat-card-title class="!text-base !font-semibold text-slate-700">
+          Acciones r&aacute;pidas
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="!pt-2">
+        <div class="grid grid-cols-2 gap-2">
+          <button
+            mat-stroked-button
+            routerLink="/pos"
+            class="!border-slate-200 !text-slate-600 hover:!bg-slate-50 !rounded-lg !py-6 !text-sm !justify-start !pl-4"
+          >
+            <mat-icon class="!mr-2 !text-lg !text-blue-500">point_of_sale</mat-icon>
+            Nueva Venta
+          </button>
+          <button
+            mat-stroked-button
+            routerLink="/compras/ordenes/nuevo"
+            class="!border-slate-200 !text-slate-600 hover:!bg-slate-50 !rounded-lg !py-6 !text-sm !justify-start !pl-4"
+          >
+            <mat-icon class="!mr-2 !text-lg !text-purple-500">shopping_cart</mat-icon>
+            Nueva Compra
+          </button>
+          <button
+            mat-stroked-button
+            routerLink="/inventario/articulos"
+            class="!border-slate-200 !text-slate-600 hover:!bg-slate-50 !rounded-lg !py-6 !text-sm !justify-start !pl-4"
+          >
+            <mat-icon class="!mr-2 !text-lg !text-amber-500">inventory</mat-icon>
+            Inventario
+          </button>
+          <button
+            mat-stroked-button
+            routerLink="/ventas/cobranzas"
+            class="!border-slate-200 !text-slate-600 hover:!bg-slate-50 !rounded-lg !py-6 !text-sm !justify-start !pl-4"
+          >
+            <mat-icon class="!mr-2 !text-lg !text-green-500">payments</mat-icon>
+            Cobranzas
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Recent Activity -->
+    <mat-card class="!rounded-lg">
+      <mat-card-header class="!pb-1">
+        <mat-card-title class="!text-base !font-semibold text-slate-700">
+          &Uacute;ltima actividad
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="!pt-2">
+        @let activityData = recentActivity.value();
+        @let entries = activityData?.content ?? [];
+
+        @if (entries.length === 0) {
+          <div class="flex flex-col items-center justify-center py-8 text-slate-400">
+            <mat-icon class="!text-4xl !w-10 !h-10 mb-2">history</mat-icon>
+            <p class="text-sm">No hay actividad reciente</p>
+          </div>
+        } @else {
+          <div class="space-y-2">
+            @for (entry of entries; track entry.id; let last = $last) {
+              <div
+                class="flex items-start gap-3 py-2.5"
+                [class.border-b]="!last"
+                [class.border-slate-100]="!last"
+              >
+                @switch (entry.action) {
+                  @case ('CREATE') {
+                    <div
+                      class="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0"
+                    >
+                      <mat-icon class="!text-sm !text-emerald-600 !w-5 !h-5 !leading-5"
+                        >add_circle</mat-icon
+                      >
+                    </div>
+                  }
+                  @case ('UPDATE') {
+                    <div
+                      class="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0"
+                    >
+                      <mat-icon class="!text-sm !text-blue-600 !w-5 !h-5 !leading-5">edit</mat-icon>
+                    </div>
+                  }
+                  @case ('DELETE') {
+                    <div
+                      class="w-9 h-9 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0"
+                    >
+                      <mat-icon class="!text-sm !text-red-600 !w-5 !h-5 !leading-5"
+                        >delete_outline</mat-icon
+                      >
+                    </div>
+                  }
+                }
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm text-slate-700 truncate">
+                    @switch (entry.action) {
+                      @case ('CREATE') {
+                        Cre&oacute; {{ entry.entityType }}
+                      }
+                      @case ('UPDATE') {
+                        Edit&oacute; {{ entry.entityType }}
+                      }
+                      @case ('DELETE') {
+                        Elimin&oacute; {{ entry.entityType }}
+                      }
+                    }
+                    @if (entry.fieldName) {
+                      <span class="text-slate-400"> — {{ entry.fieldName }}</span>
+                    }
+                  </p>
+                  <p class="text-xs text-slate-400 mt-0.5">
+                    {{ entry.createdAt | date: 'medium' }}
+                  </p>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

@@ -1,0 +1,44 @@
+.rl-page {
+  padding: 1rem;
+}
+
+.rl-title {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.rl-subtitle {
+  color: #64748b;
+  margin: 0 0 1.5rem 0;
+  font-size: 0.875rem;
+}
+
+.rl-loading {
+  display: flex;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.rl-error {
+  color: #ef4444;
+  text-align: center;
+}
+
+.rl-empty {
+  text-align: center;
+  color: #64748b;
+  padding: 2rem;
+}
+
+.rl-table {
+  width: 100%;
+}
+
+.rl-permissions {
+  margin: 0;
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+  color: #475569;
+  line-height: 1.4;
+}

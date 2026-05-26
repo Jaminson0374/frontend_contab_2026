@@ -1,0 +1,137 @@
+<div class="page-header">
+  <h2 class="page-title">Facturas Proveedores</h2>
+
+  <div class="page-actions">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Buscar</mat-label>
+      <input matInput [formControl]="searchControl" />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-select
+      [value]="service.status()"
+      (selectionChange)="onStatusChange($event.value)"
+      class="status-filter"
+    >
+      @for (opt of statusOptions; track opt.value) {
+        <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+      }
+    </mat-select>
+
+    <mat-form-field appearance="outline" class="supplier-filter-field">
+      <mat-label>Proveedor</mat-label>
+      <mat-select [value]="service.supplierId()" (selectionChange)="onSupplierFilter($event.value)">
+        <mat-option [value]="null">Todos</mat-option>
+        @for (s of availableSuppliers(); track s.id) {
+          <mat-option [value]="s.id">{{ s.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <button mat-flat-button (click)="openNew()"><mat-icon>add</mat-icon> Nueva factura</button>
+  </div>
+</div>
+
+@if (service.facturas.isLoading()) {
+  <div class="spinner-container">
+    <mat-spinner diameter="40" />
+  </div>
+}
+
+@if (service.facturas.error()) {
+  <p class="error-msg">Error cargando facturas. Intentá de nuevo.</p>
+}
+
+@let data = service.facturas.value();
+
+@if (data) {
+  <div class="table-wrapper">
+    <mat-table [dataSource]="data.content" class="w-full">
+      <ng-container matColumnDef="invoiceNumber">
+        <mat-header-cell *matHeaderCellDef>Núm. factura</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.invoiceNumber }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="supplierName">
+        <mat-header-cell *matHeaderCellDef>Proveedor</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.supplierName }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="issueDate">
+        <mat-header-cell *matHeaderCellDef>Fecha emisión</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.issueDate | date: 'dd/MM/yyyy' }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="total">
+        <mat-header-cell *matHeaderCellDef>Total</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.total | currency: 'COP' }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <mat-chip [class]="getStatusClass(row.status)">
+            {{ getStatusLabel(row.status) }}
+          </mat-chip>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <mat-header-cell *matHeaderCellDef></mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          @if (row.status === 'PENDING') {
+            <button
+              mat-icon-button
+              color="primary"
+              (click)="reconcileInvoice(row.id)"
+              matTooltip="Conciliar"
+              aria-label="Conciliar factura"
+            >
+              <mat-icon>check_circle</mat-icon>
+            </button>
+          }
+          @if (row.status === 'RECONCILED') {
+            <button
+              mat-icon-button
+              color="accent"
+              (click)="payInvoice(row)"
+              matTooltip="Pagar"
+              aria-label="Pagar factura"
+            >
+              <mat-icon>payments</mat-icon>
+            </button>
+          }
+          @if (row.status !== 'PAID') {
+            <button
+              mat-icon-button
+              color="warn"
+              (click)="disputeInvoice(row.id)"
+              matTooltip="Disputar"
+              aria-label="Disputar factura"
+            >
+              <mat-icon>gavel</mat-icon>
+            </button>
+          }
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns" />
+      <mat-row *matRowDef="let row; columns: displayedColumns" />
+    </mat-table>
+  </div>
+
+  @if (!service.facturas.isLoading() && data.content.length === 0) {
+    <p class="error-msg">No hay facturas que coincidan con el filtro.</p>
+  }
+
+  <mat-paginator
+    [length]="data.totalElements"
+    [pageSize]="data.size"
+    [pageIndex]="data.page"
+    [pageSizeOptions]="pageSizeOptions"
+    showFirstLastButtons
+    (page)="onPageChange($event)"
+    aria-label="Paginación de facturas"
+  >
+  </mat-paginator>
+}

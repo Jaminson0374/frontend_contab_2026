@@ -1,0 +1,67 @@
+<div class="ol-page">
+  <div class="ol-header">
+    <h2 class="ol-title">Órdenes de Producción</h2>
+    <a mat-flat-button color="primary" routerLink="/produccion/ordenes/nuevo">
+      <mat-icon>add</mat-icon> Nueva orden
+    </a>
+  </div>
+  @if (loading()) {
+    <div class="spinner-container"><mat-spinner diameter="32" /></div>
+  }
+  @if (data(); as pg) {
+    @if (pg.content.length === 0) {
+      <p class="empty-msg">No hay órdenes.</p>
+    } @else {
+      <mat-table [dataSource]="pg.content" class="ol-table">
+        <ng-container matColumnDef="orderNumber"
+          ><mat-header-cell *matHeaderCellDef>N° Orden</mat-header-cell
+          ><mat-cell *matCellDef="let r">{{ r.orderNumber }}</mat-cell></ng-container
+        >
+        <ng-container matColumnDef="plannedDate"
+          ><mat-header-cell *matHeaderCellDef>Fecha</mat-header-cell
+          ><mat-cell *matCellDef="let r">{{ r.plannedDate }}</mat-cell></ng-container
+        >
+        <ng-container matColumnDef="formulaId"
+          ><mat-header-cell *matHeaderCellDef>Fórmula</mat-header-cell
+          ><mat-cell *matCellDef="let r">{{ r.formulaId | slice: 0 : 8 }}</mat-cell></ng-container
+        >
+        <ng-container matColumnDef="plannedQuantity"
+          ><mat-header-cell *matHeaderCellDef>Cantidad</mat-header-cell
+          ><mat-cell *matCellDef="let r">{{ r.plannedQuantity }}</mat-cell></ng-container
+        >
+        <ng-container matColumnDef="status"
+          ><mat-header-cell *matHeaderCellDef>Estado</mat-header-cell
+          ><mat-cell *matCellDef="let r"
+            ><span [class]="statusClass(r.status)">{{ statusLabel(r.status) }}</span></mat-cell
+          ></ng-container
+        >
+        <ng-container matColumnDef="warehouseId"
+          ><mat-header-cell *matHeaderCellDef>Bodega</mat-header-cell
+          ><mat-cell *matCellDef="let r">{{ r.warehouseId | slice: 0 : 8 }}</mat-cell></ng-container
+        >
+        <ng-container matColumnDef="actions"
+          ><mat-header-cell *matHeaderCellDef></mat-header-cell>
+          <mat-cell *matCellDef="let r">
+            @if (r.status === 'PLANNED') {
+              <button mat-icon-button color="primary" (click)="approve(r.id)" matTooltip="Aprobar">
+                <mat-icon>check_circle</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="cancel(r.id)" matTooltip="Cancelar">
+                <mat-icon>cancel</mat-icon>
+              </button>
+            }
+          </mat-cell>
+        </ng-container>
+        <mat-header-row *matHeaderRowDef="cols" /><mat-row *matRowDef="let r; columns: cols" />
+      </mat-table>
+      <mat-paginator
+        [length]="pg.totalElements"
+        [pageSize]="size()"
+        [pageIndex]="page()"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="onPageChange($event)"
+        showFirstLastButtons
+      />
+    }
+  }
+</div>

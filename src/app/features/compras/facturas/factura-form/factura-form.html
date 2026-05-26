@@ -1,0 +1,127 @@
+<div class="of-page">
+  <!-- Toolbar -->
+  <div class="of-toolbar">
+    <div class="of-toolbar-left">
+      <button mat-icon-button (click)="cancel()" matTooltip="Volver a la lista">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <span class="of-breadcrumb">Nueva factura proveedor</span>
+    </div>
+
+    <div class="of-toolbar-actions">
+      <button mat-flat-button [disabled]="saving()" (click)="save()">
+        <mat-icon matButtonIcon>save</mat-icon>
+        @if (saving()) {
+          <mat-spinner diameter="18" />
+        } @else {
+          Guardar
+        }
+      </button>
+      <button mat-button (click)="cancel()" [disabled]="saving()">
+        <mat-icon>cancel</mat-icon> Cancelar
+      </button>
+    </div>
+  </div>
+
+  <!-- Error bar -->
+  @if (error()) {
+    <div class="of-error-bar"><mat-icon>error_outline</mat-icon> {{ error() }}</div>
+  }
+
+  <!-- Form -->
+  <form [formGroup]="form" class="of-form" autocomplete="off">
+    <!-- Linked OC section -->
+    @if (linkedOcIds().length > 0) {
+      <div class="linked-oc-section">
+        <span class="linked-oc-label"> <mat-icon>link</mat-icon> Orden de compra vinculada: </span>
+        @for (ocId of linkedOcIds(); track ocId) {
+          <mat-chip class="linked-oc-chip" (removed)="removeLinkedOc(ocId)">
+            {{ ocId | slice: 0 : 8 }}
+            <mat-icon matChipRemove>cancel</mat-icon>
+          </mat-chip>
+        }
+      </div>
+    }
+
+    <div class="of-grid">
+      <!-- Supplier autocomplete -->
+      <mat-form-field appearance="outline">
+        <mat-label>Proveedor</mat-label>
+        <input
+          type="text"
+          matInput
+          [formControl]="supplierDisplay"
+          [matAutocomplete]="supplierAuto"
+          (blur)="syncSupplierDisplay()"
+        />
+        <mat-autocomplete
+          #supplierAuto="matAutocomplete"
+          (optionSelected)="onSupplierSelected($event)"
+        >
+          @if (thirdPartyService.supplierOptions.isLoading()) {
+            <mat-option disabled>Cargando...</mat-option>
+          }
+          @for (tp of suppliers(); track tp.id) {
+            <mat-option [value]="tp.id">{{ supplierLabel(tp) }}</mat-option>
+          }
+          <mat-option value="__create__" class="create-option">
+            <mat-icon>add</mat-icon> Crear nuevo proveedor
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <!-- Invoice number -->
+      <mat-form-field appearance="outline">
+        <mat-label>Número de factura</mat-label>
+        <input matInput formControlName="invoiceNumber" />
+      </mat-form-field>
+
+      <!-- Issue date -->
+      <mat-form-field appearance="outline">
+        <mat-label>Fecha de emisión</mat-label>
+        <input matInput [matDatepicker]="issuePicker" formControlName="issueDate" />
+        <mat-datepicker-toggle matIconSuffix [for]="issuePicker" />
+        <mat-datepicker #issuePicker />
+      </mat-form-field>
+
+      <!-- Due date -->
+      <mat-form-field appearance="outline">
+        <mat-label>Fecha de vencimiento</mat-label>
+        <input matInput [matDatepicker]="duePicker" formControlName="dueDate" />
+        <mat-datepicker-toggle matIconSuffix [for]="duePicker" />
+        <mat-datepicker #duePicker />
+      </mat-form-field>
+
+      <!-- Subtotal -->
+      <mat-form-field appearance="outline">
+        <mat-label>Subtotal</mat-label>
+        <input matInput type="number" min="0" step="0.01" formControlName="subtotal" />
+      </mat-form-field>
+
+      <!-- IVA -->
+      <mat-form-field appearance="outline">
+        <mat-label>IVA total</mat-label>
+        <input matInput type="number" min="0" step="0.01" formControlName="ivaTotal" />
+      </mat-form-field>
+
+      <!-- Retención -->
+      <mat-form-field appearance="outline">
+        <mat-label>Retención total</mat-label>
+        <input matInput type="number" min="0" step="0.01" formControlName="retentionTotal" />
+      </mat-form-field>
+
+      <!-- Total (auto-calculated) -->
+      <mat-form-field appearance="outline">
+        <mat-label>Total (calculado)</mat-label>
+        <input matInput [value]="total() | number: '1.2-2'" readonly />
+        <mat-hint>Subtotal + IVA − Retención</mat-hint>
+      </mat-form-field>
+
+      <!-- Notes -->
+      <mat-form-field appearance="outline" class="of-full-width">
+        <mat-label>Notas</mat-label>
+        <textarea matInput formControlName="notes" rows="3" maxlength="500"></textarea>
+      </mat-form-field>
+    </div>
+  </form>
+</div>

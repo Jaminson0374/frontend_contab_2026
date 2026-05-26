@@ -1,0 +1,70 @@
+<div class="dl-page">
+  <div class="dl-header">
+    <h2 class="dl-title">Decomisos</h2>
+    <a mat-flat-button color="primary" routerLink="/inventario/decomisos/nuevo">
+      <mat-icon>add</mat-icon>
+      Nuevo decomiso
+    </a>
+  </div>
+  @if (loading()) {
+    <div class="spinner-container"><mat-spinner diameter="32" /></div>
+  }
+  @if (error()) {
+    <p class="error-msg">{{ error() }}</p>
+  }
+  @if (data(); as pg) {
+    @if (pg.content.length === 0) {
+      <p class="empty-msg">No hay decomisos registrados.</p>
+    } @else {
+      <mat-table [dataSource]="pg.content" class="dl-table">
+        <ng-container matColumnDef="createdAt"
+          ><mat-header-cell *matHeaderCellDef>Fecha</mat-header-cell
+          ><mat-cell *matCellDef="let r">{{ r.createdAt | date: 'short' }}</mat-cell></ng-container
+        >
+        <ng-container matColumnDef="disposalType"
+          ><mat-header-cell *matHeaderCellDef>Tipo</mat-header-cell
+          ><mat-cell *matCellDef="let r"
+            ><mat-chip [class]="typeClass(r.disposalType)">{{
+              typeLabel(r.disposalType)
+            }}</mat-chip></mat-cell
+          ></ng-container
+        >
+        <ng-container matColumnDef="productId"
+          ><mat-header-cell *matHeaderCellDef>Producto</mat-header-cell
+          ><mat-cell *matCellDef="let r" class="cell-mono">{{
+            r.productId | slice: 0 : 8
+          }}</mat-cell></ng-container
+        >
+        <ng-container matColumnDef="warehouseId"
+          ><mat-header-cell *matHeaderCellDef>Bodega</mat-header-cell
+          ><mat-cell *matCellDef="let r" class="cell-mono">{{
+            r.warehouseId | slice: 0 : 8
+          }}</mat-cell></ng-container
+        >
+        <ng-container matColumnDef="quantity"
+          ><mat-header-cell *matHeaderCellDef>Cantidad</mat-header-cell
+          ><mat-cell *matCellDef="let r">{{ r.quantity }}</mat-cell></ng-container
+        >
+        <ng-container matColumnDef="unitCost"
+          ><mat-header-cell *matHeaderCellDef>Costo</mat-header-cell
+          ><mat-cell *matCellDef="let r">{{
+            r.unitCost | currency: 'COP' : 'symbol-narrow' : '1.0-2' : 'es-CO'
+          }}</mat-cell></ng-container
+        >
+        <ng-container matColumnDef="reason"
+          ><mat-header-cell *matHeaderCellDef>Motivo</mat-header-cell
+          ><mat-cell *matCellDef="let r">{{ r.reason | slice: 0 : 50 }}</mat-cell></ng-container
+        >
+        <mat-header-row *matHeaderRowDef="cols" /><mat-row *matRowDef="let r; columns: cols" />
+      </mat-table>
+      <mat-paginator
+        [length]="pg.totalElements"
+        [pageSize]="size()"
+        [pageIndex]="page()"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="onPageChange($event)"
+        showFirstLastButtons
+      />
+    }
+  }
+</div>

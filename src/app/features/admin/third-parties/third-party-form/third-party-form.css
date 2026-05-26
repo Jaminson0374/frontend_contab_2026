@@ -1,0 +1,396 @@
+/* ── Page container ── */
+.tp-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  font-size: 13px;
+  font-family: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+}
+
+/* ── Font family override (Roboto → system sans-serif) ── */
+::ng-deep .tp-page,
+::ng-deep .tp-page *:not(mat-icon):not(.material-icons) {
+  font-family: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif !important;
+}
+
+/* ── Compact form fields (reduce height ~50%) ── */
+::ng-deep .tp-page .mat-mdc-form-field-infix {
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+  min-height: 36px !important;
+}
+
+::ng-deep .tp-page .mdc-text-field--outlined {
+  height: 38px !important;
+}
+
+::ng-deep .tp-page .mdc-floating-label {
+  font-size: 12px !important;
+  top: 19px !important;
+}
+
+::ng-deep .tp-page .mdc-floating-label--float-above {
+  transform: translateY(-24px) scale(0.85) !important;
+}
+
+::ng-deep .tp-page .mdc-notched-outline__notch {
+  max-width: calc(100% - 48px);
+}
+
+/* ── Toolbar ── */
+.tp-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px 6px 4px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.tp-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.tp-breadcrumb {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tp-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.tb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.tb-btn mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.tb-btn:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.tb-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tb-btn--primary {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #fff;
+}
+
+.tb-btn--primary:hover:not(:disabled) {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+/* ── Error bar ── */
+.tp-error-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  background: #fef2f2;
+  border-bottom: 1px solid #fecaca;
+  color: #dc2626;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.tp-error-bar mat-icon { font-size: 16px; width: 16px; height: 16px; }
+
+/* ── Search panel ── */
+.tp-search-panel {
+  padding: 10px 16px 12px;
+  background: #eff6ff;
+  border-bottom: 1px solid #bfdbfe;
+  flex-shrink: 0;
+}
+
+.tp-search-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tp-search-field { flex: 1; }
+
+.tp-search-loading { padding: 8px; }
+
+.tp-search-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.tp-search-table th {
+  padding: 6px 8px;
+  text-align: left;
+  background: #dbeafe;
+  font-weight: 600;
+  color: #1e40af;
+}
+
+.tp-search-row { cursor: pointer; transition: background 0.12s; }
+.tp-search-row:hover { background: #eff6ff; }
+.tp-search-row td { padding: 5px 8px; border-bottom: 1px solid #e2e8f0; }
+
+.tp-search-empty { font-size: 12px; color: #64748b; padding: 8px 0 0; margin: 0; }
+
+/* ── Loading ── */
+.tp-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+}
+
+/* ── Form wrapper ── */
+.tp-form-wrapper {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Tabs ── */
+::ng-deep .tp-tabs {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+::ng-deep .tp-tabs .mat-mdc-tab-header {
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+
+::ng-deep .tp-tabs .mat-mdc-tab-label-container { padding: 0 12px; }
+
+::ng-deep .tp-tabs .mat-mdc-tab-body-wrapper {
+  flex: 1;
+  overflow: hidden;
+}
+
+::ng-deep .tp-tabs .mat-mdc-tab-body { overflow: hidden; }
+
+/* ── Tab content ── */
+.tab-content {
+  padding: 16px 20px;
+  overflow-y: auto;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* ── 13px for all form fields ── */
+::ng-deep .tp-page .mat-mdc-form-field,
+::ng-deep .tp-page .mat-mdc-form-field input,
+::ng-deep .tp-page .mat-mdc-form-field textarea,
+::ng-deep .tp-page .mat-mdc-form-field .mat-mdc-select-value-text,
+::ng-deep .tp-page .mat-mdc-option {
+  font-size: 13px !important;
+}
+
+::ng-deep .tp-page .mat-mdc-form-field-subscript-wrapper { margin-bottom: 2px; }
+
+/* ── Section titles ── */
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #3b82f6;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin: 0 0 12px;
+  text-align: center;
+}
+
+/* ── Two-column layout ── */
+.form-two-col {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 0 12px;
+}
+
+/* ── Two-column layout contacto ── */
+.form-two-col-contacto {
+  display: grid;
+  grid-template-columns: 1fr 0px;
+  gap: 0 12px;
+}
+
+/* ── Tree-column layout ── */
+.form-three-col {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 0 20px;
+}
+
+
+
+.form-left  { display: flex; flex-direction: column; }
+.form-right { display: flex; flex-direction: column; }
+
+/* ── Form rows ── */
+.form-row,
+.form-row-depts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 12px;
+}
+
+/* ── Form rows ── */
+.form-row-depts2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0 12px;
+}
+
+
+/* ── ID + DV row ── */
+.id-row {
+  display: grid;
+  grid-template-columns: 1fr 70px;
+  gap: 0 8px;
+  align-items: start;
+}
+
+/* ── Person type toggle ── */
+.person-type-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.person-type-label { font-size: 12px; color: #64748b; min-width: 48px; }
+
+::ng-deep .person-toggle .mat-button-toggle { font-size: 10px; height: 30px; padding: 0px; width: 100px}
+::ng-deep .person-toggle .mat-button-toggle-checked { background: #3b82f6; color: #fff; }
+
+/* ── Checkboxes ── */
+.checkbox-list { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+::ng-deep .tp-page .mat-mdc-checkbox .mdc-label { font-size: 13px; }
+
+/* ── Active row ── */
+.active-row { display: flex; align-items: center; margin-top: 2px; }
+
+/* ── Employee sub-nav ── */
+.emp-subnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px;
+  background: #1e3a5f;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.emp-subnav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  width: 66px;
+  padding: 6px 3px;
+  border-radius: 6px;
+  cursor: default;
+  opacity: 0.4;
+}
+
+.emp-subnav-btn.active { opacity: 1; background: rgba(255,255,255,0.12); }
+.emp-subnav-btn mat-icon { font-size: 22px; width: 22px; height: 22px; color: #e2e8f0; }
+.emp-subnav-btn span { font-size: 0.6rem; color: #e2e8f0; text-align: center; line-height: 1.2; }
+
+/* ── Read-only tables ── */
+.readonly-tab { display: flex; flex-direction: column; gap: 10px; }
+
+.readonly-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+
+.readonly-table th {
+  padding: 7px 8px;
+  text-align: left;
+  background: #f1f5f9;
+  border-bottom: 2px solid #e2e8f0;
+  font-weight: 600;
+  color: #475569;
+}
+
+.readonly-table td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; }
+.text-right { text-align: right !important; }
+
+.empty-state { text-align: center; padding: 24px; color: #94a3b8; font-size: 12px; }
+
+/* ── Form fields full width ── */
+/*mat-form-field { width: 100%; }/*
+
+/* ── Autocomplete options ── */
+::ng-deep .mat-mdc-autocomplete-panel .mat-mdc-option {
+  font-size: 13px;
+  min-height: 36px;
+}
+
+/* ── Quick-create option at bottom of autocomplete ── */
+::ng-deep .mat-mdc-autocomplete-panel .qc-create-option {
+  color: #2563eb;
+  border-top: 1px solid #e2e8f0;
+  font-weight: 500;
+}
+
+::ng-deep .mat-mdc-autocomplete-panel .qc-create-option:hover {
+  background: #eff6ff !important;
+}
+
+::ng-deep .mat-mdc-autocomplete-panel .qc-create-option .qc-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+  vertical-align: middle;
+  color: #2563eb;
+}
+
+/*mat-form-field.input-width{
+  width: 50%;
+  }
+mat-form-field.input-width-tipo-identificacion{
+  width: 50%;
+}*/
+
+
+  /*Para el ancho del input, multiplico el maxlength *1,5, el resultado es el ancho*/
+  

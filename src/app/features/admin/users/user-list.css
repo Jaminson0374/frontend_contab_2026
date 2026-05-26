@@ -1,0 +1,54 @@
+.ul-page {
+  padding: 1rem;
+}
+
+.ul-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.ul-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.ul-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.ul-search {
+  flex: 1;
+  min-width: 250px;
+}
+
+.ul-loading {
+  display: flex;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.ul-empty {
+  text-align: center;
+  color: #64748b;
+  padding: 2rem;
+}
+
+.ul-table {
+  width: 100%;
+}
+
+.ul-chip-active {
+  background-color: #dcfce7 !important;
+  color: #166534 !important;
+}
+
+.ul-chip-inactive {
+  background-color: #fee2e2 !important;
+  color: #991b1b !important;
+}

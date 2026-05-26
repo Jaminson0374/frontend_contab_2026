@@ -1,0 +1,72 @@
+<div class="td-page">
+  @if (loading()) {
+    <div class="spinner-container">
+      <mat-spinner diameter="40" />
+    </div>
+  }
+
+  @if (error()) {
+    <p class="error-msg">{{ error() }}</p>
+  }
+
+  @if (transfer(); as t) {
+    <h2 class="td-title">Traslado {{ t.id | slice: 0 : 8 }}</h2>
+
+    <div class="td-grid">
+      <div class="td-field">
+        <span class="td-label">Bodega origen</span>
+        <span class="td-value">{{ t.sourceWarehouseId | slice: 0 : 8 }}</span>
+      </div>
+      <div class="td-field">
+        <span class="td-label">Bodega destino</span>
+        <span class="td-value">{{ t.targetWarehouseId | slice: 0 : 8 }}</span>
+      </div>
+      <div class="td-field">
+        <span class="td-label">Estado</span>
+        <span [class]="'td-status-' + t.status.toLowerCase()">{{ statusLabel(t.status) }}</span>
+      </div>
+      <div class="td-field">
+        <span class="td-label">Creado</span>
+        <span class="td-value">{{ t.createdAt | date: 'medium' }}</span>
+      </div>
+      @if (t.confirmedAt) {
+        <div class="td-field">
+          <span class="td-label">Confirmado</span>
+          <span class="td-value">{{ t.confirmedAt | date: 'medium' }}</span>
+        </div>
+      }
+      @if (t.notes) {
+        <div class="td-field td-field-full">
+          <span class="td-label">Notas</span>
+          <span class="td-value">{{ t.notes }}</span>
+        </div>
+      }
+    </div>
+
+    <h3 class="td-subtitle">Ítems ({{ t.items.length }})</h3>
+
+    <mat-table [dataSource]="t.items" class="td-table">
+      <ng-container matColumnDef="productId">
+        <mat-header-cell *matHeaderCellDef>Producto</mat-header-cell>
+        <mat-cell *matCellDef="let item" class="cell-mono">{{
+          item.productId | slice: 0 : 8
+        }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="quantity">
+        <mat-header-cell *matHeaderCellDef>Cantidad</mat-header-cell>
+        <mat-cell *matCellDef="let item">{{ item.quantity }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="unitCost">
+        <mat-header-cell *matHeaderCellDef>Costo unit.</mat-header-cell>
+        <mat-cell *matCellDef="let item">
+          {{ item.unitCost | currency: 'COP' : 'symbol-narrow' : '1.0-2' : 'es-CO' }}
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="['productId', 'quantity', 'unitCost']" />
+      <mat-row *matRowDef="let row; columns: ['productId', 'quantity', 'unitCost']" />
+    </mat-table>
+  }
+</div>

@@ -1,0 +1,114 @@
+<div class="page-header">
+  <h2 class="page-title">Turnos</h2>
+
+  <div class="page-actions">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Buscar</mat-label>
+      <input matInput [formControl]="searchControl" />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <button mat-flat-button (click)="openNew()"><mat-icon>add</mat-icon> Abrir turno</button>
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="spinner-container">
+    <mat-spinner diameter="40" />
+  </div>
+}
+
+@if (error()) {
+  <p class="error-msg">{{ error() }}</p>
+}
+
+@let pageData = data();
+
+@if (pageData) {
+  <div class="table-wrapper">
+    <mat-table [dataSource]="filteredRows()" class="w-full">
+      <ng-container matColumnDef="index">
+        <mat-header-cell *matHeaderCellDef class="col-index">#</mat-header-cell>
+        <mat-cell *matCellDef="let row; let i = index" class="col-index">
+          {{ pageData.page * pageData.size + i + 1 }}
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="cashRegister">
+        <mat-header-cell *matHeaderCellDef>Caja</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.cashRegisterName ?? row.cashRegisterId }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="user">
+        <mat-header-cell *matHeaderCellDef>Usuario</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.userName ?? row.userId }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="openingTime">
+        <mat-header-cell *matHeaderCellDef>Apertura</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.openingTime | date: 'short' }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="closingTime">
+        <mat-header-cell *matHeaderCellDef>Cierre</mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          {{ row.closingTime ? (row.closingTime | date: 'short') : '—' }}
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="openingAmount">
+        <mat-header-cell *matHeaderCellDef>Monto apertura</mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          {{ row.openingAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO' }}
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="closingAmount">
+        <mat-header-cell *matHeaderCellDef>Monto cierre</mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          {{
+            row.closingAmount != null
+              ? (row.closingAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO')
+              : '—'
+          }}
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <mat-chip [class]="statusClass(row.status)">
+            {{ statusLabel(row.status) }}
+          </mat-chip>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <mat-header-cell *matHeaderCellDef></mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <button mat-icon-button (click)="openEdit(row.id)" [attr.aria-label]="'Ver turno'">
+            <mat-icon>{{ row.status === 'OPEN' ? 'edit' : 'visibility' }}</mat-icon>
+          </button>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns" />
+      <mat-row *matRowDef="let row; columns: displayedColumns" />
+    </mat-table>
+  </div>
+
+  @if (!loading() && filteredRows().length === 0) {
+    <p class="error-msg">No hay turnos registrados.</p>
+  }
+
+  <mat-paginator
+    [length]="pageData.totalElements"
+    [pageSize]="pageData.size"
+    [pageIndex]="pageData.page"
+    [pageSizeOptions]="pageSizeOptions"
+    showFirstLastButtons
+    (page)="onPageChange($event)"
+    aria-label="Paginación de turnos"
+  >
+  </mat-paginator>
+}

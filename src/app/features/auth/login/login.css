@@ -1,0 +1,63 @@
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 8px;
+  border-radius: 16px;
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.brand-icon {
+  font-size: 2rem;
+  width: 2rem;
+  height: 2rem;
+  color: #0284c7;
+}
+
+.brand-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.error-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 0.875rem;
+}
+
+mat-form-field {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.login-btn {
+  height: 48px;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.w-full {
+  width: 100%;
+}

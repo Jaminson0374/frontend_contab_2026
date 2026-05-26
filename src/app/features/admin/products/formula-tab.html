@@ -1,0 +1,152 @@
+<div class="formula-tab">
+  <div class="sub-table-header">
+    <p class="section-title">COMPONENTES DE FÓRMULA</p>
+    <div class="sub-table-header-actions">
+      @if (!adding() && !editingId()) {
+        <button class="tb-btn" (click)="startAdd()">
+          <mat-icon>add</mat-icon> Agregar componente
+        </button>
+      }
+      <button class="tb-btn tb-btn--primary" (click)="navigateToProduction()">
+        <mat-icon>factory</mat-icon> Producir
+      </button>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div style="text-align: center; padding: 24px"><mat-spinner diameter="24" /></div>
+  }
+
+  @if (adding()) {
+    <div class="formula-edit-row">
+      <div>
+        <mat-form-field appearance="outline" class="formula-field-lg">
+          <mat-label>Buscar componente</mat-label>
+          <input matInput [(ngModel)]="componentSearch" (input)="searchComponents()" />
+        </mat-form-field>
+        @if (componentSearchLoading()) {
+          <mat-spinner diameter="16" />
+        }
+        @for (p of componentResults(); track p.id) {
+          <div class="search-result" (click)="selectComponent(p)">
+            {{ p.name }} ({{ p.productCode }})
+          </div>
+        }
+      </div>
+      <mat-form-field appearance="outline" class="formula-field-sm">
+        <mat-label>Cantidad</mat-label>
+        <input matInput type="number" [(ngModel)]="editQuantity" min="0.0001" step="0.0001" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="formula-field-md">
+        <mat-label>U.M.</mat-label>
+        <mat-select [(ngModel)]="editUomId">
+          <mat-option [value]="null">— Ninguna —</mat-option>
+          @for (u of uomService.units.value() ?? []; track u.id) {
+            <mat-option [value]="u.id">{{ u.code }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="formula-field-sm">
+        <mat-label>Orden</mat-label>
+        <input matInput type="number" [(ngModel)]="editSeq" min="0" />
+      </mat-form-field>
+      <button mat-icon-button color="primary" (click)="saveNew()" matTooltip="Guardar">
+        <mat-icon>check</mat-icon>
+      </button>
+      <button mat-icon-button (click)="cancelEdit()" matTooltip="Cancelar">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  }
+
+  @if (formulas().length === 0 && !adding()) {
+    <p class="sub-table-empty">Sin componentes definidos en la fórmula</p>
+  } @else {
+    <table class="formula-table">
+      <thead>
+        <tr>
+          <th>Componente</th>
+          <th>Cantidad</th>
+          <th>U.M.</th>
+          <th>Orden</th>
+          <th>Notas</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of formulas(); track row.id) {
+          @if (editingId() === row.id) {
+            <tr>
+              <td>{{ row.componentProductId }}</td>
+              <td>
+                <mat-form-field appearance="outline" class="formula-inline">
+                  <input
+                    matInput
+                    type="number"
+                    [(ngModel)]="editQuantity"
+                    min="0.0001"
+                    step="0.0001"
+                  />
+                </mat-form-field>
+              </td>
+              <td>
+                <mat-form-field appearance="outline" class="formula-inline">
+                  <mat-select [(ngModel)]="editUomId">
+                    <mat-option [value]="null">—</mat-option>
+                    @for (u of uomService.units.value() ?? []; track u.id) {
+                      <mat-option [value]="u.id">{{ u.code }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              </td>
+              <td>
+                <mat-form-field appearance="outline" class="formula-inline">
+                  <input matInput type="number" [(ngModel)]="editSeq" min="0" />
+                </mat-form-field>
+              </td>
+              <td>
+                <mat-form-field appearance="outline" class="formula-inline">
+                  <input matInput [(ngModel)]="editNotes" />
+                </mat-form-field>
+              </td>
+              <td>
+                <button
+                  mat-icon-button
+                  color="primary"
+                  (click)="saveEdit(row)"
+                  matTooltip="Guardar"
+                >
+                  <mat-icon>check</mat-icon>
+                </button>
+                <button mat-icon-button (click)="cancelEdit()" matTooltip="Cancelar">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </td>
+            </tr>
+          } @else {
+            <tr>
+              <td>{{ row.componentProductId }}</td>
+              <td class="formula-num">{{ row.quantity }}</td>
+              <td>{{ row.unitOfMeasureId ?? '—' }}</td>
+              <td>{{ row.sequenceNumber }}</td>
+              <td>{{ row.notes ?? '' }}</td>
+              <td>
+                <button mat-icon-button (click)="startEdit(row)" matTooltip="Editar">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  color="warn"
+                  (click)="removeFormula(row)"
+                  matTooltip="Eliminar"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  }
+</div>

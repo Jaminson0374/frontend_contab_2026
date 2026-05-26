@@ -1,0 +1,50 @@
+<div class="login-wrapper">
+  <mat-card class="login-card">
+    <mat-card-header>
+      <div class="login-brand">
+        <mat-icon class="brand-icon">storefront</mat-icon>
+        <span class="brand-name">PosInvent</span>
+      </div>
+      <mat-card-subtitle>Sistema de punto de venta</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      @if (errorMsg()) {
+        <div class="error-alert">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ errorMsg() }}</span>
+        </div>
+      }
+
+      <form (ngSubmit)="submit()" #loginForm="ngForm">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Usuario</mat-label>
+          <input matInput [(ngModel)]="username" name="username"
+                 required autocomplete="username" [disabled]="loading()">
+          <mat-icon matPrefix>person</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Contraseña</mat-label>
+          <input matInput [(ngModel)]="password" name="password"
+                 [type]="hidePass() ? 'password' : 'text'"
+                 required autocomplete="current-password" [disabled]="loading()">
+          <mat-icon matPrefix>lock</mat-icon>
+          <button mat-icon-button matSuffix type="button"
+                  (click)="hidePass.set(!hidePass())">
+            <mat-icon>{{ hidePass() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+        </mat-form-field>
+
+        <button mat-flat-button color="primary" type="submit"
+                class="w-full login-btn" [disabled]="loading() || !loginForm.valid">
+          @if (loading()) {
+            <mat-spinner diameter="20" />
+          } @else {
+            Ingresar
+          }
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

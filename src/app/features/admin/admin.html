@@ -1,0 +1,12 @@
+<div class="admin-container">
+  <nav mat-tab-nav-bar [tabPanel]="tabPanel" class="admin-tabs">
+    <a mat-tab-link routerLink="products"      routerLinkActive #rla1="routerLinkActive" [active]="rla1.isActive">Artículos</a>
+    <a mat-tab-link routerLink="third-parties" routerLinkActive #rla2="routerLinkActive" [active]="rla2.isActive">Terceros</a>
+  </nav>
+
+  <mat-tab-nav-panel #tabPanel>
+    <div class="admin-content">
+      <router-outlet />
+    </div>
+  </mat-tab-nav-panel>
+</div>

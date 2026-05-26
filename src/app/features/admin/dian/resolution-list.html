@@ -1,0 +1,79 @@
+<div class="p-6">
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="text-xl font-semibold text-slate-800">Resoluciones DIAN</h1>
+    <a mat-flat-button color="primary" routerLink="/administracion/dian/resoluciones/nuevo">
+      <mat-icon>add</mat-icon>
+      Nueva resolución
+    </a>
+  </div>
+
+  @let data = resolutions.value();
+  @if (!data) {
+    <div class="flex justify-center py-8">
+      <mat-spinner diameter="40" />
+    </div>
+  } @else if (data.length === 0) {
+    <p class="text-slate-500 text-center py-8">No hay resoluciones registradas.</p>
+  } @else {
+    <div class="overflow-hidden rounded-lg border border-slate-200">
+      <table mat-table [dataSource]="data" class="w-full">
+        <ng-container matColumnDef="resolutionNumber">
+          <th mat-header-cell *matHeaderCellDef>Número</th>
+          <td mat-cell *matCellDef="let r">{{ r.resolutionNumber }}</td>
+        </ng-container>
+        <ng-container matColumnDef="validFrom">
+          <th mat-header-cell *matHeaderCellDef>Desde</th>
+          <td mat-cell *matCellDef="let r">{{ r.validFrom | date: 'dd/MM/yyyy' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="validTo">
+          <th mat-header-cell *matHeaderCellDef>Hasta</th>
+          <td mat-cell *matCellDef="let r">{{ r.validTo | date: 'dd/MM/yyyy' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="prefix">
+          <th mat-header-cell *matHeaderCellDef>Prefijo</th>
+          <td mat-cell *matCellDef="let r">{{ r.prefix || '—' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="range">
+          <th mat-header-cell *matHeaderCellDef>Rango</th>
+          <td mat-cell *matCellDef="let r">
+            {{ r.rangeFrom | number }} — {{ r.rangeTo | number }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="active">
+          <th mat-header-cell *matHeaderCellDef>Estado</th>
+          <td mat-cell *matCellDef="let r">
+            @if (r.active) {
+              <mat-chip class="!bg-green-100 !text-green-800">Activa</mat-chip>
+            } @else {
+              <mat-chip class="!bg-slate-100 !text-slate-600">Inactiva</mat-chip>
+            }
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="w-40">Acciones</th>
+          <td mat-cell *matCellDef="let r">
+            <div class="flex gap-1">
+              <a
+                mat-icon-button
+                [routerLink]="['/administracion/dian/resoluciones', r.id]"
+                matTooltip="Editar"
+              >
+                <mat-icon class="text-blue-600">edit</mat-icon>
+              </a>
+              @if (!r.active) {
+                <button mat-icon-button (click)="activate(r.id)" matTooltip="Activar">
+                  <mat-icon class="text-green-600">check_circle</mat-icon>
+                </button>
+              }
+              <button mat-icon-button (click)="delete(r.id)" matTooltip="Eliminar">
+                <mat-icon class="text-red-600">delete</mat-icon>
+              </button>
+            </div>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    </div>
+  }
+</div>

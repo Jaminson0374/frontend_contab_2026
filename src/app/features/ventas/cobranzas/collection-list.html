@@ -1,0 +1,89 @@
+<div class="cl-page">
+  <div class="cl-header">
+    <h2 class="cl-title">Cobranzas</h2>
+    <mat-select
+      [value]="service.statusFilter()"
+      (selectionChange)="onStatusChange($event.value)"
+      class="status-filter"
+    >
+      @for (opt of statusOptions; track opt.value) {
+        <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+      }
+    </mat-select>
+  </div>
+
+  @if (service.collections.isLoading()) {
+    <div class="spinner-container"><mat-spinner diameter="32" /></div>
+  }
+  @if (service.collections.error()) {
+    <p class="error-msg">Error al cargar cobranzas.</p>
+  }
+  @let data = service.collections.value();
+  @if (data) {
+    @if (data.content.length === 0) {
+      <p class="empty-msg">No hay registros de cobranza.</p>
+    } @else {
+      <mat-table [dataSource]="data.content" class="cl-table">
+        <ng-container matColumnDef="clientName">
+          <mat-header-cell *matHeaderCellDef>Cliente</mat-header-cell>
+          <mat-cell *matCellDef="let row">{{ row.clientName }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="documentNumber">
+          <mat-header-cell *matHeaderCellDef>Documento</mat-header-cell>
+          <mat-cell *matCellDef="let row">{{ row.documentNumber ?? '—' }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="dueDate">
+          <mat-header-cell *matHeaderCellDef>Vence</mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            <span [style.color]="isOverdue(row.dueDate) ? '#dc2626' : ''">
+              {{ row.dueDate | date: 'dd/MM/yyyy' }}
+            </span>
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="status">
+          <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            <mat-chip [class]="statusClass(row.status)">{{ statusLabel(row.status) }}</mat-chip>
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="lastContact">
+          <mat-header-cell *matHeaderCellDef>Último contacto</mat-header-cell>
+          <mat-cell *matCellDef="let row">{{
+            row.lastContactDate ? (row.lastContactDate | date: 'dd/MM/yyyy') : '—'
+          }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="contactMethod">
+          <mat-header-cell *matHeaderCellDef>Método</mat-header-cell>
+          <mat-cell *matCellDef="let row">{{ row.contactMethod ?? '—' }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="actions">
+          <mat-header-cell *matHeaderCellDef></mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            <button
+              mat-icon-button
+              color="primary"
+              (click)="logContact(row.id); $event.stopPropagation()"
+              matTooltip="Registrar contacto"
+            >
+              <mat-icon>phone</mat-icon>
+            </button>
+          </mat-cell>
+        </ng-container>
+        <mat-header-row *matHeaderRowDef="cols" />
+        <mat-row
+          *matRowDef="let row; columns: cols"
+          (click)="viewCxc(row)"
+          class="cl-row-clickable"
+        />
+      </mat-table>
+      <mat-paginator
+        [length]="data.totalElements"
+        [pageSize]="data.size"
+        [pageIndex]="data.page"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="onPageChange($event)"
+        showFirstLastButtons
+      />
+    }
+  }
+</div>

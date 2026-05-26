@@ -1,0 +1,133 @@
+<div class="of-page">
+  <!-- Toolbar -->
+  <div class="of-toolbar">
+    <div class="of-toolbar-left">
+      <button mat-icon-button (click)="cancel()" matTooltip="Volver">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <span class="of-breadcrumb">
+        @if (isEdit()) {
+          Editar nota
+        } @else {
+          Nueva nota débito/crédito
+        }
+      </span>
+    </div>
+
+    <div class="of-toolbar-actions">
+      <button mat-flat-button [disabled]="saving() || loading()" (click)="save()">
+        <mat-icon matButtonIcon>save</mat-icon>
+        @if (saving()) {
+          <mat-spinner diameter="18" />
+        } @else {
+          {{ isEdit() ? 'Actualizar nota' : 'Registrar nota' }}
+        }
+      </button>
+      <button mat-button (click)="cancel()" [disabled]="saving()">
+        <mat-icon>cancel</mat-icon> Cancelar
+      </button>
+    </div>
+  </div>
+
+  <!-- Error bar -->
+  @if (error()) {
+    <div class="of-error-bar"><mat-icon>error_outline</mat-icon> {{ error() }}</div>
+  }
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="spinner-container">
+      <mat-spinner diameter="40" />
+    </div>
+  }
+
+  <!-- Form -->
+  @if (!loading()) {
+    <form [formGroup]="form" class="of-form" autocomplete="off">
+      <div class="of-grid">
+        <!-- Type select -->
+        <mat-form-field appearance="outline">
+          <mat-label>Tipo de nota</mat-label>
+          <mat-select formControlName="type">
+            @for (opt of typeOptions; track opt.value) {
+              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+            }
+          </mat-select>
+          @if (form.controls.type.invalid && form.controls.type.touched) {
+            <mat-error>Tipo requerido</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Supplier autocomplete -->
+        <mat-form-field appearance="outline">
+          <mat-label>Proveedor</mat-label>
+          <input
+            type="text"
+            matInput
+            [formControl]="supplierDisplay"
+            [matAutocomplete]="supplierAuto"
+            (blur)="syncSupplierDisplay()"
+          />
+          <mat-autocomplete
+            #supplierAuto="matAutocomplete"
+            (optionSelected)="onSupplierSelected($event)"
+          >
+            @if (thirdPartyService.supplierOptions.isLoading()) {
+              <mat-option disabled>Cargando...</mat-option>
+            }
+            @for (tp of suppliers(); track tp.id) {
+              <mat-option [value]="tp.id">{{ supplierLabel(tp) }}</mat-option>
+            }
+          </mat-autocomplete>
+          @if (form.controls.supplierId.invalid && form.controls.supplierId.touched) {
+            <mat-error>Proveedor requerido</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Amount -->
+        <mat-form-field appearance="outline">
+          <mat-label>Monto</mat-label>
+          <input matInput type="number" min="0.01" step="0.01" formControlName="amount" />
+          @if (form.controls.amount.invalid && form.controls.amount.touched) {
+            <mat-error>Monto requerido (mínimo $0.01)</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Document number -->
+        <mat-form-field appearance="outline">
+          <mat-label>Número de documento</mat-label>
+          <input
+            matInput
+            formControlName="documentNumber"
+            placeholder="Auto-generado si se deja vacío"
+          />
+        </mat-form-field>
+
+        <!-- Reference -->
+        <mat-form-field appearance="outline">
+          <mat-label>Referencia</mat-label>
+          <input matInput formControlName="reference" />
+        </mat-form-field>
+
+        <!-- Reason -->
+        <mat-form-field appearance="outline" class="span-full">
+          <mat-label>Motivo</mat-label>
+          <textarea matInput formControlName="reason" rows="3"></textarea>
+        </mat-form-field>
+      </div>
+
+      <mat-divider />
+
+      <mat-card class="info-card">
+        <mat-card-content>
+          <p>
+            <mat-icon>info</mat-icon>
+            Las notas débito <strong>aumentan</strong> el saldo a pagar al proveedor. Las notas
+            crédito <strong>disminuyen</strong> el saldo a pagar. La factura asociada es opcional y
+            no modifica su total.
+          </p>
+        </mat-card-content>
+      </mat-card>
+    </form>
+  }
+</div>

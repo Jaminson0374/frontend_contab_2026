@@ -1,0 +1,55 @@
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.page-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.status-filter {
+  width: 160px;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.error-msg {
+  color: var(--mat-sys-error);
+  text-align: center;
+  padding: 1rem;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.75rem 0;
+}
+
+.chip-status-received {
+  --mdc-chip-label-text-color: #15803d;
+  background: #dcfce7;
+}
+.chip-status-in_slaughter {
+  --mdc-chip-label-text-color: #92400e;
+  background: #fef3c7;
+}
+.chip-status-slaughtered {
+  --mdc-chip-label-text-color: #475569;
+  background: #f1f5f9;
+}

@@ -1,0 +1,29 @@
+<div class="mf-page">
+  <h2 class="mf-title">Nuevo Equipo</h2>
+  <form [formGroup]="form" (ngSubmit)="submit()" class="mf-form">
+    <mat-form-field appearance="outline"
+      ><mat-label>Código *</mat-label><input matInput formControlName="code"
+    /></mat-form-field>
+    <mat-form-field appearance="outline"
+      ><mat-label>Nombre *</mat-label><input matInput formControlName="name"
+    /></mat-form-field>
+    <mat-form-field appearance="outline"
+      ><mat-label>Tipo *</mat-label
+      ><mat-select formControlName="machineryType">
+        @for (opt of typeOptions; track opt.value) {
+          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+        }
+      </mat-select></mat-form-field
+    >
+    <div class="mf-actions">
+      <button mat-flat-button color="primary" type="submit" [disabled]="saving() || form.invalid">
+        @if (saving()) {
+          <mat-spinner diameter="18" />
+        } @else {
+          <mat-icon>check</mat-icon>
+        }
+        Guardar
+      </button>
+    </div>
+  </form>
+</div>

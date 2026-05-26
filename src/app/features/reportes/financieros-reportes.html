@@ -1,0 +1,78 @@
+<div class="p-4">
+  <mat-card class="mb-4">
+    <mat-card-content class="flex flex-wrap gap-4 items-center p-4">
+      <mat-form-field appearance="outline" class="w-44">
+        <mat-label>Desde</mat-label>
+        <input matInput [matDatepicker]="dpFrom" [formControl]="fromControl" />
+        <mat-datepicker-toggle matSuffix [for]="dpFrom" />
+        <mat-datepicker #dpFrom />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="w-44">
+        <mat-label>Hasta</mat-label>
+        <input matInput [matDatepicker]="dpTo" [formControl]="toControl" />
+        <mat-datepicker-toggle matSuffix [for]="dpTo" />
+        <mat-datepicker #dpTo />
+      </mat-form-field>
+      <button mat-raised-button color="primary" (click)="applyFilters()">
+        <mat-icon>search</mat-icon> Consultar
+      </button>
+    </mat-card-content>
+  </mat-card>
+
+  @if (data.isLoading()) {
+    <div class="flex justify-center p-8"><mat-spinner diameter="40" /></div>
+  } @else if (data.value(); as stmt) {
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+      <mat-card class="text-center">
+        <mat-card-content>
+          <p class="text-sm text-gray-500">Ingresos</p>
+          <p class="text-xl font-bold text-green-600">{{ stmt.totalRevenue | currency }}</p>
+        </mat-card-content>
+      </mat-card>
+      <mat-card class="text-center">
+        <mat-card-content>
+          <p class="text-sm text-gray-500">COGS</p>
+          <p class="text-xl font-bold text-red-600">{{ stmt.totalCogs | currency }}</p>
+        </mat-card-content>
+      </mat-card>
+      <mat-card class="text-center">
+        <mat-card-content>
+          <p class="text-sm text-gray-500">Margen Bruto</p>
+          <p class="text-xl font-bold">{{ stmt.grossMargin | currency }}</p>
+        </mat-card-content>
+      </mat-card>
+      <mat-card class="text-center">
+        <mat-card-content>
+          <p class="text-sm text-gray-500">Gastos</p>
+          <p class="text-xl font-bold text-orange-600">{{ stmt.totalExpenses | currency }}</p>
+        </mat-card-content>
+      </mat-card>
+      <mat-card class="text-center">
+        <mat-card-content>
+          <p class="text-sm text-gray-500">Resultado Neto</p>
+          <p
+            class="text-xl font-bold"
+            [class.text-red-600]="stmt.netIncome < 0"
+            [class.text-green-600]="stmt.netIncome >= 0"
+          >
+            {{ stmt.netIncome | currency }}
+          </p>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div class="flex justify-end mb-4">
+      <button mat-stroked-button color="primary" (click)="exportExcel()">
+        <mat-icon>download</mat-icon> Exportar Excel
+      </button>
+    </div>
+
+    <div class="mb-6">
+      <canvas #pnlChart height="100"></canvas>
+    </div>
+  } @else {
+    <div class="text-center text-gray-500 p-8">
+      Seleccione fechas y consulte para ver el estado financiero
+    </div>
+  }
+</div>

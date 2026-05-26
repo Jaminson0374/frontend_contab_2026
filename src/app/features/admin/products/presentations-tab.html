@@ -1,0 +1,163 @@
+<div class="pres-tab">
+  <div class="sub-table-header">
+    <p class="section-title">PRESENTACIONES DEL PRODUCTO</p>
+    @if (!adding() && !editingRow()) {
+      <button class="tb-btn" (click)="startAdd()">
+        <mat-icon>add</mat-icon> Agregar presentación
+      </button>
+    }
+  </div>
+
+  @if (loading()) {
+    <div style="text-align: center; padding: 24px"><mat-spinner diameter="24" /></div>
+  }
+
+  <!-- Add new row -->
+  @if (adding()) {
+    <div class="pres-edit-row">
+      <mat-form-field appearance="outline" class="pres-field-sm">
+        <mat-label>Código</mat-label>
+        <input matInput [(ngModel)]="editCode" maxlength="20" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="pres-field-md">
+        <mat-label>Nombre</mat-label>
+        <input matInput [(ngModel)]="editName" maxlength="100" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="pres-field-md">
+        <mat-label>Unidad de medida</mat-label>
+        <mat-select [(ngModel)]="editUomId">
+          @for (u of uomService.units.value() ?? []; track u.id) {
+            <mat-option [value]="u.id">{{ u.code }} — {{ u.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="pres-field-sm">
+        <mat-label>Factor conv.</mat-label>
+        <input matInput type="number" [(ngModel)]="editFactor" min="0.0001" step="0.0001" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="pres-field-sm">
+        <mat-label>P.Venta</mat-label>
+        <input matInput type="number" [(ngModel)]="editPrice" min="0" />
+      </mat-form-field>
+      <mat-checkbox [(ngModel)]="editIsDefault">Predet.</mat-checkbox>
+      <button mat-icon-button color="primary" (click)="saveNew()" matTooltip="Guardar">
+        <mat-icon>check</mat-icon>
+      </button>
+      <button mat-icon-button (click)="cancelEdit()" matTooltip="Cancelar">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  }
+
+  @if (presentations().length === 0 && !adding()) {
+    <p class="sub-table-empty">Sin presentaciones definidas</p>
+  } @else {
+    <table class="pres-table">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Nombre</th>
+          <th>U.M.</th>
+          <th>Factor</th>
+          <th>P.Venta</th>
+          <th>Predet.</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of presentations(); track row.id) {
+          @if (editingRow()?.id === row.id) {
+            <!-- Edit row -->
+            <tr>
+              <td>
+                <mat-form-field appearance="outline" class="pres-inline-field">
+                  <input matInput [(ngModel)]="editCode" maxlength="20" />
+                </mat-form-field>
+              </td>
+              <td>
+                <mat-form-field appearance="outline" class="pres-inline-field">
+                  <input matInput [(ngModel)]="editName" maxlength="100" />
+                </mat-form-field>
+              </td>
+              <td>
+                <mat-form-field appearance="outline" class="pres-inline-field">
+                  <mat-select [(ngModel)]="editUomId">
+                    @for (u of uomService.units.value() ?? []; track u.id) {
+                      <mat-option [value]="u.id">{{ u.code }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              </td>
+              <td>
+                <mat-form-field appearance="outline" class="pres-inline-field">
+                  <input
+                    matInput
+                    type="number"
+                    [(ngModel)]="editFactor"
+                    min="0.0001"
+                    step="0.0001"
+                  />
+                </mat-form-field>
+              </td>
+              <td>
+                <mat-form-field appearance="outline" class="pres-inline-field">
+                  <input matInput type="number" [(ngModel)]="editPrice" min="0" />
+                </mat-form-field>
+              </td>
+              <td><mat-checkbox [(ngModel)]="editIsDefault" /></td>
+              <td class="pres-actions">
+                <button
+                  mat-icon-button
+                  color="primary"
+                  (click)="saveEdit(row)"
+                  matTooltip="Guardar"
+                >
+                  <mat-icon>check</mat-icon>
+                </button>
+                <button mat-icon-button (click)="cancelEdit()" matTooltip="Cancelar">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </td>
+            </tr>
+          } @else {
+            <!-- View row -->
+            <tr>
+              <td>{{ row.code }}</td>
+              <td>{{ row.name }}</td>
+              <td>{{ row.unitOfMeasureName }}</td>
+              <td class="pres-num">{{ row.conversionFactor }}</td>
+              <td class="pres-num">{{ row.salePrice | number: '1.0-4' }}</td>
+              <td>
+                @if (row.isDefault) {
+                  <mat-icon class="pres-default-icon">star</mat-icon>
+                } @else {
+                  <button
+                    mat-icon-button
+                    (click)="setAsDefault(row)"
+                    matTooltip="Marcar como predeterminada"
+                    class="pres-set-default-btn"
+                  >
+                    <mat-icon>star_border</mat-icon>
+                  </button>
+                }
+              </td>
+              <td class="pres-actions">
+                <button mat-icon-button (click)="startEdit(row)" matTooltip="Editar">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  color="warn"
+                  (click)="deletePresentation(row)"
+                  matTooltip="Eliminar"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  }
+</div>

@@ -1,0 +1,58 @@
+<div class="ml-page">
+  <div class="ml-header">
+    <h2 class="ml-title">Maquinaria</h2>
+    <a mat-flat-button color="primary" routerLink="/produccion/maquinaria/nuevo"
+      ><mat-icon>add</mat-icon>Nuevo equipo</a
+    >
+  </div>
+  @if (loading()) {
+    <div class="spinner-container"><mat-spinner diameter="32" /></div>
+  }
+  @if (data(); as items) {
+    @if (items.length === 0) {
+      <p style="text-align: center; color: #94a3b8; padding: 24px">No hay equipos registrados.</p>
+    } @else {
+      <mat-table
+        [dataSource]="items"
+        style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden"
+      >
+        <ng-container matColumnDef="code"
+          ><mat-header-cell *matHeaderCellDef>Código</mat-header-cell
+          ><mat-cell *matCellDef="let r">{{ r.code }}</mat-cell></ng-container
+        >
+        <ng-container matColumnDef="name"
+          ><mat-header-cell *matHeaderCellDef>Nombre</mat-header-cell
+          ><mat-cell *matCellDef="let r">{{ r.name }}</mat-cell></ng-container
+        >
+        <ng-container matColumnDef="machineryType"
+          ><mat-header-cell *matHeaderCellDef>Tipo</mat-header-cell
+          ><mat-cell *matCellDef="let r">{{ typeLabel(r.machineryType) }}</mat-cell></ng-container
+        >
+        <ng-container matColumnDef="status"
+          ><mat-header-cell *matHeaderCellDef>Estado</mat-header-cell
+          ><mat-cell *matCellDef="let r"
+            ><span [class]="'ml-chip ' + statusClass(r.status)">{{
+              statusLabel(r.status)
+            }}</span></mat-cell
+          ></ng-container
+        >
+        <ng-container matColumnDef="actions"
+          ><mat-header-cell *matHeaderCellDef></mat-header-cell
+          ><mat-cell *matCellDef="let r">
+            @if (r.status !== 'DECOMMISSIONED') {
+              <button
+                mat-icon-button
+                color="warn"
+                (click)="deactivate(r.id)"
+                matTooltip="Dar de baja"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            }
+          </mat-cell></ng-container
+        >
+        <mat-header-row *matHeaderRowDef="cols" /><mat-row *matRowDef="let r; columns: cols" />
+      </mat-table>
+    }
+  }
+</div>

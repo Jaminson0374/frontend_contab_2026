@@ -1,0 +1,216 @@
+.detail-container {
+  padding: 0 0 2rem;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.error-msg {
+  color: var(--mat-sys-error);
+  text-align: center;
+  padding: 2rem;
+  font-size: 1rem;
+}
+
+/* Header */
+.detail-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.header-info {
+  flex: 1;
+}
+
+.doc-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.doc-number {
+  font-family: 'Courier New', monospace;
+  color: #64748b;
+}
+
+.header-meta {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.meta-client {
+  color: #475569;
+  font-weight: 500;
+}
+
+.meta-date {
+  color: #94a3b8;
+  font-size: 0.875rem;
+}
+
+.meta-due {
+  color: #b45309;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.chip-credit {
+  --mdc-chip-label-text-color: #b45309;
+  background: #fef3c7;
+  font-size: 0.75rem;
+}
+
+/* Transition bar */
+.transition-bar {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+/* Section */
+.section {
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+/* Totals */
+.totals-panel {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  max-width: 360px;
+  margin-left: auto;
+}
+
+.totals-title {
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+}
+
+.totals-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.totals-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.95rem;
+}
+
+.totals-tax {
+  color: #64748b;
+}
+
+.totals-grand {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #0f172a;
+}
+
+/* Metadata */
+.meta-card {
+  margin-bottom: 1.5rem;
+}
+
+.meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.meta-label {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.cell-mono {
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+/* Status chips (same as list) */
+.chip-status-draft {
+  --mdc-chip-label-text-color: #64748b;
+  background: #f1f5f9;
+}
+
+.chip-status-sent {
+  --mdc-chip-label-text-color: #1e40af;
+  background: #dbeafe;
+}
+
+.chip-status-accepted {
+  --mdc-chip-label-text-color: #15803d;
+  background: #dcfce7;
+}
+
+.chip-status-rejected {
+  --mdc-chip-label-text-color: #991b1b;
+  background: #fee2e2;
+}
+
+.chip-status-expired {
+  --mdc-chip-label-text-color: #92400e;
+  background: #fef3c7;
+}
+
+.chip-status-confirmed {
+  --mdc-chip-label-text-color: #0e7490;
+  background: #cffafe;
+}
+
+.chip-status-invoiced,
+.chip-status-partially_invoiced {
+  --mdc-chip-label-text-color: #4f46e5;
+  background: #e0e7ff;
+}
+
+.chip-status-issued {
+  --mdc-chip-label-text-color: #166534;
+  background: #bbf7d0;
+}
+
+.chip-status-paid {
+  --mdc-chip-label-text-color: #166534;
+  background: #dcfce7;
+}
+
+.chip-status-cancelled {
+  --mdc-chip-label-text-color: #991b1b;
+  background: #fee2e2;
+}

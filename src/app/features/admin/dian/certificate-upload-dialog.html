@@ -1,0 +1,32 @@
+<h2 mat-dialog-title class="text-lg font-semibold">Subir Certificado Digital</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="flex flex-col gap-3 pt-2">
+    <mat-form-field appearance="outline">
+      <mat-label>Nombre</mat-label>
+      <input matInput formControlName="name" placeholder="Certificado Producción" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Contraseña</mat-label>
+      <input matInput type="password" formControlName="password" />
+    </mat-form-field>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-sm text-slate-600">Archivo (.p12 o .pfx)</label>
+      <input type="file" accept=".p12,.pfx" (change)="onFileSelected($event)" class="text-sm" />
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button mat-dialog-close>Cancelar</button>
+  <button mat-flat-button color="primary" (click)="upload()" [disabled]="uploading()">
+    @if (uploading()) {
+      <mat-spinner diameter="20" />
+    } @else {
+      <mat-icon>upload</mat-icon>
+    }
+    Subir
+  </button>
+</mat-dialog-actions>
