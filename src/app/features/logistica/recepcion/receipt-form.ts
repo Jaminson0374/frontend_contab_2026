@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import {
   FormBuilder,
@@ -49,7 +49,7 @@ export class ReceiptFormComponent {
   readonly warehouseService = inject(WarehouseService);
 
   readonly saving = signal(false);
-  readonly warehouses = this.warehouseService.warehouses;
+  readonly warehouses = computed(() => this.warehouseService.warehouses.value() ?? []);
 
   readonly form = this.fb.nonNullable.group({
     receiptNumber: ['', Validators.required],

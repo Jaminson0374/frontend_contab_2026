@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import {
   FormBuilder,
@@ -46,7 +46,7 @@ export class PickingFormComponent {
   private readonly service = inject(LogisticsService);
   private readonly router = inject(Router);
   readonly warehouseService = inject(WarehouseService);
-  readonly warehouses = this.warehouseService.warehouses;
+  readonly warehouses = computed(() => this.warehouseService.warehouses.value() ?? []);
   readonly saving = signal(false);
 
   readonly form = this.fb.nonNullable.group({
