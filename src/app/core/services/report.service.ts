@@ -74,5 +74,9 @@ export class ReportService {
     this.to.set(to);
     if (warehouseId !== undefined) this.warehouseId.set(warehouseId);
     if (granularity !== undefined) this.granularity.set(granularity);
+    this.salesByProduct.reload();
+    this.salesByPeriod.reload();
+    this.profitability.reload();
+    this.incomeStatement.reload();
   }
 }
