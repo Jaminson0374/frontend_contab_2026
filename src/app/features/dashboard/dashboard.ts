@@ -28,6 +28,8 @@ import {
   PointElement,
   LineElement,
   BarElement,
+  BarController,
+  LineController,
   Title,
   Tooltip,
   Legend,
@@ -46,6 +48,8 @@ Chart.register(
   PointElement,
   LineElement,
   BarElement,
+  BarController,
+  LineController,
   Title,
   Tooltip,
   Legend,
@@ -128,6 +132,7 @@ export class DashboardComponent {
     canvas: HTMLCanvasElement,
     data: SalesByPeriod[],
   ): Chart<'line', number[], string> {
+    Chart.getChart(canvas)?.destroy();
     const labels = data.map((d) => d.period);
     const values = data.map((d) => d.totalRevenue);
 
@@ -191,6 +196,7 @@ export class DashboardComponent {
     canvas: HTMLCanvasElement,
     data: SalesByProduct[],
   ): Chart<'bar', number[], string> {
+    Chart.getChart(canvas)?.destroy();
     const top10 = [...data].sort((a, b) => b.totalRevenue - a.totalRevenue).slice(0, 10);
 
     const labels = top10.map((d) => d.productName);

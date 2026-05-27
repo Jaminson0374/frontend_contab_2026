@@ -1,5 +1,5 @@
 import { Component, input, output } from '@angular/core';
-import { DatePipe, SlicePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -12,7 +12,6 @@ import type { JournalEntry } from '../../core/models/journal-entry.model';
   standalone: true,
   imports: [
     DatePipe,
-    SlicePipe,
     MatTableModule,
     MatButtonModule,
     MatIconModule,
