@@ -84,6 +84,19 @@ export class ShellComponent {
       ],
     },
     {
+      key: 'logistica',
+      label: 'Logística',
+      icon: 'local_shipping',
+      route: '/logistica',
+      roles: ['ADMIN', 'AUXILIAR'],
+      children: [
+        { label: 'Recepciones', icon: 'download', route: '/logistica/recepciones' },
+        { label: 'Picking', icon: 'list_alt', route: '/logistica/picking' },
+        { label: 'Despachos', icon: 'local_shipping', route: '/logistica/despachos' },
+        { label: 'Guías', icon: 'description', route: '/logistica/guias' },
+      ],
+    },
+    {
       key: 'inventario',
       label: 'Inventarios',
       icon: 'inventory_2',

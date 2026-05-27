@@ -1,0 +1,40 @@
+.form-container {
+  padding: 24px;
+  max-width: 960px;
+}
+.form-row {
+  display: flex;
+  gap: 16px;
+}
+.form-row mat-form-field {
+  flex: 1;
+}
+.lines-section {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+.lines-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.lines-header h3 {
+  margin: 0;
+}
+.line-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.line-row mat-form-field {
+  flex: 1;
+}
+.form-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}

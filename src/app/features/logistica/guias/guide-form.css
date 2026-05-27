@@ -1,0 +1,17 @@
+.form-container {
+  padding: 24px;
+  max-width: 960px;
+}
+.form-row {
+  display: flex;
+  gap: 16px;
+}
+.form-row mat-form-field {
+  flex: 1;
+}
+.form-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}

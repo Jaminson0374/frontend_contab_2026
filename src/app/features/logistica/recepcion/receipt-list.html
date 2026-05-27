@@ -1,0 +1,57 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>Recepciones</h2>
+    <a mat-flat-button routerLink="nuevo"> <mat-icon>add</mat-icon> Nueva recepción </a>
+  </div>
+
+  <mat-table [dataSource]="data()" [class.loading]="loading()">
+    <ng-container matColumnDef="receiptNumber">
+      <mat-header-cell *matHeaderCellDef>Número</mat-header-cell>
+      <mat-cell *matCellDef="let r">{{ r.receiptNumber }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="receiptDate">
+      <mat-header-cell *matHeaderCellDef>Fecha</mat-header-cell>
+      <mat-cell *matCellDef="let r">{{ r.receiptDate | date: 'shortDate' }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="warehouseId">
+      <mat-header-cell *matHeaderCellDef>Bodega</mat-header-cell>
+      <mat-cell *matCellDef="let r">{{ r.warehouseId }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="supplierId">
+      <mat-header-cell *matHeaderCellDef>Proveedor</mat-header-cell>
+      <mat-cell *matCellDef="let r">{{ r.supplierId || '-' }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="status">
+      <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
+      <mat-cell *matCellDef="let r">
+        <mat-chip [color]="statusColor(r.status)" [highlighted]="r.status === 'PENDING'">
+          {{ r.status }}
+        </mat-chip>
+      </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <mat-header-cell *matHeaderCellDef></mat-header-cell>
+      <mat-cell *matCellDef="let r">
+        <a mat-icon-button [routerLink]="[r.id]" matTooltip="Ver detalle">
+          <mat-icon>visibility</mat-icon>
+        </a>
+      </mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="columns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: columns"></mat-row>
+  </mat-table>
+
+  <mat-paginator
+    [length]="total()"
+    [pageSize]="size()"
+    [pageIndex]="page()"
+    [pageSizeOptions]="[10, 20, 50]"
+    (page)="onPage($event)"
+  ></mat-paginator>
+</div>

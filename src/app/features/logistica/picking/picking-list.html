@@ -1,0 +1,45 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>Picking</h2>
+    <a mat-flat-button routerLink="nuevo"> <mat-icon>add</mat-icon> Nuevo picking </a>
+  </div>
+
+  <mat-table [dataSource]="data()">
+    <ng-container matColumnDef="pickingNumber">
+      <mat-header-cell *matHeaderCellDef>Número</mat-header-cell>
+      <mat-cell *matCellDef="let p">{{ p.pickingNumber }}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="pickingDate">
+      <mat-header-cell *matHeaderCellDef>Fecha</mat-header-cell>
+      <mat-cell *matCellDef="let p">{{ p.pickingDate | date: 'shortDate' }}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="warehouseId">
+      <mat-header-cell *matHeaderCellDef>Bodega</mat-header-cell>
+      <mat-cell *matCellDef="let p">{{ p.warehouseId }}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="status">
+      <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
+      <mat-cell *matCellDef="let p">
+        <mat-chip [color]="statusColor(p.status)">{{ p.status }}</mat-chip>
+      </mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="actions">
+      <mat-header-cell *matHeaderCellDef></mat-header-cell>
+      <mat-cell *matCellDef="let p">
+        <a mat-icon-button [routerLink]="[p.id]" matTooltip="Ver detalle">
+          <mat-icon>visibility</mat-icon>
+        </a>
+      </mat-cell>
+    </ng-container>
+    <mat-header-row *matHeaderRowDef="columns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: columns"></mat-row>
+  </mat-table>
+
+  <mat-paginator
+    [length]="total()"
+    [pageSize]="size()"
+    [pageIndex]="page()"
+    [pageSizeOptions]="[10, 20, 50]"
+    (page)="onPage($event)"
+  ></mat-paginator>
+</div>

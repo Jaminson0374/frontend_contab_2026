@@ -1,0 +1,61 @@
+<div class="form-container">
+  <h2>Nuevo Despacho</h2>
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="form-row">
+      <mat-form-field
+        ><mat-label>Número</mat-label><input matInput formControlName="shipmentNumber"
+      /></mat-form-field>
+      <mat-form-field>
+        <mat-label>Fecha</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="shipmentDate" />
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+    </div>
+    <div class="form-row">
+      <mat-form-field
+        ><mat-label>Transportista</mat-label><input matInput formControlName="carrierName"
+      /></mat-form-field>
+      <mat-form-field
+        ><mat-label>Placa vehículo</mat-label><input matInput formControlName="vehiclePlate"
+      /></mat-form-field>
+      <mat-form-field
+        ><mat-label>Conductor</mat-label><input matInput formControlName="driverName"
+      /></mat-form-field>
+    </div>
+    <mat-form-field
+      ><mat-label>Notas</mat-label><textarea matInput formControlName="notes" rows="2"></textarea>
+    </mat-form-field>
+
+    <div class="lines-section">
+      <div class="lines-header">
+        <h3>Ítems</h3>
+        <button type="button" mat-stroked-button (click)="addLine()">
+          <mat-icon>add</mat-icon> Agregar
+        </button>
+      </div>
+      <div formArrayName="linesArray">
+        @for (line of linesArray.controls; track $index) {
+          <div [formGroupName]="$index" class="line-row">
+            <mat-form-field
+              ><mat-label>Producto ID</mat-label><input matInput formControlName="productId"
+            /></mat-form-field>
+            <mat-form-field
+              ><mat-label>Cantidad</mat-label
+              ><input matInput type="number" formControlName="quantity"
+            /></mat-form-field>
+            <button type="button" mat-icon-button color="warn" (click)="removeLine($index)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+    <div class="form-actions">
+      <a mat-button routerLink="..">Cancelar</a>
+      <button mat-flat-button type="submit" [disabled]="form.invalid || saving()">
+        {{ saving() ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
+  </form>
+</div>

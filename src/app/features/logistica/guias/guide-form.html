@@ -1,0 +1,53 @@
+<div class="form-container">
+  <h2>Nueva Guía de Transporte</h2>
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="form-row">
+      <mat-form-field
+        ><mat-label>Número</mat-label><input matInput formControlName="guideNumber"
+      /></mat-form-field>
+      <mat-form-field>
+        <mat-label>Fecha</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="issueDate" />
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+    </div>
+    <div class="form-row">
+      <mat-form-field
+        ><mat-label>Transportista</mat-label><input matInput formControlName="carrierName"
+      /></mat-form-field>
+      <mat-form-field
+        ><mat-label>Placa vehículo</mat-label><input matInput formControlName="vehiclePlate"
+      /></mat-form-field>
+    </div>
+    <div class="form-row">
+      <mat-form-field
+        ><mat-label>Conductor</mat-label><input matInput formControlName="driverName"
+      /></mat-form-field>
+      <mat-form-field
+        ><mat-label>ID Conductor</mat-label><input matInput formControlName="driverId"
+      /></mat-form-field>
+    </div>
+    <mat-form-field
+      ><mat-label>Dirección origen</mat-label><input matInput formControlName="originAddress"
+    /></mat-form-field>
+    <mat-form-field
+      ><mat-label>Dirección destino</mat-label><input matInput formControlName="destinationAddress"
+    /></mat-form-field>
+    <mat-form-field>
+      <mat-label>Entrega estimada</mat-label>
+      <input matInput [matDatepicker]="picker2" formControlName="estimatedDelivery" />
+      <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
+      <mat-datepicker #picker2></mat-datepicker>
+    </mat-form-field>
+    <mat-form-field
+      ><mat-label>Notas</mat-label><textarea matInput formControlName="notes" rows="2"></textarea>
+    </mat-form-field>
+    <div class="form-actions">
+      <a mat-button routerLink="..">Cancelar</a>
+      <button mat-flat-button type="submit" [disabled]="form.invalid || saving()">
+        {{ saving() ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
+  </form>
+</div>

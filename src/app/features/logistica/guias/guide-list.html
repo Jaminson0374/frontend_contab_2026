@@ -1,0 +1,47 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>Guías de Transporte</h2>
+    <a mat-flat-button routerLink="nuevo"><mat-icon>add</mat-icon> Nueva guía</a>
+  </div>
+  <mat-table [dataSource]="data()">
+    <ng-container matColumnDef="guideNumber"
+      ><mat-header-cell *matHeaderCellDef>Número</mat-header-cell
+      ><mat-cell *matCellDef="let g">{{ g.guideNumber }}</mat-cell></ng-container
+    >
+    <ng-container matColumnDef="issueDate"
+      ><mat-header-cell *matHeaderCellDef>Fecha</mat-header-cell
+      ><mat-cell *matCellDef="let g">{{ g.issueDate | date: 'shortDate' }}</mat-cell></ng-container
+    >
+    <ng-container matColumnDef="carrierName"
+      ><mat-header-cell *matHeaderCellDef>Transportista</mat-header-cell
+      ><mat-cell *matCellDef="let g">{{ g.carrierName || '-' }}</mat-cell></ng-container
+    >
+    <ng-container matColumnDef="driverName"
+      ><mat-header-cell *matHeaderCellDef>Conductor</mat-header-cell
+      ><mat-cell *matCellDef="let g">{{ g.driverName || '-' }}</mat-cell></ng-container
+    >
+    <ng-container matColumnDef="originAddress"
+      ><mat-header-cell *matHeaderCellDef>Origen</mat-header-cell
+      ><mat-cell *matCellDef="let g">{{ g.originAddress || '-' }}</mat-cell></ng-container
+    >
+    <ng-container matColumnDef="destinationAddress"
+      ><mat-header-cell *matHeaderCellDef>Destino</mat-header-cell
+      ><mat-cell *matCellDef="let g">{{ g.destinationAddress || '-' }}</mat-cell></ng-container
+    >
+    <ng-container matColumnDef="status"
+      ><mat-header-cell *matHeaderCellDef>Estado</mat-header-cell
+      ><mat-cell *matCellDef="let g"
+        ><mat-chip [color]="statusColor(g.status)">{{ g.status }}</mat-chip></mat-cell
+      ></ng-container
+    >
+    <mat-header-row *matHeaderRowDef="columns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: columns"></mat-row>
+  </mat-table>
+  <mat-paginator
+    [length]="total()"
+    [pageSize]="size()"
+    [pageIndex]="page()"
+    [pageSizeOptions]="[10, 20, 50]"
+    (page)="onPage($event)"
+  ></mat-paginator>
+</div>

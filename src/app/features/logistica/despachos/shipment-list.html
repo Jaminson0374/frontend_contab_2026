@@ -1,0 +1,49 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>Despachos</h2>
+    <a mat-flat-button routerLink="nuevo"><mat-icon>add</mat-icon> Nuevo despacho</a>
+  </div>
+  <mat-table [dataSource]="data()">
+    <ng-container matColumnDef="shipmentNumber"
+      ><mat-header-cell *matHeaderCellDef>Número</mat-header-cell
+      ><mat-cell *matCellDef="let s">{{ s.shipmentNumber }}</mat-cell></ng-container
+    >
+    <ng-container matColumnDef="shipmentDate"
+      ><mat-header-cell *matHeaderCellDef>Fecha</mat-header-cell
+      ><mat-cell *matCellDef="let s">{{
+        s.shipmentDate | date: 'shortDate'
+      }}</mat-cell></ng-container
+    >
+    <ng-container matColumnDef="carrierName"
+      ><mat-header-cell *matHeaderCellDef>Transportista</mat-header-cell
+      ><mat-cell *matCellDef="let s">{{ s.carrierName || '-' }}</mat-cell></ng-container
+    >
+    <ng-container matColumnDef="driverName"
+      ><mat-header-cell *matHeaderCellDef>Conductor</mat-header-cell
+      ><mat-cell *matCellDef="let s">{{ s.driverName || '-' }}</mat-cell></ng-container
+    >
+    <ng-container matColumnDef="status"
+      ><mat-header-cell *matHeaderCellDef>Estado</mat-header-cell
+      ><mat-cell *matCellDef="let s"
+        ><mat-chip [color]="statusColor(s.status)">{{ s.status }}</mat-chip></mat-cell
+      ></ng-container
+    >
+    <ng-container matColumnDef="actions"
+      ><mat-header-cell *matHeaderCellDef></mat-header-cell
+      ><mat-cell *matCellDef="let s"
+        ><a mat-icon-button [routerLink]="[s.id]" matTooltip="Ver detalle"
+          ><mat-icon>visibility</mat-icon></a
+        ></mat-cell
+      ></ng-container
+    >
+    <mat-header-row *matHeaderRowDef="columns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: columns"></mat-row>
+  </mat-table>
+  <mat-paginator
+    [length]="total()"
+    [pageSize]="size()"
+    [pageIndex]="page()"
+    [pageSizeOptions]="[10, 20, 50]"
+    (page)="onPage($event)"
+  ></mat-paginator>
+</div>

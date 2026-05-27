@@ -18,6 +18,112 @@ export const routes: Routes = [
           import('./features/dashboard/dashboard').then((m) => m.DashboardComponent),
       },
       {
+        path: 'logistica',
+        loadComponent: () =>
+          import('./features/logistica/logistica').then((m) => m.LogisticaComponent),
+        children: [
+          { path: '', redirectTo: 'recepciones', pathMatch: 'full' },
+          {
+            path: 'recepciones',
+            children: [
+              {
+                path: '',
+                loadComponent: () =>
+                  import('./features/logistica/recepcion/receipt-list').then(
+                    (m) => m.ReceiptListComponent,
+                  ),
+              },
+              {
+                path: 'nuevo',
+                loadComponent: () =>
+                  import('./features/logistica/recepcion/receipt-form').then(
+                    (m) => m.ReceiptFormComponent,
+                  ),
+              },
+              {
+                path: ':id',
+                loadComponent: () =>
+                  import('./features/logistica/recepcion/receipt-form').then(
+                    (m) => m.ReceiptFormComponent,
+                  ),
+              },
+            ],
+          },
+          {
+            path: 'picking',
+            children: [
+              {
+                path: '',
+                loadComponent: () =>
+                  import('./features/logistica/picking/picking-list').then(
+                    (m) => m.PickingListComponent,
+                  ),
+              },
+              {
+                path: 'nuevo',
+                loadComponent: () =>
+                  import('./features/logistica/picking/picking-form').then(
+                    (m) => m.PickingFormComponent,
+                  ),
+              },
+              {
+                path: ':id',
+                loadComponent: () =>
+                  import('./features/logistica/picking/picking-form').then(
+                    (m) => m.PickingFormComponent,
+                  ),
+              },
+            ],
+          },
+          {
+            path: 'despachos',
+            children: [
+              {
+                path: '',
+                loadComponent: () =>
+                  import('./features/logistica/despachos/shipment-list').then(
+                    (m) => m.ShipmentListComponent,
+                  ),
+              },
+              {
+                path: 'nuevo',
+                loadComponent: () =>
+                  import('./features/logistica/despachos/shipment-form').then(
+                    (m) => m.ShipmentFormComponent,
+                  ),
+              },
+              {
+                path: ':id',
+                loadComponent: () =>
+                  import('./features/logistica/despachos/shipment-form').then(
+                    (m) => m.ShipmentFormComponent,
+                  ),
+              },
+            ],
+          },
+          {
+            path: 'guias',
+            children: [
+              {
+                path: '',
+                loadComponent: () =>
+                  import('./features/logistica/guias/guide-list').then((m) => m.GuideListComponent),
+              },
+              {
+                path: 'nuevo',
+                loadComponent: () =>
+                  import('./features/logistica/guias/guide-form').then((m) => m.GuideFormComponent),
+              },
+              {
+                path: ':id',
+                loadComponent: () =>
+                  import('./features/logistica/guias/guide-form').then((m) => m.GuideFormComponent),
+              },
+            ],
+          },
+        ],
+      },
+      {
         path: 'compras',
         loadComponent: () => import('./features/compras/compras').then((m) => m.ComprasComponent),
         children: [
