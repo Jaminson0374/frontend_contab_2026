@@ -30,6 +30,28 @@
 
   <!-- Form -->
   <form [formGroup]="form" class="of-form" autocomplete="off">
+    <!-- OC search field -->
+    <div class="linked-oc-search">
+      <mat-form-field appearance="outline" class="oc-search-field">
+        <mat-label>Vincular orden de compra</mat-label>
+        <input
+          type="text"
+          matInput
+          [formControl]="ocSearchControl"
+          [matAutocomplete]="ocAuto"
+          placeholder="Buscar por número de OC..."
+        />
+        @if (ocSearchLoading()) {
+          <mat-spinner matSuffix diameter="18" />
+        }
+        <mat-autocomplete #ocAuto="matAutocomplete" (optionSelected)="onOcSelected($event)">
+          @for (oc of ocOptions(); track oc.id) {
+            <mat-option [value]="oc">{{ ocLabel(oc) }}</mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+    </div>
+
     <!-- Linked OC section -->
     @if (linkedOcIds().length > 0) {
       <div class="linked-oc-section">

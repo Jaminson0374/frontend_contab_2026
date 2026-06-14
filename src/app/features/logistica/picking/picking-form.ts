@@ -17,6 +17,8 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
 import { LogisticsService } from '../../../core/services/logistics.service';
 import { WarehouseService } from '../../../core/services/warehouse.service';
+import { ProductSearchComponent } from '../../shared/product-search';
+import { WarehousePickerComponent } from '../../shared/warehouse-picker';
 
 type LineForm = FormGroup<{
   productId: FormControl<string>;
@@ -37,6 +39,8 @@ type LineForm = FormGroup<{
     MatDatepickerModule,
     MatNativeDateModule,
     MatIconModule,
+    ProductSearchComponent,
+    WarehousePickerComponent,
   ],
   templateUrl: './picking-form.html',
   styleUrl: './picking-form.css',
@@ -75,6 +79,14 @@ export class PickingFormComponent {
 
   removeLine(index: number): void {
     this.linesArray.removeAt(index);
+  }
+
+  onLineProductSelected(index: number, event: { id: string }): void {
+    this.linesArray.at(index).controls.productId.setValue(event.id);
+  }
+
+  onLineWarehouseSelected(index: number, id: string): void {
+    this.linesArray.at(index).controls.warehouseId.setValue(id);
   }
 
   submit(): void {

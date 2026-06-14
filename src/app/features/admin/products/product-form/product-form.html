@@ -602,6 +602,27 @@
                 }
               </mat-select>
             </mat-form-field>
+
+            <mat-divider></mat-divider>
+            <p class="section-title">PLANTILLA CONTABLE</p>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Plantilla contable</mat-label>
+              <mat-select formControlName="accountingTemplateId">
+                <mat-option [value]="null">— Ninguna —</mat-option>
+                @for (tpl of templateService.templates.value() ?? []; track tpl.id) {
+                  <mat-option [value]="tpl.id"> {{ tpl.code }} — {{ tpl.name }} </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            @if (form.get('accountingTemplateId')?.value; as selectedTemplateId) {
+              @let selectedTemplate = templateLabel(selectedTemplateId);
+              @if (selectedTemplate) {
+                <p class="template-selected-info">
+                  <mat-icon>account_tree</mat-icon>
+                  {{ selectedTemplate }}
+                </p>
+              }
+            }
           </div>
         </mat-tab>
 

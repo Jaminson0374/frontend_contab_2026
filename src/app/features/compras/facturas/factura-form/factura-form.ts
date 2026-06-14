@@ -16,6 +16,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { DecimalPipe, SlicePipe } from '@angular/common';
+import { debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
 import { SupplierInvoiceService } from '../../../../core/services/supplier-invoice.service';
 import { ThirdPartyService } from '../../../../core/services/third-party.service';
 import { PurchaseOrderService } from '../../../../core/services/purchase-order.service';
@@ -24,6 +25,7 @@ import type {
   ThirdParty,
   ThirdPartySupplierOption,
 } from '../../../../core/models/third-party.model';
+import type { PurchaseOrder } from '../../../../core/models/purchase-order.model';
 import type { SupplierInvoiceRequest } from '../../../../core/models/supplier-invoice.model';
 
 @Component({
@@ -61,6 +63,27 @@ export class FacturaFormComponent implements OnInit {
 
   readonly linkedOcIds = signal<string[]>([]);
   readonly loadingOc = signal(false);
+
+  readonly ocSearchControl = new FormControl('', { nonNullable: true });
+  readonly ocOptions = signal<PurchaseOrder[]>([]);
+  readonly ocSearchLoading = signal(false);
+
+  constructor() {
+    this.ocSearchControl.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((q) => {
+          if (!q || q.trim().length < 2) return of([]);
+          this.ocSearchLoading.set(true);
+          return this.purchaseOrderService.searchByNumber(q.trim());
+        }),
+      )
+      .subscribe((results) => {
+        this.ocSearchLoading.set(false);
+        this.ocOptions.set(results);
+      });
+  }
 
   // ── Supplier autocomplete ────────────────────────────────────────
   readonly supplierDisplay = new FormControl('', { nonNullable: true });
@@ -117,24 +140,56 @@ export class FacturaFormComponent implements OnInit {
     }
   }
 
-  private loadOcSummary(ocId: string): void {
-    this.loadingOc.set(true);
-    this.purchaseOrderService.getById(ocId).subscribe({
-      next: (oc) => {
-        this.loadingOc.set(false);
-        if (!this.form.controls.supplierId.getRawValue() && oc.supplierId) {
-          this.form.controls.supplierId.setValue(oc.supplierId);
-          this.syncSupplierDisplay();
-        }
-      },
-      error: () => {
-        this.loadingOc.set(false);
-      },
-    });
+  private loadOcSummary(ocIdOrObj: string | PurchaseOrder): void {
+    if (typeof ocIdOrObj === 'string') {
+      this.loadingOc.set(true);
+      this.purchaseOrderService.getById(ocIdOrObj).subscribe({
+        next: (oc) => this.fillFromOc(oc),
+        error: () => {
+          this.loadingOc.set(false);
+        },
+      });
+    } else {
+      this.fillFromOc(ocIdOrObj);
+    }
+  }
+
+  private fillFromOc(oc: PurchaseOrder): void {
+    this.loadingOc.set(false);
+    if (!this.form.controls.supplierId.getRawValue() && oc.supplierId) {
+      this.form.controls.supplierId.setValue(oc.supplierId);
+      this.syncSupplierDisplay();
+    }
+    const lineTotal = oc.lines.reduce(
+      (sum, line) => sum + (line.orderedQty ?? 0) * (line.unitCost ?? 0),
+      0,
+    );
+    this.form.controls.subtotal.setValue(lineTotal);
   }
 
   removeLinkedOc(id: string): void {
     this.linkedOcIds.update((ids) => ids.filter((i) => i !== id));
+  }
+
+  onOcSelected(ev: MatAutocompleteSelectedEvent): void {
+    const oc = ev.option.value as PurchaseOrder;
+    if (!oc) return;
+    if (!this.linkedOcIds().includes(oc.id)) {
+      this.linkedOcIds.update((ids) => [...ids, oc.id]);
+    }
+    this.loadOcSummary(oc);
+    this.ocSearchControl.setValue('', { emitEvent: false });
+    this.ocOptions.set([]);
+  }
+
+  ocLabel(oc: PurchaseOrder): string {
+    const total = oc.lines.reduce((s, l) => s + (l.orderedQty ?? 0) * (l.unitCost ?? 0), 0);
+    const formatted = new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0,
+    }).format(total);
+    return `${oc.documentNumber} — ${oc.supplierName} (${formatted})`;
   }
 
   // ── Supplier ──────────────────────────────────────────────────────

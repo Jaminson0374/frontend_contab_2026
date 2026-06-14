@@ -1,4 +1,11 @@
-import { Component, inject, signal, computed, DestroyRef } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  computed,
+  DestroyRef,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -26,7 +33,6 @@ interface ReturnLine {
 
 @Component({
   selector: 'app-pos-devolution',
-  standalone: true,
   imports: [
     CurrencyPipe,
     DatePipe,
@@ -40,6 +46,7 @@ interface ReturnLine {
     MatTooltipModule,
     MatProgressSpinnerModule,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './pos-devolution.html',
   styleUrl: './pos-devolution.css',
 })
@@ -258,8 +265,8 @@ export class PosDevolutionComponent {
             title: 'Devolución procesada',
             html: `
               <p>Nota crédito: <strong>${response.documentNumber}</strong></p>
-              <p>Total devuelto: <strong>${this.formatCurrency(response.totalReturned)}</strong></p>
-              <p>Stock revertido: <strong>${response.stockReversed ? 'Sí' : 'No'}</strong></p>
+              <p>Total devuelto: <strong>${this.formatCurrency(response.totalAmount ?? 0)}</strong></p>
+              <p>Ítems revertidos: <strong>${response.reversedItems ?? 0}</strong></p>
             `,
             confirmButtonColor: '#15803d',
           }).then(() => {

@@ -1,0 +1,198 @@
+<div class="devolucion-page">
+  <div class="page-header">
+    <button mat-icon-button (click)="goBack()" aria-label="Volver">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h2 class="page-title">Nueva Devolución</h2>
+  </div>
+
+  <form [formGroup]="form">
+    <!-- Receipt Selection -->
+    <mat-card class="receipt-card">
+      <mat-card-content>
+        <div class="receipt-row">
+          <mat-form-field appearance="outline" class="receipt-field">
+            <mat-label>Remisión (ID)</mat-label>
+            <input matInput formControlName="receiptId" placeholder="UUID de la remisión" />
+          </mat-form-field>
+          <button
+            mat-flat-button
+            type="button"
+            (click)="loadReceipt()"
+            [disabled]="!form.controls.receiptId.value || loading()"
+          >
+            <mat-icon>search</mat-icon> Cargar
+          </button>
+        </div>
+
+        @if (loading()) {
+          <div class="spinner-container">
+            <mat-spinner diameter="24" />
+          </div>
+        }
+
+        @if (loadError()) {
+          <div class="error-card">
+            <mat-icon>error_outline</mat-icon>
+            <p>{{ loadError() }}</p>
+          </div>
+        }
+
+        @if (receipt(); as r) {
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Remisión</span>
+              <span class="info-value">{{ r.id }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Fecha</span>
+              <span class="info-value">{{ r.receiptDate }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">OC</span>
+              <span class="info-value">{{ r.ocId }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Lotes</span>
+              <span class="info-value">{{ r.batchIds.length }}</span>
+            </div>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Reason -->
+    <mat-card class="reason-card">
+      <mat-card-content>
+        <mat-form-field appearance="outline" class="reason-field">
+          <mat-label>Motivo de la devolución</mat-label>
+          <textarea
+            matInput
+            formControlName="reason"
+            rows="2"
+            placeholder="Describa el motivo"
+          ></textarea>
+        </mat-form-field>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Return Lines -->
+    <mat-card class="lines-card">
+      <mat-card-header>
+        <mat-card-title>Líneas de devolución</mat-card-title>
+        <button mat-button type="button" (click)="addLine()">
+          <mat-icon>add</mat-icon> Agregar línea
+        </button>
+      </mat-card-header>
+      <mat-card-content>
+        @for (line of linesArray.controls; track $index; let i = $index) {
+          <div class="line-row" [formGroup]="line">
+            <div class="line-header">
+              <span class="line-title">Línea {{ i + 1 }}</span>
+              <button
+                mat-icon-button
+                type="button"
+                (click)="removeLine(i)"
+                aria-label="Quitar línea"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+
+            <div class="line-fields">
+              <mat-form-field appearance="outline">
+                <mat-label>Producto ID</mat-label>
+                <input matInput formControlName="productId" placeholder="UUID" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Bodega ID</mat-label>
+                <input matInput formControlName="warehouseId" placeholder="UUID" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Lote ID</mat-label>
+                <input matInput formControlName="batchId" placeholder="UUID" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Cantidad a devolver</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  min="0.001"
+                  step="0.001"
+                  formControlName="returnQty"
+                />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Costo unitario</mat-label>
+                <input matInput type="number" min="0" step="1" formControlName="unitCost" />
+              </mat-form-field>
+            </div>
+          </div>
+        } @empty {
+          <div class="empty-lines">
+            <mat-icon>receipt_long</mat-icon>
+            <p>No hay líneas. Haga clic en "Agregar línea" para comenzar.</p>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Total -->
+    @if (linesArray.length > 0) {
+      <mat-card class="total-card">
+        <mat-card-content>
+          <div class="total-row">
+            <span class="total-label">Total a devolver</span>
+            <span class="total-value">{{ formatCurrency(totalReturned()) }}</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    <!-- Error message -->
+    @if (submitError()) {
+      <div class="error-msg">
+        <mat-icon>error</mat-icon>
+        <span>{{ submitError() }}</span>
+      </div>
+    }
+
+    <!-- Success -->
+    @if (submitSuccess(); as result) {
+      <mat-card class="success-card">
+        <mat-card-header>
+          <mat-icon class="success-icon">check_circle</mat-icon>
+          <mat-card-title>Devolución registrada</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p><strong>Documento:</strong> {{ result.documentNumber }}</p>
+          <p><strong>ID:</strong> {{ result.id }}</p>
+          <p><strong>Estado:</strong> {{ result.status }}</p>
+          <p><strong>Total devuelto:</strong> {{ formatCurrency(result.totalReturned) }}</p>
+          <p><strong>Lotes afectados:</strong> {{ result.affectedBatches }}</p>
+        </mat-card-content>
+        <mat-card-actions align="end">
+          <button mat-button (click)="goBack()">Ir al listado</button>
+        </mat-card-actions>
+      </mat-card>
+    }
+
+    <!-- Action buttons -->
+    @if (!submitSuccess()) {
+      <div class="form-actions">
+        <button mat-button (click)="goBack()" [disabled]="saving()">Cancelar</button>
+        <button mat-flat-button color="primary" [disabled]="!canSubmit()" (click)="submit()">
+          @if (saving()) {
+            <mat-spinner diameter="18" color="accent" />
+          } @else {
+            Registrar devolución
+          }
+        </button>
+      </div>
+    }
+  </form>
+</div>

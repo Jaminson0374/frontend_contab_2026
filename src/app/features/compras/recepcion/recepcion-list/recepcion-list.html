@@ -1,0 +1,72 @@
+<div class="page-header">
+  <h2 class="page-title">Recepciones</h2>
+  <div class="page-actions">
+    <button mat-flat-button (click)="router.navigate(['/compras/recepcion/nueva'])">
+      <mat-icon>add</mat-icon> Nueva Recepción
+    </button>
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="spinner-container">
+    <mat-spinner diameter="40" />
+  </div>
+} @else if (data().length === 0) {
+  <div class="empty-state">
+    <mat-icon class="empty-icon">inbox</mat-icon>
+    <p class="empty-text">No hay recepciones registradas</p>
+    <p class="empty-sub">Las recepciones de mercancía se crean desde una orden de compra.</p>
+  </div>
+} @else {
+  <div class="table-wrapper">
+    <mat-table [dataSource]="data()">
+      <ng-container matColumnDef="receiptDate">
+        <mat-header-cell *matHeaderCellDef>Fecha</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.receiptDate | date: 'dd/MM/yyyy' }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="ocId">
+        <mat-header-cell *matHeaderCellDef>Orden de Compra</mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <a class="oc-link" (click)="viewOc(row.ocId)">{{ row.ocId }}</a>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="batches">
+        <mat-header-cell *matHeaderCellDef>Lotes</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.batchIds?.length ?? 0 }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="deviations">
+        <mat-header-cell *matHeaderCellDef>Desviaciones</mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          @if (row.deviations?.length) {
+            <span class="deviation-badge">{{ row.deviations.length }}</span>
+          } @else {
+            —
+          }
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <mat-header-cell *matHeaderCellDef></mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <button mat-icon-button (click)="viewOc(row.ocId)" matTooltip="Ver OC">
+            <mat-icon>visibility</mat-icon>
+          </button>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+    </mat-table>
+
+    <mat-paginator
+      [length]="total()"
+      [pageSize]="size()"
+      [pageIndex]="page()"
+      [pageSizeOptions]="[10, 20, 50]"
+      (page)="onPage($event)"
+    />
+  </div>
+}

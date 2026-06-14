@@ -22,4 +22,7 @@ export interface DevolutionResponse {
   items: DevolutionItemResponse[];
   totalReturned: number;
   stockReversed: boolean;
+  totalAmount?: number;
+  reversedItems?: number;
+  arAdjustment?: number | null;
 }

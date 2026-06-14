@@ -212,6 +212,13 @@ export const routes: Routes = [
             path: 'recepcion',
             children: [
               {
+                path: '',
+                loadComponent: () =>
+                  import('./features/compras/recepcion/recepcion-list/recepcion-list').then(
+                    (m) => m.RecepcionListComponent,
+                  ),
+              },
+              {
                 path: 'nueva',
                 loadComponent: () =>
                   import('./features/compras/recepcion/recepcion-form/recepcion-form').then(
@@ -219,6 +226,32 @@ export const routes: Routes = [
                   ),
               },
             ],
+          },
+          {
+            path: 'devoluciones',
+            children: [
+              {
+                path: '',
+                loadComponent: () =>
+                  import('./features/compras/devoluciones/devolucion-list/devolucion-list').then(
+                    (m) => m.DevolucionListComponent,
+                  ),
+              },
+              {
+                path: 'nueva',
+                loadComponent: () =>
+                  import('./features/compras/devoluciones/devolucion-form/devolucion-form').then(
+                    (m) => m.DevolucionFormComponent,
+                  ),
+              },
+            ],
+          },
+          {
+            path: 'reportes',
+            loadComponent: () =>
+              import('./features/compras/reportes/compras-reportes').then(
+                (m) => m.ComprasReportesComponent,
+              ),
           },
           {
             path: 'pagos',
@@ -259,7 +292,8 @@ export const routes: Routes = [
           },
           {
             path: 'cxp',
-            redirectTo: 'facturas',
+            loadComponent: () =>
+              import('./features/compras/cxp/cxp-list').then((m) => m.CxpListComponent),
           },
         ],
       },
@@ -821,6 +855,32 @@ export const routes: Routes = [
                 loadComponent: () =>
                   import('./features/admin/dian/electronic-invoice-list').then(
                     (m) => m.ElectronicInvoiceListComponent,
+                  ),
+              },
+            ],
+          },
+          {
+            path: 'plantillas',
+            children: [
+              {
+                path: '',
+                loadComponent: () =>
+                  import('./features/admin/plantillas/plantilla-list').then(
+                    (m) => m.PlantillaListComponent,
+                  ),
+              },
+              {
+                path: 'nuevo',
+                loadComponent: () =>
+                  import('./features/admin/plantillas/plantilla-form').then(
+                    (m) => m.PlantillaFormComponent,
+                  ),
+              },
+              {
+                path: ':id',
+                loadComponent: () =>
+                  import('./features/admin/plantillas/plantilla-form').then(
+                    (m) => m.PlantillaFormComponent,
                   ),
               },
             ],

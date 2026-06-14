@@ -1,7 +1,8 @@
+import { HttpParams } from '@angular/common/http';
 import { Injectable, inject, signal, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, httpResource } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { PageResponse } from '../models/page.model';
 import {
   PurchaseOrder,
@@ -48,6 +49,12 @@ export class PurchaseOrderService {
 
   getById(id: string): Observable<PurchaseOrder> {
     return this.http.get<PurchaseOrder>(`${this.base}/${id}`);
+  }
+
+  searchByNumber(query: string): Observable<PurchaseOrder[]> {
+    return this.http
+      .get<PageResponse<PurchaseOrder>>(`${this.base}?q=${encodeURIComponent(query)}&size=10`)
+      .pipe(map((r) => r.content));
   }
 
   create(request: PurchaseOrderRequest): Observable<PurchaseOrder> {

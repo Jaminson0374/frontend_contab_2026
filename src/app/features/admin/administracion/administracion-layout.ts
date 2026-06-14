@@ -13,6 +13,7 @@ export class AdministracionLayoutComponent {
     { label: 'Usuarios y roles', route: '/administracion/usuarios' },
     { label: 'Empresa', route: '/administracion/empresa' },
     { label: 'PUC', route: '/administracion/puc' },
+    { label: 'Plantillas contables', route: '/administracion/plantillas' },
     { label: 'Precios', route: '/administracion/precios' },
     { label: 'Auditoría', route: '/administracion/auditoria' },
   ];

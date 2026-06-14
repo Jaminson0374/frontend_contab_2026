@@ -2,6 +2,8 @@ export const SALES_DOCUMENT_TYPE = {
   QUOTE: 'QUOTE',
   ORDER: 'ORDER',
   INVOICE: 'INVOICE',
+  CREDIT_NOTE: 'CREDIT_NOTE',
+  DEBIT_NOTE: 'DEBIT_NOTE',
 } as const;
 export type SalesDocumentType = (typeof SALES_DOCUMENT_TYPE)[keyof typeof SALES_DOCUMENT_TYPE];
 

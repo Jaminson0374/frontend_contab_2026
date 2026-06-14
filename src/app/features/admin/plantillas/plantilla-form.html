@@ -1,0 +1,148 @@
+<div class="pf-page">
+  <div class="pf-header">
+    <h2 class="pf-title">{{ isEdit() ? 'Editar plantilla' : 'Nueva plantilla' }}</h2>
+    <a mat-button [routerLink]="['/administracion/plantillas']">
+      <mat-icon>arrow_back</mat-icon>
+      Volver
+    </a>
+  </div>
+
+  @if (loading()) {
+    <div class="pf-loading">
+      <mat-spinner diameter="40" />
+    </div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()" class="pf-form">
+      @if (error()) {
+        <div class="pf-error">{{ error() }}</div>
+      }
+
+      <!-- Template fields -->
+      <div class="pf-section">
+        <h3 class="pf-section-title">Datos de la plantilla</h3>
+
+        <div class="pf-row">
+          <mat-form-field appearance="outline" class="pf-half">
+            <mat-label>Código</mat-label>
+            <input matInput formControlName="code" maxlength="50" placeholder="Ej: DEFAULT_SALE" />
+            @if (form.controls.code.hasError('required')) {
+              <mat-error>Requerido</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="pf-half">
+            <mat-label>Nombre</mat-label>
+            <input
+              matInput
+              formControlName="name"
+              maxlength="255"
+              placeholder="Nombre de la plantilla"
+            />
+            @if (form.controls.name.hasError('required')) {
+              <mat-error>Requerido</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Descripción</mat-label>
+          <textarea
+            matInput
+            formControlName="description"
+            rows="2"
+            placeholder="Opcional"
+          ></textarea>
+        </mat-form-field>
+
+        <div class="pf-row">
+          <mat-form-field appearance="outline" class="pf-half">
+            <mat-label>Módulo</mat-label>
+            <mat-select formControlName="module">
+              @for (opt of moduleOptions; track opt.value) {
+                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+              }
+            </mat-select>
+            @if (form.controls.module.hasError('required')) {
+              <mat-error>Requerido</mat-error>
+            }
+          </mat-form-field>
+
+          <div class="pf-toggles pf-half">
+            <mat-slide-toggle formControlName="isDefault">Por defecto</mat-slide-toggle>
+            <mat-slide-toggle formControlName="isActive">Activo</mat-slide-toggle>
+          </div>
+        </div>
+      </div>
+
+      <!-- Entries sub-editor -->
+      <div class="pf-section" formArrayName="entries">
+        <div class="pf-entries-header">
+          <h3 class="pf-section-title">Entradas contables</h3>
+          <button mat-stroked-button type="button" (click)="addEntry()">
+            <mat-icon>add</mat-icon>
+            Agregar entrada
+          </button>
+        </div>
+
+        @if (entriesArray.length === 0) {
+          <p class="pf-entries-empty">
+            No hay entradas. Agregue al menos una para definir la plantilla.
+          </p>
+        } @else {
+          <div class="pf-entries-table">
+            @for (entryGroup of entriesArray.controls; track $index; let i = $index) {
+              <div class="pf-entry-row" [formGroupName]="i">
+                <mat-form-field appearance="outline" class="pf-entry-event">
+                  <mat-label>Tipo de evento</mat-label>
+                  <mat-select formControlName="eventType">
+                    @for (key of eventTypeKeys; track key) {
+                      <mat-option [value]="key">{{ eventTypeLabels[key] }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="pf-entry-account">
+                  <mat-label>Cuenta PUC</mat-label>
+                  <mat-select formControlName="accountId">
+                    @for (acc of pucService.accounts.value() ?? []; track acc.id) {
+                      <mat-option [value]="acc.id">{{ acc.code }} — {{ acc.name }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-slide-toggle formControlName="isDebit" class="pf-entry-debit">
+                  {{ entryGroup.get('isDebit')?.value ? 'Débito' : 'Crédito' }}
+                </mat-slide-toggle>
+
+                <mat-form-field appearance="outline" class="pf-entry-priority">
+                  <mat-label>Prioridad</mat-label>
+                  <input matInput type="number" formControlName="priority" min="0" />
+                </mat-form-field>
+
+                <button
+                  mat-icon-button
+                  color="warn"
+                  type="button"
+                  (click)="removeEntry(i)"
+                  matTooltip="Eliminar entrada"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="pf-actions">
+        <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
+          @if (saving()) {
+            <mat-spinner diameter="20" color="accent" />
+          } @else {
+            {{ isEdit() ? 'Guardar cambios' : 'Crear plantilla' }}
+          }
+        </button>
+      </div>
+    </form>
+  }
+</div>

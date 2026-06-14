@@ -425,13 +425,103 @@ export class PosVentaComponent {
 
   // ── Cotizar ──
 
-  cotizar(): void {
+  async cotizar(): Promise<void> {
+    const lines = this.orderLines();
+    const customer = this.selectedCustomer();
+
+    if (lines.length === 0) {
+      Swal.fire({
+        title: 'Sin productos',
+        text: 'Agregá al menos un producto a la orden.',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+      });
+      return;
+    }
+
+    if (!customer) {
+      Swal.fire({
+        title: 'Sin cliente',
+        text: 'Seleccioná un cliente para continuar.',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+      });
+      return;
+    }
+
+    const warehouse = this.selectedWarehouse();
+    if (!warehouse) {
+      Swal.fire({
+        title: 'Infraestructura no disponible',
+        text: 'No se encontró bodega activa. Reintentá en unos segundos.',
+        icon: 'error',
+        confirmButtonText: 'Entendido',
+      });
+      return;
+    }
+
     Swal.fire({
-      title: 'Próximamente',
-      text: 'La funcionalidad de cotización estará disponible pronto.',
-      icon: 'info',
-      confirmButtonText: 'Entendido',
+      title: 'Creando cotización...',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
     });
+
+    try {
+      // 1. Create QUOTE document
+      const quote = await this.saleService
+        .createDocument({
+          type: 'QUOTE',
+          clientId: customer.id,
+          warehouseId: warehouse.id,
+        })
+        .toPromise()!;
+
+      const docId = quote!.id;
+
+      // 2. Add all items
+      for (const line of lines) {
+        await this.saleService
+          .addItem(docId, {
+            productId: line.productId,
+            quantity: line.quantity,
+            unitPrice: line.unitPrice,
+            taxType: line.taxType,
+          })
+          .toPromise()!;
+      }
+
+      // 3. Transition to SENT
+      await this.saleService.transitionDocument(docId, 'SENT').toPromise()!;
+
+      // 4. Success
+      await Swal.fire({
+        title: '¡Cotización creada!',
+        html: `
+          <p>Cotización: <strong>${quote!.documentNumber}</strong></p>
+          <p>Cliente: <strong>${customer.name}${customer.lastName ? ' ' + customer.lastName : ''}</strong></p>
+          <p>Total: <strong>${this.formatCurrency(this.grandTotal())}</strong></p>
+        `,
+        icon: 'success',
+        confirmButtonText: 'Nueva venta',
+      });
+
+      // Reset state
+      this.orderLines.set([]);
+      this.selectedCustomer.set(null);
+      this.searchControl.setValue('', { emitEvent: false });
+      this.products.set([]);
+    } catch (err: unknown) {
+      console.error('Quote creation error:', err);
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      Swal.fire({
+        title: 'Error al crear cotización',
+        text: message,
+        icon: 'error',
+        confirmButtonText: 'Cerrar',
+      });
+    }
   }
 
   // ── Scale ──

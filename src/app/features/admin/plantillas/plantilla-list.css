@@ -1,0 +1,69 @@
+.pl-page {
+  padding: 24px;
+}
+
+.pl-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.pl-title {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.pl-filters {
+  margin-bottom: 16px;
+}
+
+.pl-module-filter {
+  width: 220px;
+}
+
+.pl-loading {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.pl-error {
+  color: #ef4444;
+  text-align: center;
+  padding: 20px;
+}
+
+.pl-empty {
+  text-align: center;
+  color: #64748b;
+  padding: 40px 0;
+}
+
+.pl-table {
+  width: 100%;
+}
+
+.pl-code {
+  font-family: monospace;
+  font-weight: 600;
+}
+
+.pl-chip-sale {
+  background-color: #dbeafe !important;
+  color: #1e40af !important;
+}
+
+.pl-chip-purchase {
+  background-color: #d1fae5 !important;
+  color: #065f46 !important;
+}
+
+.pl-default-icon {
+  color: #15803d;
+  font-size: 20px;
+}
+
+.pl-not-default {
+  color: #94a3b8;
+}

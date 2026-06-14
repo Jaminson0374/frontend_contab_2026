@@ -59,6 +59,8 @@ export class PucListComponent {
 
   readonly allAccounts = signal<PucAccount[]>([]);
   readonly searchQuery = signal('');
+  /** Bump this to trigger flatRows recomputation when a node is toggled */
+  readonly toggleVersion = signal(0);
 
   /** Build tree root nodes (level 1, or accounts with no parent) */
   readonly rootNodes = computed(() => {
@@ -98,6 +100,8 @@ export class PucListComponent {
 
   /** Flatten tree into rows with indentation level for MatTable */
   readonly flatRows = computed(() => {
+    // Read toggleVersion so this recomputes when a node is toggled
+    this.toggleVersion();
     const result: { node: PucTreeNode; depth: number }[] = [];
     const flatten = (nodes: PucTreeNode[], depth: number) => {
       for (const node of nodes) {
@@ -150,6 +154,8 @@ export class PucListComponent {
 
   toggleExpand(node: PucTreeNode): void {
     node.expanded = !node.expanded;
+    // Bump version to trigger flatRows recomputation
+    this.toggleVersion.update((v) => v + 1);
   }
 
   hasChildren(node: PucTreeNode): boolean {

@@ -82,6 +82,7 @@ export interface Product {
   incomeAccountId: string | null;
   inventoryAccountId: string | null;
   costOfSalesAcctId: string | null;
+  accountingTemplateId: string | null;
   active: boolean;
   version: number;
   createdAt: string;
@@ -127,6 +128,7 @@ export interface ProductRequest {
   incomeAccountId: string | null;
   inventoryAccountId: string | null;
   costOfSalesAcctId: string | null;
+  accountingTemplateId: string | null;
   version: number;
   warehouses: ProductWarehouse[];
   suppliers: ProductSupplier[];

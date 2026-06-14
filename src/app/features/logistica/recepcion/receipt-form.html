@@ -46,14 +46,16 @@
       <div formArrayName="linesArray">
         @for (line of linesArray.controls; track $index) {
           <div [formGroupName]="$index" class="line-row">
-            <mat-form-field>
-              <mat-label>Producto ID</mat-label>
-              <input matInput formControlName="productId" />
-            </mat-form-field>
-            <mat-form-field>
-              <mat-label>Bodega</mat-label>
-              <input matInput formControlName="warehouseId" />
-            </mat-form-field>
+            <input type="hidden" formControlName="productId" />
+            <app-product-search
+              (selected)="onLineProductSelected($index, $event)"
+              label="Producto"
+            ></app-product-search>
+            <input type="hidden" formControlName="warehouseId" />
+            <app-warehouse-picker
+              (selected)="onLineWarehouseSelected($index, $event)"
+              label="Bodega destino"
+            ></app-warehouse-picker>
             <mat-form-field>
               <mat-label>Cantidad</mat-label>
               <input matInput type="number" formControlName="receivedQuantity" />

@@ -1,0 +1,105 @@
+<div class="cxp-page">
+  <div class="cxp-header">
+    <h2 class="cxp-title">Cuentas por pagar — Proveedores</h2>
+    <div class="cxp-header-actions">
+      <button mat-stroked-button (click)="loadAging()" [disabled]="agingLoading()">
+        <mat-icon>analytics</mat-icon>
+        Aging
+      </button>
+      <button mat-stroked-button color="warn" (click)="triggerMarkOverdue()">
+        <mat-icon>flag</mat-icon>
+        Marcar vencidas
+      </button>
+    </div>
+  </div>
+
+  <!-- Aging Summary -->
+  @if (aging(); as data) {
+    <div class="cxp-aging">
+      @for (bucket of data.buckets; track bucket.label) {
+        <div class="aging-bucket" [class.aging-overdue]="bucket.label !== 'Corriente'">
+          <span class="aging-label">{{ bucket.label }}</span>
+          <span class="aging-count">{{ bucket.count }} CxP</span>
+          <span class="aging-amount">{{ formatCurrency(bucket.totalOutstanding) }}</span>
+        </div>
+      }
+      <div class="aging-bucket aging-total">
+        <span class="aging-label">Total</span>
+        <span class="aging-amount">{{ formatCurrency(data.overallTotal) }}</span>
+      </div>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="cxp-loading">
+      <mat-spinner diameter="40" />
+    </div>
+  } @else if (error()) {
+    <p class="cxp-error">{{ error() }}</p>
+  } @else if (payables().length === 0) {
+    <p class="cxp-empty">No se encontraron cuentas por pagar.</p>
+  } @else {
+    <table mat-table [dataSource]="payables()" class="cxp-table">
+      <!-- Supplier column -->
+      <ng-container matColumnDef="supplierName">
+        <th mat-header-cell *matHeaderCellDef>Proveedor</th>
+        <td mat-cell *matCellDef="let row">{{ row.supplierName }}</td>
+      </ng-container>
+
+      <!-- Total Amount column -->
+      <ng-container matColumnDef="totalAmount">
+        <th mat-header-cell *matHeaderCellDef>Total</th>
+        <td mat-cell *matCellDef="let row" [class.amount-negative]="row.totalAmount < 0">
+          {{ formatCurrency(row.totalAmount) }}
+        </td>
+      </ng-container>
+
+      <!-- Paid Amount column -->
+      <ng-container matColumnDef="paidAmount">
+        <th mat-header-cell *matHeaderCellDef>Pagado</th>
+        <td mat-cell *matCellDef="let row">{{ formatCurrency(row.paidAmount) }}</td>
+      </ng-container>
+
+      <!-- Outstanding column -->
+      <ng-container matColumnDef="outstanding">
+        <th mat-header-cell *matHeaderCellDef>Saldo</th>
+        <td mat-cell *matCellDef="let row">
+          <strong [class.text-red]="row.outstanding > 0">
+            {{ formatCurrency(row.outstanding) }}
+          </strong>
+        </td>
+      </ng-container>
+
+      <!-- Due Date column -->
+      <ng-container matColumnDef="dueDate">
+        <th mat-header-cell *matHeaderCellDef>Vencimiento</th>
+        <td mat-cell *matCellDef="let row">
+          <span [class.date-overdue]="isOverdue(row)">
+            {{ row.dueDate | date: 'dd/MM/yyyy' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Status column -->
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Estado</th>
+        <td mat-cell *matCellDef="let row">
+          <mat-chip [class]="statusClass(row.status)" class="status-chip">
+            {{ statusLabel(row.status) }}
+          </mat-chip>
+        </td>
+      </ng-container>
+
+      <!-- Actions column -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let row">
+          <span class="no-actions">—</span>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+  }
+</div>

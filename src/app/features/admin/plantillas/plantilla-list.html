@@ -1,0 +1,100 @@
+<div class="pl-page">
+  <div class="pl-header">
+    <h2 class="pl-title">Plantillas contables</h2>
+    <button mat-flat-button color="primary" [routerLink]="['/administracion/plantillas/nuevo']">
+      <mat-icon>add</mat-icon>
+      Nueva plantilla
+    </button>
+  </div>
+
+  <div class="pl-filters">
+    <mat-form-field appearance="outline" class="pl-module-filter">
+      <mat-label>Módulo</mat-label>
+      <mat-select [formControl]="moduleFilter">
+        @for (opt of moduleOptions; track opt.value) {
+          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  @if (loading()) {
+    <div class="pl-loading">
+      <mat-spinner diameter="40" />
+    </div>
+  } @else if (error()) {
+    <p class="pl-error">{{ error() }}</p>
+  } @else if (templates().length === 0) {
+    <p class="pl-empty">No se encontraron plantillas contables.</p>
+  } @else {
+    <table mat-table [dataSource]="templates()" class="pl-table">
+      <!-- Code column -->
+      <ng-container matColumnDef="code">
+        <th mat-header-cell *matHeaderCellDef>Código</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="pl-code">{{ row.code }}</span>
+        </td>
+      </ng-container>
+
+      <!-- Name column -->
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Nombre</th>
+        <td mat-cell *matCellDef="let row">{{ row.name }}</td>
+      </ng-container>
+
+      <!-- Module column -->
+      <ng-container matColumnDef="module">
+        <th mat-header-cell *matHeaderCellDef>Módulo</th>
+        <td mat-cell *matCellDef="let row">
+          <mat-chip
+            [class.pl-chip-sale]="row.module === 'SALE'"
+            [class.pl-chip-purchase]="row.module === 'PURCHASE'"
+          >
+            {{ moduleLabel(row.module) }}
+          </mat-chip>
+        </td>
+      </ng-container>
+
+      <!-- Entries count column -->
+      <ng-container matColumnDef="entriesCount">
+        <th mat-header-cell *matHeaderCellDef>Entradas</th>
+        <td mat-cell *matCellDef="let row">
+          {{ row.entries?.length ?? 0 }}
+        </td>
+      </ng-container>
+
+      <!-- isDefault column -->
+      <ng-container matColumnDef="isDefault">
+        <th mat-header-cell *matHeaderCellDef>Por defecto</th>
+        <td mat-cell *matCellDef="let row">
+          @if (row.isDefault) {
+            <mat-icon class="pl-default-icon">check_circle</mat-icon>
+          } @else {
+            <span class="pl-not-default">—</span>
+          }
+        </td>
+      </ng-container>
+
+      <!-- Actions column -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let row">
+          <button
+            mat-icon-button
+            color="primary"
+            [routerLink]="['/administracion/plantillas', row.id]"
+            matTooltip="Editar"
+          >
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="deleteTemplate(row)" matTooltip="Eliminar">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+  }
+</div>

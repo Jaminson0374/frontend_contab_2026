@@ -56,6 +56,7 @@ import { ProductGroupService } from '../../../../core/services/product-group.ser
 import { UnitOfMeasureService } from '../../../../core/services/unit-of-measure.service';
 import { PriceListService } from '../../../../core/services/price-list.service';
 import { PucAccountService } from '../../../../core/services/puc-account.service';
+import { AccountingTemplateService } from '../../../../core/services/accounting-template.service';
 import { WarehouseService } from '../../../../core/services/warehouse.service';
 import { WarehouseLocationService } from '../../../../core/services/warehouse-location.service';
 import { ThirdPartyService } from '../../../../core/services/third-party.service';
@@ -168,6 +169,7 @@ export class ProductFormComponent implements OnInit {
   readonly uomService = inject(UnitOfMeasureService);
   readonly priceListService = inject(PriceListService);
   readonly pucService = inject(PucAccountService);
+  readonly templateService = inject(AccountingTemplateService);
   readonly warehouseService = inject(WarehouseService);
   readonly warehouseLocationService = inject(WarehouseLocationService);
   readonly thirdPartyService = inject(ThirdPartyService);
@@ -331,6 +333,7 @@ export class ProductFormComponent implements OnInit {
     incomeAccountId: [null as string | null],
     inventoryAccountId: [null as string | null],
     costOfSalesAcctId: [null as string | null],
+    accountingTemplateId: [null as string | null],
     serialNumber: [''],
     originCountry: [''],
     specifications: [''],
@@ -1204,6 +1207,7 @@ export class ProductFormComponent implements OnInit {
         incomeAccountId: data.incomeAccountId,
         inventoryAccountId: data.inventoryAccountId,
         costOfSalesAcctId: data.costOfSalesAcctId,
+        accountingTemplateId: data.accountingTemplateId,
         serialNumber: data.serialNumber ?? '',
         originCountry: data.originCountry ?? '',
         specifications: data.specifications ?? '',
@@ -1861,6 +1865,7 @@ export class ProductFormComponent implements OnInit {
       incomeAccountId: v.incomeAccountId,
       inventoryAccountId: v.inventoryAccountId,
       costOfSalesAcctId: v.costOfSalesAcctId,
+      accountingTemplateId: v.accountingTemplateId,
       serialNumber: v.serialNumber || null,
       originCountry: v.originCountry || null,
       specifications: v.specifications || null,
@@ -2003,5 +2008,12 @@ export class ProductFormComponent implements OnInit {
 
   getWarehouseLocationLabel(location: WarehouseLocation): string {
     return location.active ? location.name : `${location.name} (inactiva)`;
+  }
+
+  templateLabel(accountingTemplateId: string | null): string {
+    if (!accountingTemplateId) return '';
+    const tpls = this.templateService.templates.value() ?? [];
+    const found = tpls.find((t) => t.id === accountingTemplateId);
+    return found ? `${found.code} — ${found.name}` : '';
   }
 }

@@ -1,5 +1,5 @@
 import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, DecimalPipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -13,6 +13,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatCardModule } from '@angular/material/card';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { ProductService } from '../../../../core/services/product.service';
@@ -24,6 +26,7 @@ type ProductListFilter = 'exempt' | 'active' | 'inactive' | 'no-stock' | 'below-
   standalone: true,
   imports: [
     CurrencyPipe,
+    DecimalPipe,
     ReactiveFormsModule,
     MatTableModule,
     MatButtonModule,
@@ -32,6 +35,8 @@ type ProductListFilter = 'exempt' | 'active' | 'inactive' | 'no-stock' | 'below-
     MatFormFieldModule,
     MatSelectModule,
     MatChipsModule,
+    MatCardModule,
+    MatTooltipModule,
     MatProgressSpinnerModule,
     MatPaginatorModule,
   ],
@@ -116,7 +121,7 @@ export class ProductListComponent implements OnInit {
       });
   }
 
-  private loadProducts(): void {
+  loadProducts(): void {
     this.loading.set(true);
     this.error.set(null);
 
@@ -168,6 +173,14 @@ export class ProductListComponent implements OnInit {
 
   taxClass(type: string): string {
     return type === 'EXENTO' ? 'chip-tax-exento' : 'chip-tax';
+  }
+
+  stockClass(product: Product): string {
+    const stock = product.totalStock ?? 0;
+    if (stock <= 0) return 'stock-zero';
+    if (stock < product.minStock) return 'stock-low';
+    if (stock <= product.minStock * 1.5) return 'stock-warn';
+    return 'stock-ok';
   }
 
   openNew(): void {

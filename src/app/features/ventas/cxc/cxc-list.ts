@@ -2,7 +2,7 @@ import { Component, DestroyRef, inject, OnInit, signal, computed } from '@angula
 import { CurrencyPipe, DatePipe, SlicePipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { debounceTime, distinctUntilChanged } from 'rxjs';
+import { debounceTime, distinctUntilChanged, firstValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
@@ -16,7 +16,6 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatCardModule } from '@angular/material/card';
 import { CxcService } from '../../../core/services/cxc.service';
-import { InterestService } from '../../../core/services/interest.service';
 import {
   AccountsReceivable,
   ArStatus,
@@ -51,7 +50,6 @@ import Swal from 'sweetalert2';
 })
 export class CxcListComponent implements OnInit {
   readonly service = inject(CxcService);
-  private readonly interestService = inject(InterestService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
 
@@ -185,52 +183,50 @@ export class CxcListComponent implements OnInit {
     return a ? a.totalOutstanding : 0;
   }
 
-  calculateInterest(): void {
-    Swal.fire({
+  async calculateInterest(): Promise<void> {
+    const result = await Swal.fire({
       title: '¿Calcular intereses?',
-      text: 'Se calcularán intereses de mora para todas las cuentas vencidas.',
+      text: 'Se calcularán intereses de mora sobre todas las cuentas vencidas',
       icon: 'question',
       showCancelButton: true,
       confirmButtonText: 'Calcular',
       cancelButtonText: 'Cancelar',
       confirmButtonColor: '#f59e0b',
-    }).then((result) => {
-      if (!result.isConfirmed) return;
-
-      this.calculatingInterest.set(true);
-      this.interestService.calculateInterest().subscribe({
-        next: (response) => {
-          this.calculatingInterest.set(false);
-          const totalStr = new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
-          }).format(response.totalInterestCalculated);
-
-          let html = `
-            <p><strong>${response.processedCount}</strong> cuentas procesadas</p>
-            <p>Total intereses: <strong>${totalStr}</strong></p>
-          `;
-
-          if (response.errors.length > 0) {
-            html += `<hr/><p style="color:#ef4444;">Errores: ${response.errors.join('<br/>')}</p>`;
-          }
-
-          Swal.fire({
-            icon: 'success',
-            title: 'Intereses calculados',
-            html,
-            confirmButtonColor: '#15803d',
-          }).then(() => this.loadData());
-        },
-        error: (err) => {
-          this.calculatingInterest.set(false);
-          const msg = err?.error?.message ?? 'Error al calcular intereses.';
-          Swal.fire({ icon: 'error', title: 'Error', text: msg, confirmButtonColor: '#ef4444' });
-        },
-      });
     });
+    if (!result.isConfirmed) return;
+
+    this.calculatingInterest.set(true);
+    try {
+      const response = await firstValueFrom(this.service.calculateInterest());
+      await Swal.fire({
+        icon: 'success',
+        title: 'Intereses calculados',
+        html: `<b>${response.processedCount}</b> cuentas procesadas<br>
+               <b>${response.skippedCount}</b> omitidas (mismo día o en gracia)<br>
+               Total acumulado: <b>${this.formatCurrency(response.totalInterestAccrued)}</b>`,
+        confirmButtonColor: '#15803d',
+      });
+      this.loadData();
+    } catch (e: unknown) {
+      const err = e as { error?: { message?: string } };
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: err?.error?.message || 'Error al calcular intereses',
+        confirmButtonColor: '#ef4444',
+      });
+    } finally {
+      this.calculatingInterest.set(false);
+    }
+  }
+
+  formatCurrency(value: number): string {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
   }
 
   openDocument(ar: AccountsReceivable): void {

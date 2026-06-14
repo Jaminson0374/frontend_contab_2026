@@ -148,6 +148,24 @@ export class ShellComponent {
           disabled: false,
         },
         {
+          label: 'Recepciones',
+          icon: 'move_to_inbox',
+          route: '/compras/recepcion',
+          disabled: false,
+        },
+        {
+          label: 'Devoluciones',
+          icon: 'keyboard_return',
+          route: '/compras/devoluciones',
+          disabled: false,
+        },
+        {
+          label: 'Reportes de compras',
+          icon: 'bar_chart',
+          route: '/compras/reportes',
+          disabled: false,
+        },
+        {
           label: 'Facturas proveedores',
           icon: 'description',
           route: '/compras/facturas',
@@ -250,6 +268,11 @@ export class ShellComponent {
           label: 'Catálogo PUC',
           icon: 'price_change',
           route: '/administracion/puc',
+        },
+        {
+          label: 'Plantillas contables',
+          icon: 'account_tree',
+          route: '/administracion/plantillas',
         },
         {
           label: 'Auditoría',

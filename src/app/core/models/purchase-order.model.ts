@@ -23,6 +23,14 @@ export interface PurchaseOrder {
   documentNumber: string;
   status: PurchaseOrderStatus;
   orderDate: string;
+  dueDate?: string;
+  supplierAddress?: string;
+  buyerId?: string;
+  buyerName?: string;
+  paymentMethod?: string;
+  supportDocumentType?: string;
+  supportDocumentNumber?: string;
+  currency?: string;
   notes: string | null;
   lines: PurchaseLineItemResponse[];
   createdBy: string;
@@ -32,6 +40,12 @@ export interface PurchaseOrder {
 export interface PurchaseOrderRequest {
   supplierId: string;
   orderDate: string;
+  dueDate?: string | null;
+  buyerId?: string | null;
+  paymentMethod?: string | null;
+  supportDocumentType?: string | null;
+  supportDocumentNumber?: string | null;
+  currency?: string | null;
   notes?: string | null;
   lines: Omit<PurchaseLineItem, 'id' | 'receivedQty'>[];
 }

@@ -1,0 +1,144 @@
+.cxp-page {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.cxp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.cxp-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.cxp-header-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* Aging */
+.cxp-aging {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.aging-bucket {
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  text-align: center;
+  min-width: 130px;
+  flex: 1;
+}
+
+.aging-bucket.aging-overdue {
+  background: #fef2f2;
+}
+
+.aging-bucket.aging-total {
+  background: #1e293b;
+  color: #fff;
+}
+
+.aging-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+}
+
+.aging-total .aging-label {
+  color: #94a3b8;
+}
+
+.aging-count {
+  display: block;
+  font-size: 0.8rem;
+  color: #475569;
+  margin-bottom: 0.15rem;
+}
+
+.aging-amount {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.aging-total .aging-amount {
+  color: #fff;
+}
+
+/* Table */
+.cxp-table {
+  width: 100%;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 8%);
+}
+
+.cxp-loading,
+.cxp-empty,
+.cxp-error {
+  text-align: center;
+  padding: 3rem;
+  color: #64748b;
+}
+
+.cxp-error {
+  color: #ef4444;
+}
+
+/* Status chips */
+.status-chip {
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+}
+
+.status-open {
+  --mdc-chip-label-text-color: #0369a1;
+  background-color: #e0f2fe !important;
+}
+
+.status-partial {
+  --mdc-chip-label-text-color: #b45309;
+  background-color: #fef3c7 !important;
+}
+
+.status-overdue {
+  --mdc-chip-label-text-color: #b91c1c;
+  background-color: #fee2e2 !important;
+}
+
+.status-paid {
+  --mdc-chip-label-text-color: #15803d;
+  background-color: #dcfce7 !important;
+}
+
+.text-red {
+  color: #dc2626;
+}
+
+.date-overdue {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.amount-negative {
+  color: #dc2626;
+}
+
+.no-actions {
+  color: #cbd5e1;
+}

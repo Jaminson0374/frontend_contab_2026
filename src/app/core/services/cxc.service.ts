@@ -76,6 +76,23 @@ export class CxcService {
     return this.http.get<PageResponse<AccountsReceivable>>(`${this.base}?${params}`);
   }
 
+  calculateInterest(): Observable<{
+    processedCount: number;
+    totalInterestAccrued: number;
+    skippedCount: number;
+  }> {
+    return this.http.post<{
+      processedCount: number;
+      totalInterestAccrued: number;
+      skippedCount: number;
+    }>(`${this.base}/calculate-interest`, {});
+  }
+
+  getIntereses(clientId?: string): Observable<AccountsReceivable[]> {
+    const params = clientId ? `?clientId=${clientId}` : '';
+    return this.http.get<AccountsReceivable[]>(`${this.base}/intereses${params}`);
+  }
+
   reload(): void {
     this.accounts.reload();
   }

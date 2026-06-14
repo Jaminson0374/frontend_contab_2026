@@ -1,0 +1,76 @@
+<div class="page-header">
+  <h2 class="page-title">Devoluciones</h2>
+  <div class="page-actions">
+    <button mat-flat-button (click)="router.navigate(['/compras/devoluciones/nueva'])">
+      <mat-icon>add</mat-icon> Nueva Devolución
+    </button>
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="spinner-container">
+    <mat-spinner diameter="40" />
+  </div>
+} @else if (data().length === 0) {
+  <div class="empty-state">
+    <mat-icon class="empty-icon">inbox</mat-icon>
+    <p class="empty-text">No hay devoluciones registradas</p>
+    <p class="empty-sub">Las devoluciones se crean a partir de una remisión de mercancía.</p>
+  </div>
+} @else {
+  <div class="table-wrapper">
+    <mat-table [dataSource]="data()">
+      <ng-container matColumnDef="documentNumber">
+        <mat-header-cell *matHeaderCellDef>N° Devolución</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.documentNumber }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="returnDate">
+        <mat-header-cell *matHeaderCellDef>Fecha</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.returnDate | date: 'dd/MM/yyyy' }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="receiptId">
+        <mat-header-cell *matHeaderCellDef>Remisión</mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <a class="receipt-link" (click)="viewReceipt(row.receiptId)">{{ row.receiptId }}</a>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="reason">
+        <mat-header-cell *matHeaderCellDef>Motivo</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.reason }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="totalReturned">
+        <mat-header-cell *matHeaderCellDef>Total Devuelto</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ formatCurrency(row.totalReturned) }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.status }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <mat-header-cell *matHeaderCellDef></mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <button mat-icon-button (click)="viewReceipt(row.receiptId)" matTooltip="Ver remisión">
+            <mat-icon>visibility</mat-icon>
+          </button>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+    </mat-table>
+
+    <mat-paginator
+      [length]="total()"
+      [pageSize]="size()"
+      [pageIndex]="page()"
+      [pageSizeOptions]="[10, 20, 50]"
+      (page)="onPage($event)"
+    />
+  </div>
+}

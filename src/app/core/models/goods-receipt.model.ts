@@ -10,16 +10,19 @@ export interface GoodsReceiptRequest {
   lines: ReceiptLineItemInput[];
 }
 
-export interface ReceiptResponse {
+export interface Deviation {
+  productId: string;
+  ocUnitCost: number;
+  actualCost: number;
+  deviationPct: number;
+}
+
+export interface GoodsReceipt {
   id: string;
   ocId: string;
   receiptDate: string;
   batchIds: string[];
-  deviations: Array<{
-    productId: string;
-    ocUnitCost: number;
-    actualCost: number;
-    deviationPct: number;
-  }>;
-  createdAt: string;
+  deviations: Deviation[];
 }
+
+export type ReceiptResponse = GoodsReceipt;

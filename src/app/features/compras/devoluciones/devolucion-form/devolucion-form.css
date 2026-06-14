@@ -1,0 +1,186 @@
+.devolucion-page {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+}
+
+/* ── Receipt card ────────────────────────────── */
+
+.receipt-card {
+  margin-bottom: 1rem;
+}
+
+.receipt-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.receipt-field {
+  flex: 1;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.info-label {
+  font-size: 0.75rem;
+  color: var(--mat-sys-outline);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.info-value {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.error-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  color: var(--mat-sys-error);
+  text-align: center;
+}
+
+/* ── Reason card ─────────────────────────────── */
+
+.reason-card {
+  margin-bottom: 1rem;
+}
+
+.reason-field {
+  width: 100%;
+}
+
+/* ── Lines card ──────────────────────────────── */
+
+.lines-card {
+  margin-bottom: 1rem;
+}
+
+.lines-card mat-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.line-row {
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.line-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.line-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.line-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.empty-lines {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  color: var(--mat-sys-outline);
+  text-align: center;
+}
+
+/* ── Total card ──────────────────────────────── */
+
+.total-card {
+  margin-bottom: 1rem;
+  background: var(--mat-sys-surface-container-high);
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.total-label {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.total-value {
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: #b91c1c;
+}
+
+/* ── Error & Success ─────────────────────────── */
+
+.error-msg {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  background: #fce4ec;
+  color: var(--mat-sys-error);
+  border-radius: 8px;
+  font-size: 0.875rem;
+}
+
+.success-card {
+  margin-bottom: 1rem;
+  border: 1px solid #15803d;
+}
+
+.success-icon {
+  color: #15803d;
+}
+
+/* ── Actions ─────────────────────────────────── */
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}

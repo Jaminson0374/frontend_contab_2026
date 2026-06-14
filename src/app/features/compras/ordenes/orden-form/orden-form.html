@@ -69,20 +69,93 @@
         </mat-autocomplete>
       </mat-form-field>
 
-      <!-- Order date -->
+      <!-- Supplier address -->
+      @if (supplierAddress()) {
+        <div class="of-supplier-address">
+          <mat-icon class="addr-icon">location_on</mat-icon>
+          <span>{{ supplierAddress() }}</span>
+        </div>
+      }
+    </div>
+
+    <!-- Date fields -->
+    <div class="of-grid">
       <mat-form-field appearance="outline">
         <mat-label>Fecha de orden</mat-label>
-        <input matInput [matDatepicker]="picker" formControlName="orderDate" />
-        <mat-datepicker-toggle matIconSuffix [for]="picker" />
-        <mat-datepicker #picker />
+        <input matInput [matDatepicker]="picker1" formControlName="orderDate" />
+        <mat-datepicker-toggle matIconSuffix [for]="picker1" />
+        <mat-datepicker #picker1 />
       </mat-form-field>
 
-      <!-- Notes -->
-      <mat-form-field appearance="outline" class="of-full-width">
-        <mat-label>Notas</mat-label>
-        <textarea matInput formControlName="notes" rows="3" maxlength="500"></textarea>
+      <mat-form-field appearance="outline">
+        <mat-label>Fecha de vencimiento</mat-label>
+        <input matInput [matDatepicker]="picker2" formControlName="dueDate" />
+        <mat-datepicker-toggle matIconSuffix [for]="picker2" />
+        <mat-datepicker #picker2 />
       </mat-form-field>
     </div>
+
+    <!-- Buyer (employee) autocomplete -->
+    <mat-form-field appearance="outline">
+      <mat-label>Comprador</mat-label>
+      <input
+        type="text"
+        matInput
+        [formControl]="buyerDisplay"
+        [matAutocomplete]="buyerAuto"
+        (input)="buyerSearch.set($any($event.target).value)"
+        (blur)="syncBuyerDisplay()"
+      />
+      <mat-autocomplete #buyerAuto="matAutocomplete" (optionSelected)="onBuyerSelected($event)">
+        @for (emp of filteredEmployees(); track emp.id) {
+          <mat-option [value]="emp.id">{{ emp.name }} ({{ emp.numIdentification }})</mat-option>
+        }
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <!-- Payment method + Support document type -->
+    <div class="of-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Forma de pago</mat-label>
+        <mat-select formControlName="paymentMethod">
+          @for (m of paymentMethods; track m) {
+            <mat-option [value]="m">{{ m }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Documento soporte</mat-label>
+        <mat-select formControlName="supportDocumentType">
+          @for (d of supportDocumentTypes; track d) {
+            <mat-option [value]="d">{{ d }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <!-- Support document number + currency -->
+    <div class="of-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>No. documento soporte</mat-label>
+        <input matInput formControlName="supportDocumentNumber" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Moneda</mat-label>
+        <mat-select formControlName="currency">
+          @for (c of currencies; track c) {
+            <mat-option [value]="c">{{ c }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <!-- Notes -->
+    <mat-form-field appearance="outline" class="of-full-width">
+      <mat-label>Notas</mat-label>
+      <textarea matInput formControlName="notes" rows="3" maxlength="500"></textarea>
+    </mat-form-field>
 
     <!-- Lines section -->
     <h3 class="of-section-title">Líneas de la orden</h3>
@@ -147,6 +220,9 @@
           >
             <mat-icon>remove_circle_outline</mat-icon>
           </button>
+
+          <!-- Line subtotal -->
+          <span class="of-line-subtotal">{{ formatCurrency(lineSubtotals()[i]) }}</span>
         </div>
       }
     </div>
@@ -154,5 +230,11 @@
     <button mat-stroked-button type="button" (click)="addLine()" class="of-add-line">
       <mat-icon>add</mat-icon> Agregar Item
     </button>
+
+    <!-- Order total -->
+    <div class="of-total-bar">
+      <span class="of-total-label">Total de la orden:</span>
+      <span class="of-total-value">{{ formatCurrency(orderTotal()) }}</span>
+    </div>
   </form>
 </div>

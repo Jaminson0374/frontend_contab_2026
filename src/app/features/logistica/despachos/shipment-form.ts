@@ -15,6 +15,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
 import { LogisticsService } from '../../../core/services/logistics.service';
+import { ProductSearchComponent } from '../../shared/product-search';
 
 type LineForm = FormGroup<{
   productId: FormControl<string>;
@@ -33,6 +34,7 @@ type LineForm = FormGroup<{
     MatDatepickerModule,
     MatNativeDateModule,
     MatIconModule,
+    ProductSearchComponent,
   ],
   templateUrl: './shipment-form.html',
   styleUrl: './shipment-form.css',
@@ -70,6 +72,10 @@ export class ShipmentFormComponent {
 
   removeLine(index: number): void {
     this.linesArray.removeAt(index);
+  }
+
+  onLineProductSelected(index: number, event: { id: string }): void {
+    this.linesArray.at(index).controls.productId.setValue(event.id);
   }
 
   submit(): void {

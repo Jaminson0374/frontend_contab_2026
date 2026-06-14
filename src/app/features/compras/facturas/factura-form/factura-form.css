@@ -85,3 +85,11 @@
   background: #dbeafe;
   color: #1e40af;
 }
+
+.linked-oc-search {
+  margin-bottom: 0;
+}
+
+.oc-search-field {
+  width: 100%;
+}

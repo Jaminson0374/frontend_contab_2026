@@ -2,7 +2,7 @@ import { Injectable, inject, signal, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { httpResource } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { PageResponse } from '../models/page.model';
 import {
   ThirdParty,
@@ -49,6 +49,12 @@ export class ThirdPartyService {
 
   update(id: string, request: ThirdPartyRequest): Observable<ThirdParty> {
     return this.http.put<ThirdParty>(`${this.base}/${id}`, request);
+  }
+
+  getEmployees(): Observable<ThirdParty[]> {
+    return this.http
+      .get<PageResponse<ThirdParty>>(`${this.base}?type=EMPLOYEE&active=true&size=100`)
+      .pipe(map((p) => p.content));
   }
 
   reload(): void {

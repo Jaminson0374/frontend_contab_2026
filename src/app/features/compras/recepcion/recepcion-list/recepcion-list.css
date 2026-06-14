@@ -1,0 +1,70 @@
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.page-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.oc-link {
+  color: var(--mat-sys-primary);
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+
+.deviation-badge {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.empty-icon {
+  font-size: 3rem;
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.empty-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+}
+
+.empty-sub {
+  font-size: 0.9rem;
+  margin: 0;
+}

@@ -1,0 +1,118 @@
+.pf-page {
+  padding: 24px;
+  max-width: 960px;
+}
+
+.pf-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.pf-title {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.pf-loading {
+  display: flex;
+  justify-content: center;
+  padding: 60px 0;
+}
+
+.pf-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pf-error {
+  background-color: #fef2f2;
+  color: #dc2626;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.pf-section {
+  margin-bottom: 8px;
+}
+
+.pf-section-title {
+  margin: 0 0 12px 0;
+  font-size: 1.1rem;
+  color: #1e293b;
+}
+
+.pf-row {
+  display: flex;
+  gap: 16px;
+}
+
+.pf-half {
+  flex: 1;
+}
+
+.pf-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
+  padding-left: 8px;
+}
+
+.pf-entries-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pf-entries-empty {
+  color: #94a3b8;
+  text-align: center;
+  padding: 24px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+}
+
+.pf-entries-table {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.pf-entry-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background-color: #f8fafc;
+}
+
+.pf-entry-event {
+  flex: 2;
+}
+
+.pf-entry-account {
+  flex: 3;
+}
+
+.pf-entry-debit {
+  flex: 1;
+  min-width: 90px;
+}
+
+.pf-entry-priority {
+  flex: 1;
+  max-width: 100px;
+}
+
+.pf-actions {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+}

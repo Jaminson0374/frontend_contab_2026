@@ -80,6 +80,8 @@ export class SalesDocumentListComponent implements OnInit {
     QUOTE: 'Cotización',
     ORDER: 'Pedido',
     INVOICE: 'Factura',
+    CREDIT_NOTE: 'Nota crédito',
+    DEBIT_NOTE: 'Nota débito',
   };
 
   readonly statusLabels: Record<string, string> = {

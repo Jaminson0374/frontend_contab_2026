@@ -83,11 +83,33 @@ export class OrdenFormComponent implements OnInit {
   private loadedId: string | null = null;
   readonly orderStatus = signal<string | null>(null);
   readonly productSearch = signal<Record<number, string>>({});
+  readonly orderTotal = signal(0);
+  readonly lineSubtotals = signal<number[]>([]);
+
+  // ── New purchase order fields ────────────────────────────────────
+  readonly supplierAddress = signal<string>('');
+  readonly calculatedDueDate = signal<string>('');
+  readonly paymentMethods = ['EFECTIVO', 'TRANSFERENCIA', 'CREDITO', 'CHEQUE', 'OTRO'];
+  readonly supportDocumentTypes = ['COTIZACION', 'CONTRATO', 'ORDEN_COMPRA', 'OTRO'];
+  readonly currencies = ['COP', 'USD', 'EUR'];
 
   // ── Supplier autocomplete ────────────────────────────────────────
   readonly supplierDisplay = new FormControl('', { nonNullable: true });
 
   readonly suppliers = computed(() => this.thirdPartyService.supplierOptions.value() ?? []);
+
+  // ── Buyer employee autocomplete ───────────────────────────────────
+  readonly buyerDisplay = new FormControl('', { nonNullable: true });
+  readonly employees = signal<ThirdParty[]>([]);
+  readonly buyerSearch = signal('');
+
+  readonly filteredEmployees = computed(() => {
+    const q = this.buyerSearch().toLowerCase().trim();
+    if (!q) return this.employees();
+    return this.employees().filter(
+      (e) => e.name.toLowerCase().includes(q) || e.numIdentification.includes(q),
+    );
+  });
 
   // ── Catalog data ──────────────────────────────────────────────────
   readonly products = computed(() => this.productService.products.value()?.content ?? []);
@@ -97,6 +119,12 @@ export class OrdenFormComponent implements OnInit {
   readonly form = this.fb.nonNullable.group({
     supplierId: ['', Validators.required],
     orderDate: [new Date(), Validators.required],
+    dueDate: [''],
+    buyerId: [''],
+    paymentMethod: [''],
+    supportDocumentType: [''],
+    supportDocumentNumber: [''],
+    currency: ['COP'],
     notes: [''],
     linesArray: this.fb.array<LineForm>([]),
   });
@@ -119,11 +147,68 @@ export class OrdenFormComponent implements OnInit {
         this.loadOrder(id);
       }
     });
+
+    this.linesArray.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.recalcTotals());
+
+    this.form.controls.orderDate.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.recalcDueDate());
+
+    this.thirdPartyService.getEmployees().subscribe((emps) => this.employees.set(emps));
+  }
+
+  private recalcTotals(): void {
+    const lines = this.linesArray.getRawValue();
+    const subtotals = lines.map((l) => (l.orderedQty || 0) * (l.unitCost || 0));
+    this.lineSubtotals.set(subtotals);
+    this.orderTotal.set(subtotals.reduce((sum, v) => sum + v, 0));
+  }
+
+  private recalcDueDate(): void {
+    const supplierId = this.form.controls.supplierId.getRawValue();
+    if (!supplierId) return;
+    this.thirdPartyService.getById(supplierId).subscribe((supplier) => {
+      if (supplier.creditDays > 0) {
+        const orderDate = this.form.controls.orderDate.getRawValue();
+        const dueDate = this.addDays(orderDate, supplier.creditDays);
+        this.form.controls.dueDate.setValue(dueDate);
+        this.calculatedDueDate.set(dueDate);
+      }
+    });
+  }
+
+  formatCurrency(value: number): string {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0,
+    }).format(value);
+  }
+
+  addDays(date: Date, days: number): string {
+    const d = new Date(date);
+    d.setDate(d.getDate() + days);
+    return d.toISOString().split('T')[0];
   }
 
   private resetForm(): void {
-    this.form.reset({ orderDate: new Date(), notes: '', supplierId: '' });
+    this.form.reset({
+      orderDate: new Date(),
+      dueDate: '',
+      buyerId: '',
+      paymentMethod: '',
+      supportDocumentType: '',
+      supportDocumentNumber: '',
+      currency: 'COP',
+      notes: '',
+      supplierId: '',
+    });
     this.supplierDisplay.setValue('');
+    this.supplierAddress.set('');
+    this.calculatedDueDate.set('');
+    this.buyerDisplay.setValue('');
     this.linesArray.clear();
     this.addLine();
   }
@@ -147,9 +232,17 @@ export class OrdenFormComponent implements OnInit {
     this.form.patchValue({
       supplierId: order.supplierId,
       orderDate: new Date(order.orderDate),
+      dueDate: order.dueDate,
+      buyerId: order.buyerId ?? '',
+      paymentMethod: order.paymentMethod,
+      supportDocumentType: order.supportDocumentType,
+      supportDocumentNumber: order.supportDocumentNumber,
+      currency: order.currency ?? 'COP',
       notes: order.notes ?? '',
     });
+    this.supplierAddress.set(order.supplierAddress ?? '');
     this.syncSupplierDisplay();
+    this.syncBuyerDisplay();
 
     this.linesArray.clear();
     (order.lines ?? []).forEach((line) => this.linesArray.push(this.createLineGroup(line)));
@@ -183,6 +276,19 @@ export class OrdenFormComponent implements OnInit {
     }
     this.form.controls.supplierId.setValue(ev.option.value);
     this.supplierDisplay.setValue(ev.option.viewValue, { emitEvent: false });
+    this.loadSupplierDetails(ev.option.value);
+  }
+
+  private loadSupplierDetails(supplierId: string): void {
+    this.thirdPartyService.getById(supplierId).subscribe((supplier) => {
+      this.supplierAddress.set(supplier.address ?? '');
+      if (supplier.creditDays > 0) {
+        const orderDate = this.form.controls.orderDate.getRawValue();
+        const dueDate = this.addDays(orderDate, supplier.creditDays);
+        this.form.controls.dueDate.setValue(dueDate);
+        this.calculatedDueDate.set(dueDate);
+      }
+    });
   }
 
   syncSupplierDisplay(): void {
@@ -191,6 +297,9 @@ export class OrdenFormComponent implements OnInit {
     this.supplierDisplay.setValue(s ? `${s.name} (${s.numIdentification})` : '', {
       emitEvent: false,
     });
+    if (id) {
+      this.loadSupplierDetails(id);
+    }
   }
 
   private openCreateSupplier(): void {
@@ -207,6 +316,7 @@ export class OrdenFormComponent implements OnInit {
         this.supplierDisplay.setValue(`${supplier.name} (${supplier.numIdentification})`, {
           emitEvent: false,
         });
+        this.loadSupplierDetails(supplier.id);
       });
   }
 
@@ -214,6 +324,32 @@ export class OrdenFormComponent implements OnInit {
     const fullName = [tp.name, tp.lastName].filter(Boolean).join(' ');
     const status = tp.active ? '' : ' — inactivo';
     return `${fullName} (${tp.numIdentification})${status}`;
+  }
+
+  // ── Buyer ─────────────────────────────────────────────────────────
+  onBuyerSelected(ev: MatAutocompleteSelectedEvent): void {
+    if (ev.option.value === '__create__') {
+      this.buyerDisplay.setValue('', { emitEvent: false });
+      // TODO: open create employee dialog
+      return;
+    }
+    this.form.controls.buyerId.setValue(ev.option.value);
+    const emp = this.employees().find((e) => e.id === ev.option.value);
+    this.buyerDisplay.setValue(emp ? `${emp.name} (${emp.numIdentification})` : '', {
+      emitEvent: false,
+    });
+  }
+
+  syncBuyerDisplay(): void {
+    const id = this.form.controls.buyerId.getRawValue();
+    if (!id) {
+      this.buyerDisplay.setValue('');
+      return;
+    }
+    const emp = this.employees().find((e) => e.id === id);
+    this.buyerDisplay.setValue(emp ? `${emp.name} (${emp.numIdentification})` : '', {
+      emitEvent: false,
+    });
   }
 
   // ── Lines ─────────────────────────────────────────────────────────
@@ -272,6 +408,12 @@ export class OrdenFormComponent implements OnInit {
     const request: PurchaseOrderRequest = {
       supplierId: raw.supplierId,
       orderDate: date,
+      dueDate: raw.dueDate || null,
+      buyerId: raw.buyerId || null,
+      paymentMethod: raw.paymentMethod || null,
+      supportDocumentType: raw.supportDocumentType || null,
+      supportDocumentNumber: raw.supportDocumentNumber || null,
+      currency: raw.currency || 'COP',
       notes: raw.notes || null,
       lines: this.linesArray.getRawValue().map((line, idx) => ({
         productId: line.productId,

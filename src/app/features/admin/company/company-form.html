@@ -101,8 +101,9 @@
     <mat-form-field appearance="outline">
       <mat-label>Frecuencia de interés compuesto</mat-label>
       <mat-select formControlName="interestCompoundFrequency">
+        <mat-option value="NONE">Simple (sin capitalización)</mat-option>
+        <mat-option value="DAILY">Diaria</mat-option>
         <mat-option value="MONTHLY">Mensual</mat-option>
-        <mat-option value="NONE">Sin compuesto</mat-option>
       </mat-select>
     </mat-form-field>
 
