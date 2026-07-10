@@ -61,4 +61,18 @@
   font-family: 'Courier New', monospace;
   font-size: 0.8rem;
   color: #64748b;
+  text-align: right;
+  justify-content: flex-end;
+}
+
+.cell-bold {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.mat-column-taxTotal,
+.mat-column-discountTotal,
+.mat-column-grandTotal {
+  text-align: right;
+  justify-content: flex-end;
 }

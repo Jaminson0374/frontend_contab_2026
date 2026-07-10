@@ -17,28 +17,44 @@
         <div class="uf-error">{{ error() }}</div>
       }
 
-      <mat-form-field appearance="outline">
-        <mat-label>Nombre de usuario</mat-label>
-        <input matInput formControlName="username" maxlength="100" />
-        @if (form.controls.username.hasError('required')) {
-          <mat-error>Requerido</mat-error>
+      <!-- Empleado (autocomplete) -->
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Empleado</mat-label>
+        <input
+          type="text"
+          matInput
+          [formControl]="employeeDisplay"
+          [matAutocomplete]="empAuto"
+          (blur)="syncEmployeeDisplay()"
+          placeholder="Buscar empleado..."
+        />
+        <mat-autocomplete #empAuto="matAutocomplete" (optionSelected)="onEmployeeSelected($event)">
+          @if (thirdPartyService.employeeOptions.isLoading()) {
+            <mat-option disabled>Cargando...</mat-option>
+          }
+          @for (emp of employees(); track emp.id) {
+            <mat-option [value]="emp.id">{{ employeeLabel(emp) }}</mat-option>
+          }
+        </mat-autocomplete>
+        @if (form.controls.employeeId.hasError('required') && form.controls.employeeId.touched) {
+          <mat-error>Seleccioná un empleado</mat-error>
         }
       </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Nombre completo</mat-label>
-        <input matInput formControlName="fullName" maxlength="200" />
-        @if (form.controls.fullName.hasError('required')) {
-          <mat-error>Requerido</mat-error>
-        }
-      </mat-form-field>
+      @if (employees().length === 0 && !thirdPartyService.employeeOptions.isLoading()) {
+        <p class="uf-hint">No hay empleados disponibles. Creá un tercero tipo EMPLEADO primero.</p>
+      }
 
       <mat-form-field appearance="outline">
         <mat-label>Email</mat-label>
-        <input matInput formControlName="email" type="email" maxlength="200" />
-        @if (form.controls.email.hasError('required')) {
-          <mat-error>Requerido</mat-error>
-        } @else if (form.controls.email.hasError('email')) {
+        <input
+          matInput
+          formControlName="email"
+          type="email"
+          maxlength="200"
+          placeholder="Dejar vacío para usar el email del empleado"
+        />
+        @if (form.controls.email.hasError('email')) {
           <mat-error>Formato de email inválido</mat-error>
         }
       </mat-form-field>

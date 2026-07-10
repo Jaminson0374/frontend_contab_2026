@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
@@ -9,7 +10,7 @@ import { WAREHOUSE_TYPE_LABELS } from '../../../../core/models/warehouse.model';
 @Component({
   selector: 'app-warehouse-list',
   standalone: true,
-  imports: [MatCardModule, MatIconModule, MatChipsModule, MatProgressSpinnerModule],
+  imports: [RouterLink, MatCardModule, MatIconModule, MatChipsModule, MatProgressSpinnerModule],
   templateUrl: './warehouse-list.html',
   styleUrl: './warehouse-list.css',
 })
@@ -18,11 +19,11 @@ export class WarehouseListComponent {
   readonly typeLabels = WAREHOUSE_TYPE_LABELS;
 
   readonly warehouseIcons: Record<string, string> = {
-    CANAL:     'inventory',
-    CORTES:    'kitchen',
-    VISCERAS:  'science',
+    CANAL: 'inventory',
+    CORTES: 'kitchen',
+    VISCERAS: 'science',
     EMBUTIDOS: 'fastfood',
     DECOMISOS: 'delete_sweep',
-    GENERAL:   'warehouse',
+    GENERAL: 'warehouse',
   };
 }

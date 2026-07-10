@@ -68,9 +68,25 @@
         </mat-cell>
       </ng-container>
 
-      <ng-container matColumnDef="totalLines">
-        <mat-header-cell *matHeaderCellDef>Líneas</mat-header-cell>
-        <mat-cell *matCellDef="let row">{{ row.lines?.length ?? 0 }}</mat-cell>
+      <ng-container matColumnDef="taxTotal">
+        <mat-header-cell *matHeaderCellDef>IVA</mat-header-cell>
+        <mat-cell *matCellDef="let row" class="cell-mono">
+          {{ row.taxTotal | number: '1.0-0' }}
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="discountTotal">
+        <mat-header-cell *matHeaderCellDef>Descuento</mat-header-cell>
+        <mat-cell *matCellDef="let row" class="cell-mono">
+          {{ row.discountTotal | number: '1.0-0' }}
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="grandTotal">
+        <mat-header-cell *matHeaderCellDef>Total OC</mat-header-cell>
+        <mat-cell *matCellDef="let row" class="cell-mono cell-bold">
+          {{ row.grandTotal | number: '1.0-0' }}
+        </mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="actions">

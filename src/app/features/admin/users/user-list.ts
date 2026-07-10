@@ -39,7 +39,7 @@ export class UserListComponent {
   readonly service = inject(UserService);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly displayedColumns = ['username', 'fullName', 'email', 'role', 'active', 'actions'];
+  readonly displayedColumns = ['username', 'employeeName', 'email', 'role', 'active', 'actions'];
 
   readonly pageSizeOptions = [10, 20, 30];
 

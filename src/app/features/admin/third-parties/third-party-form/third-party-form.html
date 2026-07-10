@@ -1,5 +1,4 @@
 <div class="tp-page">
-
   <!-- ══ Toolbar ══════════════════════════════════════════════════════ -->
   <div class="tp-toolbar">
     <div class="tp-toolbar-left">
@@ -34,9 +33,7 @@
 
   <!-- ══ Error bar ═════════════════════════════════════════════════════ -->
   @if (error()) {
-    <div class="tp-error-bar">
-      <mat-icon>error_outline</mat-icon> {{ error() }}
-    </div>
+    <div class="tp-error-bar"><mat-icon>error_outline</mat-icon> {{ error() }}</div>
   }
 
   <!-- ══ Search panel ══════════════════════════════════════════════════ -->
@@ -45,8 +42,12 @@
       <div class="tp-search-input-row">
         <mat-form-field appearance="outline" class="tp-search-field">
           <mat-label>Buscar tercero por nombre o NIT</mat-label>
-          <input matInput [formControl]="searchControl"
-                 placeholder="Escribí para buscar..." autocomplete="off" />
+          <input
+            matInput
+            [formControl]="searchControl"
+            placeholder="Escribí para buscar..."
+            autocomplete="off"
+          />
           <mat-icon matSuffix>search</mat-icon>
         </mat-form-field>
         <button mat-icon-button (click)="buscar()" matTooltip="Cerrar">
@@ -89,414 +90,500 @@
   @if (loading()) {
     <div class="tp-loading"><mat-spinner diameter="40" /></div>
   } @else {
+    <!-- ══ Form ══════════════════════════════════════════════════════════ -->
+    <form [formGroup]="form" class="tp-form-wrapper">
+      <mat-tab-group
+        class="tp-tabs"
+        animationDuration="150ms"
+        [selectedIndex]="selectedTab()"
+        (selectedIndexChange)="selectedTab.set($event)"
+      >
+        <!-- ══ TAB 1 — DATOS BÁSICOS ═══════════════════════════════════ -->
+        <mat-tab label="Datos básicos">
+          <div class="tab-content">
+            <p class="section-title">DATOS BÁSICOS</p>
 
-  <!-- ══ Form ══════════════════════════════════════════════════════════ -->
-  <form [formGroup]="form" class="tp-form-wrapper">
-    <mat-tab-group class="tp-tabs" animationDuration="150ms"
-                   [selectedIndex]="selectedTab()"
-                   (selectedIndexChange)="selectedTab.set($event)">
-
-      <!-- ══ TAB 1 — DATOS BÁSICOS ═══════════════════════════════════ -->
-      <mat-tab label="Datos básicos">
-        <div class="tab-content">
-          <p class="section-title">DATOS BÁSICOS</p>
-
-          <div class="form-two-col">
-            <!-- Columna izquierda -->
-            <div class="form-left">
-
-              <!-- Tipo de tercero (autocomplete) -->
-              <mat-form-field appearance="outline" style="width: 300px">
-                <mat-label>Tipo de tercero</mat-label>
-                <input maxlength="30" matInput [formControl]="catDisplay" [matAutocomplete]="autoCat"
-                       (input)="catFilter.set($any($event.target).value)"
-                       (blur)="syncCatDisplay()" />
-                <mat-autocomplete #autoCat (optionSelected)="onCatSelected($event)">
-                  @for (cat of filteredCats(); track cat.id) {
-                    <mat-option [value]="cat.id">{{ cat.name }}</mat-option>
-                  }
-                  @if (isEditing()) {
-                    <mat-option value="__create__" class="qc-create-option">
-                      <mat-icon class="qc-icon">add_circle</mat-icon>
-                      Crear{{ catFilter() ? ' "' + catFilter() + '"' : ' nuevo tipo' }}
-                    </mat-option>
-                  }
-                </mat-autocomplete>
-              </mat-form-field>
-
-              <!-- Persona / Empresa toggle -->
-              <div class="person-type-row">
-                <span class="person-type-label">*Tipo:</span>
-                <mat-button-toggle-group formControlName="personType" class="person-toggle">
-                  <mat-button-toggle value="NATURAL">Persona</mat-button-toggle>
-                  <mat-button-toggle value="JURIDICA">Empresa</mat-button-toggle>
-                </mat-button-toggle-group>
-              </div>
-
-              <!-- Tipo de identificación (autocomplete) -->
-              <div class="form-row-depts2">
-              <mat-form-field style="width: 405px" appearance="outline">
-                <mat-label>*Tipo identificación</mat-label>
-                <input maxlength="50" matInput [formControl]="idTypeDisplay" [matAutocomplete]="autoIdType"
-                       (input)="idTypeFilter.set($any($event.target).value)"
-                       (blur)="syncIdTypeDisplay()" />
-                <mat-autocomplete #autoIdType (optionSelected)="onIdTypeSelected($event)">
-                  @for (t of filteredIdTypes(); track t.id) {
-                    <mat-option [value]="t.id">{{ t.code }} — {{ t.name }}</mat-option>
-                  }
-                  @if (isEditing()) {
-                    <mat-option value="__create__" class="qc-create-option">
-                      <mat-icon class="qc-icon">add_circle</mat-icon>
-                      Crear{{ idTypeFilter() ? ' "' + idTypeFilter() + '"' : ' nuevo tipo' }}
-                    </mat-option>
-                  }
-                </mat-autocomplete>
-              </mat-form-field>
-
-              <!-- Identificación + DV -->
-              <div class="id-row">
-                <mat-form-field appearance="outline" style="width: 400px">
-                  <mat-label>*Identificación</mat-label>
-                  <input maxlength="40" matInput formControlName="numIdentification" placeholder="No. de identificación" />
-                </mat-form-field>
-                <mat-form-field appearance="outline" [style.visibility]="requiresDv() ? 'visible' : 'hidden'">
-                  <mat-label>DV</mat-label>
-                  <input matInput formControlName="dv" readonly />
-                </mat-form-field>
-              </div>
-              </div>
-              <!-- Razón social / Nombre -->
-              <div class="form-row-depts">
-              <mat-form-field appearance="outline">
-                <mat-label>{{ isNatural() ? '*Nombre' : '*Razón social' }}</mat-label>
-                <input maxlength="200" matInput formControlName="name"
-                       [placeholder]="isNatural() ? 'Nombre del tercero' : 'Nombre de la empresa'" />
-              </mat-form-field>
-
-              <!-- Apellido (solo persona natural) -->
-              @if (isNatural()) {
-                <mat-form-field appearance="outline">
-                  <mat-label>Apellido</mat-label>
-                  <input maxlength="150" matInput formControlName="lastName" />
-                </mat-form-field>
-              }
-
-              <!-- Nombre común -->
-              <mat-form-field appearance="outline">
-                <mat-label>Nombre común</mat-label>
-                <input maxlength="200" matInput formControlName="commonName" placeholder="Nombre comercial" />
-              </mat-form-field>
-            </div>
-
-              <!-- Dirección -->
-              <div class="form-row-depts">
-              <mat-form-field appearance="outline">
-                <mat-label>Dirección</mat-label>
-                <input maxlength="255" matInput formControlName="address" />
-              </mat-form-field>
-
-              <!-- Teléfonos -->
-              <mat-form-field appearance="outline">
-                <mat-label>Teléfonos</mat-label>
-                <input maxlength="50" matInput formControlName="phone" placeholder="Teléfonos empresa" />
-              </mat-form-field>
-            </div>
-
-              <!-- Departamento / Ciudad (autocomplete) -->
-              <div class="form-row-depts">
-                <mat-form-field appearance="outline">
-                  <mat-label>Departamento</mat-label>
-                  <input matInput [formControl]="deptDisplay" [matAutocomplete]="autoDept"
-                         (input)="deptFilter.set($any($event.target).value)"
-                         (blur)="syncDeptDisplay()" />
-                  <mat-autocomplete #autoDept (optionSelected)="onDeptSelected($event)">
-                    @for (d of filteredDepts(); track d.id) {
-                      <mat-option [value]="d.id">{{ d.name }}</mat-option>
+            <div class="form-two-col">
+              <!-- Columna izquierda -->
+              <div class="form-left">
+                <!-- Tipo de tercero (autocomplete) -->
+                <mat-form-field appearance="outline" style="width: 300px">
+                  <mat-label>Tipo de tercero</mat-label>
+                  <input
+                    maxlength="30"
+                    matInput
+                    [formControl]="catDisplay"
+                    [matAutocomplete]="autoCat"
+                    (input)="catFilter.set($any($event.target).value)"
+                    (blur)="syncCatDisplay()"
+                  />
+                  <mat-autocomplete #autoCat (optionSelected)="onCatSelected($event)">
+                    @for (cat of filteredCats(); track cat.id) {
+                      <mat-option [value]="cat.id">{{ cat.name }}</mat-option>
+                    }
+                    @if (isEditing()) {
+                      <mat-option value="__create__" class="qc-create-option">
+                        <mat-icon class="qc-icon">add_circle</mat-icon>
+                        Crear{{ catFilter() ? ' "' + catFilter() + '"' : ' nuevo tipo' }}
+                      </mat-option>
                     }
                   </mat-autocomplete>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline">
-                  <mat-label>Ciudad</mat-label>
-                  <input matInput [formControl]="cityDisplay" [matAutocomplete]="autoCity"
-                         (input)="cityFilter.set($any($event.target).value)"
-                         (blur)="syncCityDisplay()" />
-                  <mat-autocomplete #autoCity (optionSelected)="onCitySelected($event)">
-                    @for (c of filteredCities(); track c.id) {
-                      <mat-option [value]="c.id">{{ c.name }}</mat-option>
+                <!-- Persona / Empresa toggle -->
+                <div class="person-type-row">
+                  <span class="person-type-label">*Tipo:</span>
+                  <mat-button-toggle-group
+                    formControlName="personType"
+                    class="person-toggle"
+                    [disabled]="isEmployee()"
+                  >
+                    <mat-button-toggle value="NATURAL">Persona</mat-button-toggle>
+                    @if (!isEmployee()) {
+                      <mat-button-toggle value="JURIDICA">Empresa</mat-button-toggle>
                     }
-                  </mat-autocomplete>
+                  </mat-button-toggle-group>
+                  @if (isEmployee()) {
+                    <span class="employee-hint">Fijo para empleados</span>
+                  }
+                </div>
+
+                <!-- Tipo de identificación (autocomplete) -->
+                <div class="form-row-depts2">
+                  <mat-form-field style="width: 405px" appearance="outline">
+                    <mat-label>*Tipo identificación</mat-label>
+                    <input
+                      maxlength="50"
+                      matInput
+                      [formControl]="idTypeDisplay"
+                      [matAutocomplete]="autoIdType"
+                      (input)="idTypeFilter.set($any($event.target).value)"
+                      (blur)="syncIdTypeDisplay()"
+                    />
+                    <mat-autocomplete #autoIdType (optionSelected)="onIdTypeSelected($event)">
+                      @for (t of filteredIdTypes(); track t.id) {
+                        <mat-option [value]="t.id">{{ t.code }} — {{ t.name }}</mat-option>
+                      }
+                      @if (isEditing()) {
+                        <mat-option value="__create__" class="qc-create-option">
+                          <mat-icon class="qc-icon">add_circle</mat-icon>
+                          Crear{{ idTypeFilter() ? ' "' + idTypeFilter() + '"' : ' nuevo tipo' }}
+                        </mat-option>
+                      }
+                    </mat-autocomplete>
+                  </mat-form-field>
+
+                  <!-- Identificación + DV -->
+                  <div class="id-row">
+                    <mat-form-field appearance="outline" style="width: 400px">
+                      <mat-label>*Identificación</mat-label>
+                      <input
+                        maxlength="40"
+                        matInput
+                        formControlName="numIdentification"
+                        placeholder="No. de identificación"
+                      />
+                    </mat-form-field>
+                    <mat-form-field
+                      appearance="outline"
+                      [style.visibility]="requiresDv() ? 'visible' : 'hidden'"
+                    >
+                      <mat-label>DV</mat-label>
+                      <input matInput formControlName="dv" readonly />
+                    </mat-form-field>
+                  </div>
+                </div>
+                <!-- Razón social / Nombre -->
+                <div class="form-row-depts">
+                  <mat-form-field appearance="outline">
+                    <mat-label>{{ isNatural() ? '*Nombre' : '*Razón social' }}</mat-label>
+                    <input
+                      maxlength="200"
+                      matInput
+                      formControlName="name"
+                      [placeholder]="isNatural() ? 'Nombre del tercero' : 'Nombre de la empresa'"
+                    />
+                  </mat-form-field>
+
+                  <!-- Apellido (solo persona natural) -->
+                  @if (isNatural()) {
+                    <mat-form-field appearance="outline">
+                      <mat-label>Apellido</mat-label>
+                      <input maxlength="150" matInput formControlName="lastName" />
+                    </mat-form-field>
+                  }
+
+                  <!-- Nombre común -->
+                  <mat-form-field appearance="outline">
+                    <mat-label>Nombre común</mat-label>
+                    <input
+                      maxlength="200"
+                      matInput
+                      formControlName="commonName"
+                      placeholder="Nombre comercial"
+                    />
+                  </mat-form-field>
+                </div>
+
+                <!-- Dirección -->
+                <div class="form-row-depts">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Dirección</mat-label>
+                    <input maxlength="255" matInput formControlName="address" />
+                  </mat-form-field>
+
+                  <!-- Teléfonos -->
+                  <mat-form-field appearance="outline">
+                    <mat-label>Teléfonos</mat-label>
+                    <input
+                      maxlength="50"
+                      matInput
+                      formControlName="phone"
+                      placeholder="Teléfonos empresa"
+                    />
+                  </mat-form-field>
+                </div>
+
+                <!-- Departamento / Ciudad (autocomplete) -->
+                <div class="form-row-depts">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Departamento</mat-label>
+                    <input
+                      matInput
+                      [formControl]="deptDisplay"
+                      [matAutocomplete]="autoDept"
+                      (input)="deptFilter.set($any($event.target).value)"
+                      (blur)="syncDeptDisplay()"
+                    />
+                    <mat-autocomplete #autoDept (optionSelected)="onDeptSelected($event)">
+                      @for (d of filteredDepts(); track d.id) {
+                        <mat-option [value]="d.id">{{ d.name }}</mat-option>
+                      }
+                    </mat-autocomplete>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Ciudad</mat-label>
+                    <input
+                      matInput
+                      [formControl]="cityDisplay"
+                      [matAutocomplete]="autoCity"
+                      (input)="cityFilter.set($any($event.target).value)"
+                      (blur)="syncCityDisplay()"
+                    />
+                    <mat-autocomplete #autoCity (optionSelected)="onCitySelected($event)">
+                      @for (c of filteredCities(); track c.id) {
+                        <mat-option [value]="c.id">{{ c.name }}</mat-option>
+                      }
+                    </mat-autocomplete>
+                  </mat-form-field>
+                </div>
+
+                <!-- Email -->
+                <div class="form-row-depts">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Email</mat-label>
+                    <input
+                      maxlength="200"
+                      matInput
+                      formControlName="email"
+                      placeholder="email@empresa.com"
+                    />
+                  </mat-form-field>
+
+                  <!-- Página web -->
+                  <mat-form-field appearance="outline">
+                    <mat-label>Página WEB</mat-label>
+                    <input
+                      maxlength="255"
+                      matInput
+                      formControlName="website"
+                      placeholder="www.supagina.com"
+                    />
+                  </mat-form-field>
+                </div>
+
+                <!-- Activo -->
+                <div class="active-row">
+                  <mat-checkbox formControlName="active">Activo</mat-checkbox>
+                </div>
+              </div>
+              <!-- /form-left -->
+
+              <!-- Columna derecha -->
+              <div class="form-right">
+                <mat-form-field appearance="outline">
+                  <mat-label>Plazo en días</mat-label>
+                  <input matInput type="number" formControlName="creditDays" min="0" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Cupo de crédito ($)</mat-label>
+                  <input matInput type="number" formControlName="creditLimit" min="0" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Lista de precio</mat-label>
+                  <mat-select formControlName="priceListId">
+                    <mat-option [value]="null">— Sin lista —</mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Fecha de ingreso</mat-label>
+                  <input matInput [matDatepicker]="dpEntry" formControlName="entryDate" />
+                  <mat-datepicker-toggle matIconSuffix [for]="dpEntry" />
+                  <mat-datepicker #dpEntry />
                 </mat-form-field>
               </div>
+              <!-- /form-right -->
+            </div>
+            <!-- /form-two-col -->
+          </div>
+        </mat-tab>
 
-              <!-- Email -->
+        <!-- ══ TAB 2 — CONTACTOS ════════════════════════════════════════ -->
+
+        <mat-tab label="Contactos">
+          <div class="tab-content">
+            <p class="section-title">DATOS DEL CONTACTO DE LA EMPRESA</p>
+            <div class="form-two-col-contacto">
               <div class="form-row-depts">
-              <mat-form-field appearance="outline">
-                <mat-label>Email</mat-label>
-                <input maxlength="200" matInput formControlName="email" placeholder="email@empresa.com" />
-              </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Nombre y Apellido</mat-label>
+                  <input
+                    maxlength="200"
+                    matInput
+                    formControlName="contactName"
+                    placeholder="Nombre y apellido del contacto"
+                  />
+                </mat-form-field>
 
-              <!-- Página web -->
+                <mat-form-field appearance="outline">
+                  <mat-label>Teléfonos</mat-label>
+                  <input maxlength="50" matInput formControlName="contactPhone" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Dirección</mat-label>
+                  <input maxlength="255" matInput formControlName="contactAddress" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Email</mat-label>
+                  <input
+                    maxlength="150"
+                    matInput
+                    formControlName="contactEmail"
+                    placeholder="email@contacto.com"
+                  />
+                </mat-form-field>
+              </div>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- ══ TAB 3 — FACTURACIÓN Y RESPONSABILIDAD FISCAL ════════════════════════════ -->
+        <mat-tab label="Facturación y Resposabilidad fiscal">
+          <div class="tab-content">
+            <p class="section-title">DATOS FACTURACIÓN ELECTRÓNICA Y RESPONSABILIDAD FISCAL</p>
+
+            <div class="form-row">
               <mat-form-field appearance="outline">
-                <mat-label>Página WEB</mat-label>
-                <input maxlength="255" matInput formControlName="website" placeholder="www.supagina.com" />
+                <mat-label>*Nombre contacto</mat-label>
+                <input maxlength="100" matInput formControlName="taxContactFirstName" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Apellido contacto</mat-label>
+                <input maxlength="100" matInput formControlName="taxContactLastName" />
               </mat-form-field>
             </div>
 
-              <!-- Activo -->
-              <div class="active-row">
-                <mat-checkbox formControlName="active">Activo</mat-checkbox>
-              </div>
-
-            </div><!-- /form-left -->
-
-            <!-- Columna derecha -->
-            <div class="form-right">
+            <div class="form-row-depts2">
               <mat-form-field appearance="outline">
-                <mat-label>Plazo en días</mat-label>
-                <input matInput type="number" formControlName="creditDays" min="0" />
+                <mat-label>*Correo de facturación</mat-label>
+                <input
+                  maxlength="150"
+                  matInput
+                  formControlName="taxEmail"
+                  placeholder="correo@empresa.com"
+                />
               </mat-form-field>
 
               <mat-form-field appearance="outline">
-                <mat-label>Cupo de crédito ($)</mat-label>
-                <input matInput type="number" formControlName="creditLimit" min="0" />
+                <mat-label>Teléfonos facturación</mat-label>
+                <input maxlength="50" matInput formControlName="billingPhone" />
               </mat-form-field>
 
               <mat-form-field appearance="outline">
-                <mat-label>Lista de precio</mat-label>
-                <mat-select formControlName="priceListId">
-                  <mat-option [value]="null">— Sin lista —</mat-option>
+                <mat-label>Régimen</mat-label>
+                <mat-select formControlName="taxRegime">
+                  <mat-option value="ORDINARIO">Responsable de IVA</mat-option>
+                  <mat-option value="SIMPLE">Régimen Simple</mat-option>
                 </mat-select>
               </mat-form-field>
+            </div>
 
+            <div class="checkbox-list">
+              <mat-label>Tipo de contribuyente</mat-label>
+              <mat-checkbox formControlName="isGranContribuyente">Gran contribuyente</mat-checkbox>
+              <mat-checkbox formControlName="isAutoretenedor">Autoretenedor</mat-checkbox>
+              <mat-checkbox formControlName="isAgenteRetencionIva"
+                >Agente retención IVA</mat-checkbox
+              >
+              <mat-checkbox formControlName="isRegimenSimple"
+                >Régimen simple de tributación</mat-checkbox
+              >
+              <mat-checkbox formControlName="otherTaxResp">Otros</mat-checkbox>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- ══ TAB 4 — DATOS EMPLEADO ══════════════════════════════════ -->
+        <mat-tab label="Datos empleado" [disabled]="!isEmployee()">
+          <div class="tab-content">
+            <p class="section-title">DATOS - EMPLEADO</p>
+
+            <div class="emp-subnav">
+              @for (btn of empSubNav; track btn.label) {
+                <div
+                  class="emp-subnav-btn"
+                  [class.active]="btn.active"
+                  [matTooltip]="btn.active ? '' : 'Próximamente'"
+                >
+                  <mat-icon>{{ btn.icon }}</mat-icon>
+                  <span>{{ btn.label }}</span>
+                </div>
+              }
+            </div>
+
+            <p class="section-title" style="margin-top: 0">Datos Básicos</p>
+
+            <div class="form-row">
               <mat-form-field appearance="outline">
-                <mat-label>Fecha de ingreso</mat-label>
-                <input matInput [matDatepicker]="dpEntry" formControlName="entryDate" />
-                <mat-datepicker-toggle matIconSuffix [for]="dpEntry" />
-                <mat-datepicker #dpEntry />
+                <mat-label>Cargo</mat-label>
+                <input maxlength="100" matInput formControlName="empPosition" />
               </mat-form-field>
-            </div><!-- /form-right -->
-          </div><!-- /form-two-col -->
-        </div>
-      </mat-tab>
+              <mat-form-field appearance="outline">
+                <mat-label>Centro de Costos</mat-label>
+                <input maxlength="100" matInput formControlName="empCostCenter" />
+              </mat-form-field>
+            </div>
 
-      <!-- ══ TAB 2 — CONTACTOS ════════════════════════════════════════ -->
-      
-      <mat-tab label="Contactos">
-        <div class="tab-content">
-          <p class="section-title">DATOS DEL CONTACTO DE LA EMPRESA</p>
-          <div class="form-two-col-contacto">
-          
-          <div class="form-row-depts">
-          <mat-form-field appearance="outline">
-            <mat-label>Nombre y Apellido</mat-label>
-            <input maxlength="200" matInput formControlName="contactName" placeholder="Nombre y apellido del contacto" />
-          </mat-form-field>
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Centro Trabajo</mat-label>
+                <input maxlength="100" matInput formControlName="empWorkCenter" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Sexo</mat-label>
+                <mat-select formControlName="empGender">
+                  <mat-option value="M">Masculino</mat-option>
+                  <mat-option value="F">Femenino</mat-option>
+                  <mat-option value="O">Otro</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
 
-          <mat-form-field appearance="outline">
-            <mat-label>Teléfonos</mat-label>
-            <input maxlength="50" matInput formControlName="contactPhone" />
-          </mat-form-field>
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Estado Civil</mat-label>
+                <mat-select formControlName="empCivilStatus">
+                  <mat-option value="SOLTERO">Soltero/a</mat-option>
+                  <mat-option value="CASADO">Casado/a</mat-option>
+                  <mat-option value="UNION_LIBRE">Unión libre</mat-option>
+                  <mat-option value="DIVORCIADO">Divorciado/a</mat-option>
+                  <mat-option value="VIUDO">Viudo/a</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Grupo Vendedores</mat-label>
+                <input maxlength="100" matInput formControlName="empSalesGroup" />
+              </mat-form-field>
+            </div>
 
-          <mat-form-field appearance="outline">
-            <mat-label>Dirección</mat-label>
-            <input maxlength="255" matInput formControlName="contactAddress" />
-          </mat-form-field>
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Fecha Nacimiento</mat-label>
+                <input matInput [matDatepicker]="dpBirth" formControlName="empBirthDate" />
+                <mat-datepicker-toggle matIconSuffix [for]="dpBirth" />
+                <mat-datepicker #dpBirth />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Lugar de Nacimiento</mat-label>
+                <input maxlength="100" matInput formControlName="empBirthPlace" />
+              </mat-form-field>
+            </div>
 
-          <mat-form-field appearance="outline">
-            <mat-label>Email</mat-label>
-            <input maxlength="150" matInput formControlName="contactEmail" placeholder="email@contacto.com" />
-          </mat-form-field>
-        </div>
-    </div>
-  </div>
-      </mat-tab>
-
-
-      <!-- ══ TAB 3 — FACTURACIÓN Y RESPONSABILIDAD FISCAL ════════════════════════════ -->
-      <mat-tab label="Facturación y Resposabilidad fiscal">
-        <div class="tab-content">
-          <p class="section-title">DATOS FACTURACIÓN ELECTRÓNICA Y RESPONSABILIDAD FISCAL</p>
-
-          <div class="form-row" >
             <mat-form-field appearance="outline">
-              <mat-label>*Nombre contacto</mat-label>
-              <input maxlength="100" matInput formControlName="taxContactFirstName" />
+              <mat-label>Libreta Militar No.</mat-label>
+              <input maxlength="50" matInput formControlName="empMilitaryId" />
             </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Apellido contacto</mat-label>
-              <input maxlength="100" matInput formControlName="taxContactLastName" />
-            </mat-form-field>
-          </div>
 
-          <div class="form-row-depts2">
-          <mat-form-field appearance="outline">
-            <mat-label>*Correo de facturación</mat-label>
-            <input maxlength="150" matInput formControlName="taxEmail" placeholder="correo@empresa.com" />
-          </mat-form-field>
+            <div class="checkbox-list">
+              <mat-checkbox formControlName="empIsForeigner">Extranjero</mat-checkbox>
+              <mat-checkbox formControlName="empNatResidentExterior"
+                >Nat. Residente en el Exterior</mat-checkbox
+              >
+              <mat-checkbox formControlName="empIsDeclarant">Empleado declarante</mat-checkbox>
+              <mat-checkbox formControlName="empRequiresEndowment">Requiere Dotación</mat-checkbox>
+              <mat-checkbox formControlName="empIsSenior">Tercera edad</mat-checkbox>
+            </div>
 
-          <mat-form-field appearance="outline">
-            <mat-label>Teléfonos facturación</mat-label>
-            <input maxlength="50" matInput formControlName="billingPhone" />
-          </mat-form-field>
-
-          <mat-form-field appearance="outline">
-            <mat-label>Régimen</mat-label>
-            <mat-select formControlName="taxRegime">
-              <mat-option value="ORDINARIO">Responsable de IVA</mat-option>
-              <mat-option value="SIMPLE">Régimen Simple</mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-
-          <div class="checkbox-list">
-            <mat-label>Tipo de contribuyente</mat-label>
-            <mat-checkbox formControlName="isGranContribuyente">Gran contribuyente</mat-checkbox>
-            <mat-checkbox formControlName="isAutoretenedor">Autoretenedor</mat-checkbox>
-            <mat-checkbox formControlName="isAgenteRetencionIva">Agente retención IVA</mat-checkbox>
-            <mat-checkbox formControlName="isRegimenSimple">Régimen simple de tributación</mat-checkbox>
-            <mat-checkbox formControlName="otherTaxResp">Otros</mat-checkbox>
-          </div>
-        </div>
-      </mat-tab>
-
-      <!-- ══ TAB 4 — DATOS EMPLEADO ══════════════════════════════════ -->
-      <mat-tab label="Datos empleado" [disabled]="!isEmployee()">
-        <div class="tab-content">
-          <p class="section-title">DATOS - EMPLEADO</p>
-
-          <div class="emp-subnav">
-            @for (btn of empSubNav; track btn.label) {
-              <div class="emp-subnav-btn" [class.active]="btn.active"
-                   [matTooltip]="btn.active ? '' : 'Próximamente'">
-                <mat-icon>{{ btn.icon }}</mat-icon>
-                <span>{{ btn.label }}</span>
-              </div>
-            }
-          </div>
-
-          <p class="section-title" style="margin-top:0">Datos Básicos</p>
-
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Cargo</mat-label>
-              <input maxlength="100" matInput formControlName="empPosition" />
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Centro de Costos</mat-label>
-              <input maxlength="100" matInput formControlName="empCostCenter" />
+            <mat-form-field appearance="outline" style="margin-top: 8px">
+              <mat-label>Vendedor Asociado</mat-label>
+              <input maxlength="100" matInput formControlName="empAssociatedSeller" />
             </mat-form-field>
           </div>
+        </mat-tab>
 
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Centro Trabajo</mat-label>
-              <input maxlength="100" matInput formControlName="empWorkCenter" />
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Sexo</mat-label>
-              <mat-select formControlName="empGender">
-                <mat-option value="M">Masculino</mat-option>
-                <mat-option value="F">Femenino</mat-option>
-                <mat-option value="O">Otro</mat-option>
-              </mat-select>
-            </mat-form-field>
+        <!-- ══ TAB 5 — ESTADO DE CUENTA ════════════════════════════════ -->
+        <mat-tab label="Estado de cuenta">
+          <div class="tab-content readonly-tab">
+            <p class="section-title">ESTADO DE CUENTA</p>
+            <table class="readonly-table">
+              <thead>
+                <tr>
+                  <th>No. Factura</th>
+                  <th>Fecha</th>
+                  <th>No. Días</th>
+                  <th>Fecha venc.</th>
+                  <th class="text-right">Valor</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="5" class="empty-state">Sin facturas pendientes</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
+        </mat-tab>
 
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Estado Civil</mat-label>
-              <mat-select formControlName="empCivilStatus">
-                <mat-option value="SOLTERO">Soltero/a</mat-option>
-                <mat-option value="CASADO">Casado/a</mat-option>
-                <mat-option value="UNION_LIBRE">Unión libre</mat-option>
-                <mat-option value="DIVORCIADO">Divorciado/a</mat-option>
-                <mat-option value="VIUDO">Viudo/a</mat-option>
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Grupo Vendedores</mat-label>
-              <input maxlength="100" matInput formControlName="empSalesGroup" />
-            </mat-form-field>
+        <!-- ══ TAB 6 — INVENTARIO ═══════════════════════════════════════ -->
+        <mat-tab label="Inventario">
+          <div class="tab-content readonly-tab">
+            <p class="section-title">INVENTARIO</p>
+            <table class="readonly-table">
+              <thead>
+                <tr>
+                  <th>Artículo</th>
+                  <th>Código</th>
+                  <th>Fecha</th>
+                  <th class="text-right">Cantidad</th>
+                  <th class="text-right">Valor unitario</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="5" class="empty-state">Sin movimientos de inventario</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Fecha Nacimiento</mat-label>
-              <input matInput [matDatepicker]="dpBirth" formControlName="empBirthDate" />
-              <mat-datepicker-toggle matIconSuffix [for]="dpBirth" />
-              <mat-datepicker #dpBirth />
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Lugar de Nacimiento</mat-label>
-              <input maxlength="100" matInput formControlName="empBirthPlace" />
-            </mat-form-field>
-          </div>
-
-          <mat-form-field appearance="outline">
-            <mat-label>Libreta Militar No.</mat-label>
-            <input maxlength="50" matInput formControlName="empMilitaryId" />
-          </mat-form-field>
-
-          <div class="checkbox-list">
-            <mat-checkbox formControlName="empIsForeigner">Extranjero</mat-checkbox>
-            <mat-checkbox formControlName="empNatResidentExterior">Nat. Residente en el Exterior</mat-checkbox>
-            <mat-checkbox formControlName="empIsDeclarant">Empleado declarante</mat-checkbox>
-            <mat-checkbox formControlName="empRequiresEndowment">Requiere Dotación</mat-checkbox>
-            <mat-checkbox formControlName="empIsSenior">Tercera edad</mat-checkbox>
-          </div>
-
-          <mat-form-field appearance="outline" style="margin-top:8px">
-            <mat-label>Vendedor Asociado</mat-label>
-            <input maxlength="100" matInput formControlName="empAssociatedSeller" />
-          </mat-form-field>
-        </div>
-      </mat-tab>
-
-      <!-- ══ TAB 5 — ESTADO DE CUENTA ════════════════════════════════ -->
-      <mat-tab label="Estado de cuenta">
-        <div class="tab-content readonly-tab">
-          <p class="section-title">ESTADO DE CUENTA</p>
-          <table class="readonly-table">
-            <thead>
-              <tr>
-                <th>No. Factura</th>
-                <th>Fecha</th>
-                <th>No. Días</th>
-                <th>Fecha venc.</th>
-                <th class="text-right">Valor</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td colspan="5" class="empty-state">Sin facturas pendientes</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </mat-tab>
-
-      <!-- ══ TAB 6 — INVENTARIO ═══════════════════════════════════════ -->
-      <mat-tab label="Inventario">
-        <div class="tab-content readonly-tab">
-          <p class="section-title">INVENTARIO</p>
-          <table class="readonly-table">
-            <thead>
-              <tr>
-                <th>Artículo</th>
-                <th>Código</th>
-                <th>Fecha</th>
-                <th class="text-right">Cantidad</th>
-                <th class="text-right">Valor unitario</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td colspan="5" class="empty-state">Sin movimientos de inventario</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </mat-tab>
-
-    </mat-tab-group>
-  </form>
-
-  }<!-- /loading else -->
+        </mat-tab>
+      </mat-tab-group>
+    </form>
+  }
+  <!-- /loading else -->
 </div>

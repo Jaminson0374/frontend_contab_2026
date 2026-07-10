@@ -109,8 +109,9 @@ export class PriceListListComponent {
       await firstValueFrom(this.service.deactivate(priceList.id));
       this.service.reload();
     } catch (error) {
-      const message = (error as { error?: { message?: string } })?.error?.message
-        ?? 'Error al eliminar la lista de precios.';
+      const message =
+        (error as { error?: { message?: string } })?.error?.message ??
+        'Error al eliminar la lista de precios.';
 
       await Swal.fire({
         icon: 'error',

@@ -1,5 +1,5 @@
 import { Component, effect, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -14,19 +14,24 @@ import { AuthService } from '../../../core/auth/auth.service';
   standalone: true,
   imports: [
     FormsModule,
-    MatCardModule, MatFormFieldModule, MatInputModule,
-    MatButtonModule, MatIconModule, MatProgressSpinnerModule
+    RouterLink,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './login.html',
-  styleUrl: './login.css'
+  styleUrl: './login.css',
 })
 export class LoginComponent {
-  private readonly auth   = inject(AuthService);
+  private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
-  readonly loading    = signal(false);
-  readonly errorMsg   = signal('');
-  readonly hidePass   = signal(true);
+  readonly loading = signal(false);
+  readonly errorMsg = signal('');
+  readonly hidePass = signal(true);
 
   username = '';
   password = '';
@@ -55,9 +60,9 @@ export class LoginComponent {
         this.errorMsg.set(
           err.status === 401
             ? 'Usuario o contraseña incorrectos'
-            : 'Error de conexión. Intente nuevamente.'
+            : 'Error de conexión. Intente nuevamente.',
         );
-      }
+      },
     });
   }
 }

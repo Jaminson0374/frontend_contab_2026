@@ -145,4 +145,120 @@
       </button>
     </div>
   </form>
+
+  <!-- Retenciones en la fuente -->
+  <h3 class="section-title">Retenciones en la fuente (compras)</h3>
+
+  @if (retentionLoading()) {
+    <div class="loading-spinner"><mat-spinner diameter="30"></mat-spinner></div>
+  }
+
+  @if (!editingRetentionId()) {
+    <button mat-stroked-button type="button" (click)="startCreate()" class="add-retention-btn">
+      <mat-icon>add</mat-icon> Nueva retención
+    </button>
+  }
+
+  @if (editingRetentionId() !== undefined) {
+    <form [formGroup]="retentionForm" (ngSubmit)="saveRetention()" class="retention-edit-form">
+      <div class="retention-edit-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Código</mat-label>
+          <input matInput formControlName="code" placeholder="Ej: RENTA_COMPRAS" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Nombre del concepto</mat-label>
+          <input matInput formControlName="name" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Tasa (%)</mat-label>
+          <input matInput type="number" formControlName="rate" step="0.01" min="0" max="100" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Base mínima ($)</mat-label>
+          <input matInput type="number" formControlName="baseMin" step="0.01" min="0" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Régimen del proveedor</mat-label>
+          <mat-select formControlName="appliesToTaxRegime">
+            <mat-option value="">— Todos —</mat-option>
+            <mat-option value="COMUN">Régimen común</mat-option>
+            <mat-option value="SIMPLIFICADO">Régimen simplificado</mat-option>
+            <mat-option value="ESPECIAL">Régimen especial</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Tipo de persona</mat-label>
+          <mat-select formControlName="appliesToPersonType">
+            <mat-option value="">— Todas —</mat-option>
+            <mat-option value="NATURAL">Natural</mat-option>
+            <mat-option value="JURIDICA">Jurídica</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Descripción</mat-label>
+          <textarea matInput formControlName="description" rows="2"></textarea>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Orden</mat-label>
+          <input matInput type="number" formControlName="sortOrder" />
+        </mat-form-field>
+      </div>
+      <div class="retention-edit-actions">
+        <button mat-flat-button color="primary" type="submit" [disabled]="retentionForm.invalid">
+          {{ editingRetentionId() ? 'Actualizar' : 'Crear' }}
+        </button>
+        <button mat-button type="button" (click)="cancelRetentionEdit()">Cancelar</button>
+      </div>
+    </form>
+  }
+
+  @if (retentions().length > 0) {
+    <div class="retention-table-wrapper">
+      <table class="retention-table">
+        <thead>
+          <tr>
+            <th>Concepto</th>
+            <th>Tasa</th>
+            <th>Base mín</th>
+            <th>Régimen</th>
+            <th>Activo</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of retentions(); track r.id) {
+            <tr>
+              <td>
+                <span class="ret-name">{{ r.name }}</span>
+                <span class="ret-code">{{ r.code }}</span>
+              </td>
+              <td>{{ r.rate }}%</td>
+              <td>{{ r.baseMin | number: '1.0-0' }}</td>
+              <td>{{ r.appliesToTaxRegime || 'Todos' }}</td>
+              <td>
+                <mat-slide-toggle
+                  [checked]="r.active"
+                  (change)="toggleRetention(r)"
+                ></mat-slide-toggle>
+              </td>
+              <td class="ret-actions">
+                <button mat-icon-button (click)="startEdit(r)" aria-label="Editar">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  color="warn"
+                  (click)="deleteRetention(r)"
+                  aria-label="Eliminar"
+                >
+                  <mat-icon>delete_outline</mat-icon>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
 </div>

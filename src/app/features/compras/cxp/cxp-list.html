@@ -30,12 +30,12 @@
     </div>
   }
 
-  @if (loading()) {
+  @if (isLoading()) {
     <div class="cxp-loading">
       <mat-spinner diameter="40" />
     </div>
-  } @else if (error()) {
-    <p class="cxp-error">{{ error() }}</p>
+  } @else if (err()) {
+    <p class="cxp-error">Error al cargar cuentas por pagar.</p>
   } @else if (payables().length === 0) {
     <p class="cxp-empty">No se encontraron cuentas por pagar.</p>
   } @else {

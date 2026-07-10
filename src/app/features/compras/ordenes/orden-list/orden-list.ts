@@ -11,7 +11,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { DatePipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { debounceTime, distinctUntilChanged, startWith } from 'rxjs';
 import { PurchaseOrderService } from '../../../../core/services/purchase-order.service';
 import type { PurchaseOrderStatus } from '../../../../core/models/purchase-order.model';
@@ -31,6 +31,7 @@ import type { PurchaseOrderStatus } from '../../../../core/models/purchase-order
     MatFormFieldModule,
     MatInputModule,
     DatePipe,
+    DecimalPipe,
   ],
   templateUrl: './orden-list.html',
   styleUrl: './orden-list.css',
@@ -47,7 +48,9 @@ export class OrdenListComponent implements OnInit {
     'orderDate',
     'supplierName',
     'status',
-    'totalLines',
+    'taxTotal',
+    'discountTotal',
+    'grandTotal',
     'actions',
   ];
   readonly pageSizeOptions = [10, 20, 30];

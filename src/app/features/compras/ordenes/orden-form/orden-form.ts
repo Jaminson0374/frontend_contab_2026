@@ -1,4 +1,13 @@
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  OnInit,
+  signal,
+  untracked,
+} from '@angular/core';
 import {
   FormArray,
   FormBuilder,
@@ -26,6 +35,9 @@ import { PurchaseOrderService } from '../../../../core/services/purchase-order.s
 import { ProductService } from '../../../../core/services/product.service';
 import { WarehouseService } from '../../../../core/services/warehouse.service';
 import { ThirdPartyService } from '../../../../core/services/third-party.service';
+import { UnitOfMeasureService } from '../../../../core/services/unit-of-measure.service';
+import { CompanyConfigService } from '../../../../core/services/company-config.service';
+import { PurchaseRetentionConfigService } from '../../../../core/services/purchase-retention-config.service';
 import { QuickCreateSupplierDialogComponent } from '../../../admin/products/dialogs/quick-create-supplier.dialog';
 import type {
   ThirdParty,
@@ -37,12 +49,17 @@ import type {
 } from '../../../../core/models/purchase-order.model';
 import type { Warehouse } from '../../../../core/models/warehouse.model';
 import type { Product } from '../../../../core/models/product.model';
+import { TAX_LABELS, TAX_RATES } from '../../../../core/models/purchase-order.model';
+import type { TaxType } from '../../../../core/models/purchase-order.model';
+import type { PurchaseRetentionConfig } from '../../../../core/models/purchase-retention-config.model';
 
 type LineForm = FormGroup<{
   productId: FormControl<string>;
   productDisplay: FormControl<string>;
   warehouseId: FormControl<string>;
   orderedQty: FormControl<number>;
+  discountPct: FormControl<number>;
+  taxType: FormControl<string>;
   unitCost: FormControl<number>;
 }>;
 
@@ -71,10 +88,15 @@ export class OrdenFormComponent implements OnInit {
   readonly productService = inject(ProductService);
   private readonly warehouseService = inject(WarehouseService);
   readonly thirdPartyService = inject(ThirdPartyService);
+  readonly uomService = inject(UnitOfMeasureService);
+  private readonly companyConfigService = inject(CompanyConfigService);
+  private readonly retentionConfigService = inject(PurchaseRetentionConfigService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly dialog = inject(MatDialog);
+
+  readonly TAX_LABELS = TAX_LABELS;
 
   readonly saving = signal(false);
   readonly loading = signal(false);
@@ -84,10 +106,35 @@ export class OrdenFormComponent implements OnInit {
   readonly orderStatus = signal<string | null>(null);
   readonly productSearch = signal<Record<number, string>>({});
   readonly orderTotal = signal(0);
+  readonly orderSubtotal = signal(0);
+  readonly orderDiscount = signal(0);
+  readonly orderIva = signal(0);
+  readonly orderRetefuente = signal(0);
+  readonly retentionConfigs = signal<PurchaseRetentionConfig[]>([]);
+  readonly supplierTaxRegime = signal<string | null>(null);
+  readonly supplierPersonType = signal<string | null>(null);
   readonly lineSubtotals = signal<number[]>([]);
+  readonly lineDiscountAmounts = signal<number[]>([]);
+  readonly lineIvaAmounts = signal<number[]>([]);
+  readonly applicableRetentions = computed(() => {
+    const base = this.orderSubtotal() - this.orderDiscount();
+    const regime = this.supplierTaxRegime();
+    const person = this.supplierPersonType();
+    return this.retentionConfigs()
+      .filter((c) => c.active)
+      .filter((c) => !c.appliesToTaxRegime || c.appliesToTaxRegime === regime)
+      .filter((c) => !c.appliesToPersonType || c.appliesToPersonType === person)
+      .filter((c) => base >= (c.baseMin ?? 0))
+      .map((c) => ({
+        name: c.name,
+        rate: c.rate,
+        amount: base * (c.rate / 100),
+      }));
+  });
 
   // ── New purchase order fields ────────────────────────────────────
   readonly supplierAddress = signal<string>('');
+  readonly supplierPhone = signal<string>('');
   readonly calculatedDueDate = signal<string>('');
   readonly paymentMethods = ['EFECTIVO', 'TRANSFERENCIA', 'CREDITO', 'CHEQUE', 'OTRO'];
   readonly supportDocumentTypes = ['COTIZACION', 'CONTRATO', 'ORDEN_COMPRA', 'OTRO'];
@@ -131,6 +178,17 @@ export class OrdenFormComponent implements OnInit {
 
   readonly linesArray = this.form.controls.linesArray;
 
+  /** Abreviatura de unidad de medida por índice de línea (ej: { 0: 'kg', 1: 'und' }) */
+  readonly lineUnitMap = signal<Record<number, string>>({});
+
+  // Re-resolve all line units when the UOM catalog loads (handles late-arriving data)
+  private readonly _uomEffect = effect(() => {
+    this.uomService.units.value(); // track this signal
+    untracked(() => {
+      if (this.linesArray.length > 0) this.resolveAllLineUnits();
+    });
+  });
+
   ngOnInit(): void {
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const id = params.get('id');
@@ -157,13 +215,41 @@ export class OrdenFormComponent implements OnInit {
       .subscribe(() => this.recalcDueDate());
 
     this.thirdPartyService.getEmployees().subscribe((emps) => this.employees.set(emps));
+
+    this.companyConfigService.getConfig().subscribe((config) => {
+      // keep company config for future use
+    });
+
+    this.retentionConfigService.listActive().subscribe((configs) => {
+      this.retentionConfigs.set(configs);
+    });
   }
 
   private recalcTotals(): void {
     const lines = this.linesArray.getRawValue();
     const subtotals = lines.map((l) => (l.orderedQty || 0) * (l.unitCost || 0));
+    const discountAmounts = subtotals.map((sub, i) => sub * ((lines[i].discountPct || 0) / 100));
+    const ivaAmounts = subtotals.map((sub, i) => {
+      const taxable = sub - discountAmounts[i];
+      const rate = TAX_RATES[(lines[i].taxType || 'EXENTO') as TaxType] || 0;
+      return taxable * (rate / 100);
+    });
+
     this.lineSubtotals.set(subtotals);
-    this.orderTotal.set(subtotals.reduce((sum, v) => sum + v, 0));
+    this.lineDiscountAmounts.set(discountAmounts);
+    this.lineIvaAmounts.set(ivaAmounts);
+
+    const totalSubtotal = subtotals.reduce((sum, v) => sum + v, 0);
+    const totalDiscount = discountAmounts.reduce((sum, v) => sum + v, 0);
+    const totalIva = ivaAmounts.reduce((sum, v) => sum + v, 0);
+
+    this.orderSubtotal.set(totalSubtotal);
+    this.orderDiscount.set(totalDiscount);
+    this.orderIva.set(totalIva);
+
+    const totalRete = this.applicableRetentions().reduce((sum, r) => sum + r.amount, 0);
+    this.orderRetefuente.set(totalRete);
+    this.orderTotal.set(totalSubtotal - totalDiscount + totalIva - totalRete);
   }
 
   private recalcDueDate(): void {
@@ -177,6 +263,10 @@ export class OrdenFormComponent implements OnInit {
         this.calculatedDueDate.set(dueDate);
       }
     });
+  }
+
+  taxLabel(taxType: string): string {
+    return TAX_LABELS[taxType as TaxType] ?? 'Exento';
   }
 
   formatCurrency(value: number): string {
@@ -207,9 +297,11 @@ export class OrdenFormComponent implements OnInit {
     });
     this.supplierDisplay.setValue('');
     this.supplierAddress.set('');
+    this.supplierPhone.set('');
     this.calculatedDueDate.set('');
     this.buyerDisplay.setValue('');
     this.linesArray.clear();
+    this.lineUnitMap.set({});
     this.addLine();
   }
 
@@ -245,10 +337,27 @@ export class OrdenFormComponent implements OnInit {
     this.syncBuyerDisplay();
 
     this.linesArray.clear();
+    this.lineUnitMap.set({});
     (order.lines ?? []).forEach((line) => this.linesArray.push(this.createLineGroup(line)));
     if (this.linesArray.length === 0) {
       this.addLine();
     }
+    this.resolveAllLineUnits();
+  }
+
+  private resolveAllLineUnits(): void {
+    const uoms = this.uomService.units.value() ?? [];
+    const uomMap = new Map(uoms.map((u) => [u.id, u]));
+    const map: Record<number, string> = {};
+    this.linesArray.getRawValue().forEach((line, i) => {
+      if (!line.productId) return;
+      const product = this.products().find((p) => p.id === line.productId);
+      if (product?.unitOfMeasureId) {
+        const uom = uomMap.get(product.unitOfMeasureId);
+        if (uom) map[i] = uom.code;
+      }
+    });
+    this.lineUnitMap.set(map);
   }
 
   private createLineGroup(existing?: Partial<LineForm['value']>): LineForm {
@@ -257,6 +366,8 @@ export class OrdenFormComponent implements OnInit {
       productDisplay: [this.getProductName(existing?.productId) ?? ''],
       warehouseId: [existing?.warehouseId ?? '', Validators.required],
       orderedQty: [existing?.orderedQty ?? 1, [Validators.required, Validators.min(0.001)]],
+      discountPct: [existing?.discountPct ?? 0, [Validators.min(0), Validators.max(100)]],
+      taxType: [existing?.taxType ?? 'EXENTO'],
       unitCost: [existing?.unitCost ?? 0, [Validators.required, Validators.min(0)]],
     }) as unknown as LineForm;
   }
@@ -282,6 +393,9 @@ export class OrdenFormComponent implements OnInit {
   private loadSupplierDetails(supplierId: string): void {
     this.thirdPartyService.getById(supplierId).subscribe((supplier) => {
       this.supplierAddress.set(supplier.address ?? '');
+      this.supplierPhone.set(supplier.phone ?? '');
+      this.supplierTaxRegime.set(supplier.taxRegime ?? null);
+      this.supplierPersonType.set(supplier.personType ?? null);
       if (supplier.creditDays > 0) {
         const orderDate = this.form.controls.orderDate.getRawValue();
         const dueDate = this.addDays(orderDate, supplier.creditDays);
@@ -360,6 +474,14 @@ export class OrdenFormComponent implements OnInit {
   removeLine(index: number): void {
     if (this.linesArray.length <= 1) return;
     this.linesArray.removeAt(index);
+    this.lineUnitMap.update((m) => {
+      const next: Record<number, string> = {};
+      Object.entries(m).forEach(([k, v]) => {
+        const i = Number(k);
+        next[i > index ? i - 1 : i] = v;
+      });
+      return next;
+    });
   }
 
   // ── Line product autocomplete ─────────────────────────────────────
@@ -384,6 +506,38 @@ export class OrdenFormComponent implements OnInit {
     line.controls.productDisplay.setValue(
       product ? `${product.productCode} — ${product.name}` : ev.option.viewValue,
     );
+    if (product) {
+      // Auto-fill unit cost from product
+      line.controls.unitCost.setValue(product.costPrice ?? 0, { emitEvent: false });
+      // Auto-fill tax type from product
+      line.controls.taxType.setValue(product.taxType ?? 'EXENTO', { emitEvent: false });
+      // Auto-fill discount from active promotion if any
+      const today = new Date().toISOString().split('T')[0];
+      const activePromo = (product.promotions ?? []).find(
+        (promo) => promo.isActive && promo.startDate <= today && promo.endDate >= today,
+      );
+      if (activePromo) {
+        line.controls.discountPct.setValue(activePromo.discountPct, { emitEvent: false });
+      }
+    }
+    this.resolveLineUnit(index, product);
+  }
+
+  private resolveLineUnit(index: number, product?: Product | null): void {
+    if (!product?.unitOfMeasureId) {
+      this.lineUnitMap.update((m) => {
+        const next = { ...m };
+        delete next[index];
+        return next;
+      });
+      return;
+    }
+    const uoms = this.uomService.units.value() ?? [];
+    const uom = uoms.find((u) => u.id === product.unitOfMeasureId);
+    this.lineUnitMap.update((m) => ({
+      ...m,
+      [index]: uom?.code ?? '',
+    }));
   }
 
   syncLineProductDisplay(index: number): void {
@@ -420,6 +574,8 @@ export class OrdenFormComponent implements OnInit {
         warehouseId: line.warehouseId,
         orderedQty: line.orderedQty,
         unitCost: line.unitCost,
+        discountPct: line.discountPct ?? 0,
+        taxType: (line.taxType || 'EXENTO') as TaxType,
         lineNumber: idx + 1,
       })),
     };
@@ -433,6 +589,7 @@ export class OrdenFormComponent implements OnInit {
 
     action.subscribe({
       next: () => {
+        this.service.reload();
         this.saving.set(false);
         this.router.navigate(['..'], { relativeTo: this.route });
       },

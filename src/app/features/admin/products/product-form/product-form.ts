@@ -417,16 +417,20 @@ export class ProductFormComponent implements OnInit {
     });
 
     effect(() => {
+      // Track tab changes so the effect re-runs when tabs switch
+      this.selectedTab();
       const host = this.imageDropzoneHost()?.nativeElement;
-      const shouldEnableDropzone =
-        this.isBrowser && this.isEditing() && this.selectedTab() === 6 && !!host;
+      // Only enable when the host exists AND is actually visible in the DOM
+      // (offsetParent is null when the tab content is display:none)
+      const isVisible = host && this.isBrowser && host.offsetParent !== null;
+      const shouldEnableDropzone = this.isEditing() && isVisible;
 
-      if (!shouldEnableDropzone || !host) {
+      if (!shouldEnableDropzone) {
         this.destroyImageDropzone();
         return;
       }
 
-      void this.ensureImageDropzone(host);
+      void this.ensureImageDropzone(host!);
     });
 
     this.destroyRef.onDestroy(() => this.destroyImageDropzone());

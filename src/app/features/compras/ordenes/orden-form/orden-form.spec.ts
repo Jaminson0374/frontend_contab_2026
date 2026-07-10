@@ -206,17 +206,18 @@ describe('OrdenFormComponent - new fields', () => {
     fixture.detectChanges();
     component.supplierAddress.set('Calle 123, Bogotá');
     fixture.detectChanges();
-    const addressEl = fixture.debugElement.nativeElement.querySelector('.of-supplier-address');
-    expect(addressEl).toBeTruthy();
-    expect(addressEl?.textContent).toContain('Calle 123, Bogotá');
+    const infoEl = fixture.debugElement.nativeElement.querySelector('.of-supplier-info');
+    expect(infoEl).toBeTruthy();
+    expect(infoEl?.textContent).toContain('Calle 123, Bogotá');
   });
 
-  it('should NOT render supplier address section when signal is empty', () => {
+  it('should NOT render supplier info section when both signals are empty', () => {
     fixture.detectChanges();
     component.supplierAddress.set('');
+    component.supplierPhone.set('');
     fixture.detectChanges();
-    const addressEl = fixture.debugElement.nativeElement.querySelector('.of-supplier-address');
-    expect(addressEl).toBeFalsy();
+    const infoEl = fixture.debugElement.nativeElement.querySelector('.of-supplier-info');
+    expect(infoEl).toBeFalsy();
   });
 
   it('should render payment method select options', () => {

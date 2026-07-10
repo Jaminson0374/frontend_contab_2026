@@ -1,5 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, computed, DestroyRef, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   FormArray,
@@ -15,9 +14,14 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import {
+  MatAutocompleteModule,
+  MatAutocompleteSelectedEvent,
+} from '@angular/material/autocomplete';
 import { DecimalPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { map } from 'rxjs';
+import { debounceTime, distinctUntilChanged, filter } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PurchaseOrderService } from '../../../../core/services/purchase-order.service';
 import { GoodsReceiptService } from '../../../../core/services/goods-receipt.service';
 import type {
@@ -42,6 +46,7 @@ type ReceiptLineForm = FormGroup<{
   imports: [
     ReactiveFormsModule,
     DecimalPipe,
+    MatAutocompleteModule,
     MatButtonModule,
     MatCardModule,
     MatFormFieldModule,
@@ -52,17 +57,18 @@ type ReceiptLineForm = FormGroup<{
   templateUrl: './recepcion-form.html',
   styleUrl: './recepcion-form.css',
 })
-export class RecepcionFormComponent {
+export class RecepcionFormComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
   private readonly purchaseOrderService = inject(PurchaseOrderService);
   private readonly goodsReceiptService = inject(GoodsReceiptService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  readonly ocId = toSignal(
-    this.route.queryParamMap.pipe(map((params) => params.get('ocId') ?? '')),
-    { initialValue: '' },
-  );
+  readonly ocId = signal('');
+  readonly ocSearchControl = new FormControl('', { nonNullable: true });
+  readonly ocSearchResults = signal<PurchaseOrder[]>([]);
+  readonly ocSearching = signal(false);
 
   readonly oc = signal<PurchaseOrder | null>(null);
   readonly loading = signal(true);
@@ -99,8 +105,55 @@ export class RecepcionFormComponent {
     });
   });
 
-  constructor() {
+  ngOnInit(): void {
+    const id = this.route.snapshot.queryParamMap.get('ocId') ?? '';
+    this.ocId.set(id);
+
+    if (id) {
+      this.loadOrder();
+    } else {
+      this.loading.set(false);
+      this.setupOcSearch();
+    }
+  }
+
+  private setupOcSearch(): void {
+    this.ocSearchControl.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        filter((q) => typeof q === 'string' && q.trim().length >= 2),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((q) => {
+        this.ocSearching.set(true);
+        this.purchaseOrderService.searchByNumber((q as string).trim()).subscribe({
+          next: (results) => {
+            this.ocSearchResults.set(results ?? []);
+            this.ocSearching.set(false);
+          },
+          error: () => {
+            this.ocSearchResults.set([]);
+            this.ocSearching.set(false);
+          },
+        });
+      });
+  }
+
+  onOcSelected(event: MatAutocompleteSelectedEvent): void {
+    const selected = event.option.value as PurchaseOrder;
+    this.ocId.set(selected.id);
+    this.ocSearchControl.setValue(this.formatOcOption(selected), { emitEvent: false });
+    this.ocSearchResults.set([]);
     this.loadOrder();
+  }
+
+  displayOcOption = (order: PurchaseOrder | null): string => {
+    return order ? this.formatOcOption(order) : '';
+  };
+
+  private formatOcOption(order: PurchaseOrder): string {
+    return `${order.documentNumber} — ${order.supplierName}`;
   }
 
   private loadOrder(): void {

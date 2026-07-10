@@ -130,6 +130,11 @@ export class ProductService {
     return this.http.delete<void>(`${this.base}/${id}`);
   }
 
+  readonly allProducts = httpResource<PageResponse<Product>>(() => {
+    if (!isPlatformBrowser(this.platformId)) return undefined;
+    return `${this.base}?size=20000`;
+  });
+
   reload(): void {
     this.products.reload();
   }

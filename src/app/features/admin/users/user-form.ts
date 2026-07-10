@@ -1,6 +1,10 @@
-import { Component, effect, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, computed, inject, signal, OnInit } from '@angular/core';
+import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import {
+  MatAutocompleteModule,
+  MatAutocompleteSelectedEvent,
+} from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -10,7 +14,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { UserService } from '../../../core/services/user.service';
 import { RoleService } from '../../../core/services/role.service';
-import { RoleResponse, UserResponse } from '../../../core/models/user.model';
+import { ThirdPartyService } from '../../../core/services/third-party.service';
+import { RoleResponse, UserResponse, EmployeeOption } from '../../../core/models/user.model';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -21,6 +26,7 @@ import Swal from 'sweetalert2';
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatAutocompleteModule,
     MatSlideToggleModule,
     MatButtonModule,
     MatIconModule,
@@ -29,12 +35,13 @@ import Swal from 'sweetalert2';
   templateUrl: './user-form.html',
   styleUrl: './user-form.css',
 })
-export class UserFormComponent {
+export class UserFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly userService = inject(UserService);
   private readonly roleService = inject(RoleService);
+  readonly thirdPartyService = inject(ThirdPartyService);
 
   readonly saving = signal(false);
   readonly loading = signal(false);
@@ -43,21 +50,25 @@ export class UserFormComponent {
   readonly editId = signal<string | null>(null);
   readonly roles = signal<RoleResponse[]>([]);
 
+  // ── Employee autocomplete ─────────────────────────────────────────
+  readonly employeeDisplay = new FormControl('', { nonNullable: true });
+  readonly employees = computed(() => this.thirdPartyService.employeeOptions.value() ?? []);
+
   readonly form = this.fb.nonNullable.group({
-    username: ['', [Validators.required, Validators.maxLength(100)]],
-    fullName: ['', [Validators.required, Validators.maxLength(200)]],
-    email: ['', [Validators.required, Validators.email, Validators.maxLength(200)]],
+    employeeId: ['', [Validators.required]],
+    email: ['', [Validators.email, Validators.maxLength(200)]],
     roleId: ['', [Validators.required]],
     isActive: [true],
   });
 
-  constructor() {
+  ngOnInit(): void {
     this.loadRoles();
 
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.isEdit.set(true);
       this.editId.set(id);
+      this.form.controls.employeeId.disable();
       this.loadUser(id);
     }
   }
@@ -74,12 +85,13 @@ export class UserFormComponent {
     this.userService.getById(id).subscribe({
       next: (user) => {
         this.form.patchValue({
-          username: user.username,
-          fullName: user.fullName,
+          employeeId: user.employeeId ?? '',
           email: user.email,
           roleId: user.role.id,
           isActive: user.isActive,
         });
+        // Sync display text
+        this.syncEmployeeDisplay();
         this.loading.set(false);
       },
       error: () => {
@@ -89,20 +101,32 @@ export class UserFormComponent {
     });
   }
 
+  // ── Employee autocomplete handlers ────────────────────────────────
+
+  onEmployeeSelected(ev: MatAutocompleteSelectedEvent): void {
+    this.form.controls.employeeId.setValue(ev.option.value);
+    this.employeeDisplay.setValue(ev.option.viewValue, { emitEvent: false });
+  }
+
+  syncEmployeeDisplay(): void {
+    const id = this.form.controls.employeeId.getRawValue();
+    const emp = this.employees().find((e) => e.id === id);
+    this.employeeDisplay.setValue(emp ? this.employeeLabel(emp) : '', { emitEvent: false });
+  }
+
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
 
-    const v = this.form.getRawValue();
-    const body = {
-      username: v.username,
-      fullName: v.fullName,
-      email: v.email,
-      roleId: v.roleId,
-      isActive: v.isActive,
-    };
+    // If employeeId is disabled (edit mode), get raw value
+    const employeeId = this.form.controls.employeeId.getRawValue();
+    const email = this.form.controls.email.getRawValue();
+    const roleId = this.form.controls.roleId.getRawValue();
+    const isActive = this.form.controls.isActive.getRawValue();
+
+    const body = { employeeId, email, roleId, isActive };
 
     this.saving.set(true);
     this.error.set(null);
@@ -115,51 +139,37 @@ export class UserFormComponent {
             icon: 'success',
             title: 'Usuario actualizado',
             confirmButtonColor: '#15803d',
-          }).then(() => {
-            this.router.navigate(['/administracion/usuarios']);
-          });
+          }).then(() => this.router.navigate(['/administracion/usuarios']));
         },
         error: (err) => {
           this.saving.set(false);
           const msg = err?.error?.message ?? 'Error al actualizar el usuario.';
           this.error.set(msg);
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: msg,
-            confirmButtonColor: '#ef4444',
-          });
+          Swal.fire({ icon: 'error', title: 'Error', text: msg, confirmButtonColor: '#ef4444' });
         },
       });
     } else {
       this.userService.create(body).subscribe({
-        next: (res) => {
+        next: () => {
           this.saving.set(false);
-          const tempPwd = res.tempPassword;
-          const msg = tempPwd
-            ? `Usuario creado.<br><br><strong>Contraseña temporal:</strong><br><code style="font-size:1.2rem;background:#f1f5f9;padding:4px 8px;border-radius:4px;">${tempPwd}</code><br><br>Guárdala, no se mostrará de nuevo.`
-            : 'Usuario creado exitosamente.';
           Swal.fire({
             icon: 'success',
             title: 'Usuario creado',
-            html: msg,
+            html: 'El usuario fue creado.<br><br>Se envió un email con el enlace para configurar su contraseña.',
             confirmButtonColor: '#15803d',
-          }).then(() => {
-            this.router.navigate(['/administracion/usuarios']);
-          });
+          }).then(() => this.router.navigate(['/administracion/usuarios']));
         },
         error: (err) => {
           this.saving.set(false);
           const msg = err?.error?.message ?? 'Error al crear el usuario.';
           this.error.set(msg);
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: msg,
-            confirmButtonColor: '#ef4444',
-          });
+          Swal.fire({ icon: 'error', title: 'Error', text: msg, confirmButtonColor: '#ef4444' });
         },
       });
     }
+  }
+
+  employeeLabel(emp: EmployeeOption): string {
+    return `${emp.name} (${emp.numIdentification})`;
   }
 }

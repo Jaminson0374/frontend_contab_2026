@@ -8,6 +8,18 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/login/login').then((m) => m.LoginComponent),
   },
   {
+    path: 'auth/set-password',
+    loadComponent: () =>
+      import('./features/auth/set-password/set-password').then((m) => m.SetPasswordComponent),
+  },
+  {
+    path: 'auth/forgot-password',
+    loadComponent: () =>
+      import('./features/auth/forgot-password/forgot-password').then(
+        (m) => m.ForgotPasswordComponent,
+      ),
+  },
+  {
     path: '',
     loadComponent: () => import('./layout/shell/shell').then((m) => m.ShellComponent),
     canActivate: [authGuard],
@@ -497,10 +509,22 @@ export const routes: Routes = [
           },
           {
             path: 'bodegas',
-            loadComponent: () =>
-              import('./features/inventario/warehouses/warehouse-list/warehouse-list').then(
-                (m) => m.WarehouseListComponent,
-              ),
+            children: [
+              {
+                path: '',
+                loadComponent: () =>
+                  import('./features/inventario/warehouses/warehouse-list/warehouse-list').then(
+                    (m) => m.WarehouseListComponent,
+                  ),
+              },
+              {
+                path: ':id',
+                loadComponent: () =>
+                  import('./features/inventario/warehouses/warehouse-detail/warehouse-detail').then(
+                    (m) => m.WarehouseDetailComponent,
+                  ),
+              },
+            ],
           },
           {
             path: 'lotes',

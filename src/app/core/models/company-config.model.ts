@@ -18,6 +18,7 @@ export interface CompanyConfigRequest {
   dianResolutionId: string | null;
   softwarePin: string | null;
   certificateId: string | null;
+  purchaseRetefuenteRate: number | null;
 }
 
 export interface CompanyConfigResponse {
@@ -41,6 +42,9 @@ export interface CompanyConfigResponse {
   dianResolutionId: string | null;
   softwarePin: string | null;
   certificateId: string | null;
+  purchaseRetefuenteRate: number | null;
+  createdBy: string;
   createdAt: string;
+  updatedBy: string | null;
   updatedAt: string;
 }

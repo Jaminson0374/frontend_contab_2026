@@ -9,6 +9,7 @@ import {
   ThirdPartyRequest,
   ThirdPartySupplierOption,
 } from '../models/third-party.model';
+import { EmployeeOption } from '../models/user.model';
 
 @Injectable({ providedIn: 'root' })
 export class ThirdPartyService {
@@ -39,6 +40,11 @@ export class ThirdPartyService {
     return `${this.base}/suppliers`;
   });
 
+  readonly employeeOptions = httpResource<EmployeeOption[]>(() => {
+    if (!isPlatformBrowser(this.platformId)) return undefined;
+    return `${this.base}/employees/available`;
+  });
+
   getById(id: string): Observable<ThirdParty> {
     return this.http.get<ThirdParty>(`${this.base}/${id}`);
   }
@@ -57,8 +63,13 @@ export class ThirdPartyService {
       .pipe(map((p) => p.content));
   }
 
+  getAvailableEmployees(): Observable<EmployeeOption[]> {
+    return this.http.get<EmployeeOption[]>(`${this.base}/employees/available`);
+  }
+
   reload(): void {
     this.thirdParties.reload();
     this.supplierOptions.reload();
+    this.employeeOptions.reload();
   }
 }

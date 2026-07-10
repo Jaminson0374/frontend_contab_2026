@@ -7,6 +7,7 @@ export interface User {
   role: UserRole;
   email?: string;
   isActive?: boolean;
+  employeeId?: string;
 }
 
 export interface LoginResponse {
@@ -15,11 +16,11 @@ export interface LoginResponse {
   role: UserRole;
   userId: string;
   fullName: string;
+  employeeId?: string;
 }
 
 export interface UserRequest {
-  username: string;
-  fullName: string;
+  employeeId: string;
   email: string;
   roleId: string;
   isActive: boolean;
@@ -35,6 +36,8 @@ export interface UserResponse {
   createdAt: string;
   updatedAt: string;
   tempPassword?: string;
+  employeeId?: string;
+  employeeName?: string;
 }
 
 export interface RoleSummary {
@@ -47,4 +50,11 @@ export interface RoleResponse {
   name: string;
   permissions: string;
   createdAt: string;
+}
+
+export interface EmployeeOption {
+  id: string;
+  name: string;
+  numIdentification: string;
+  email: string;
 }

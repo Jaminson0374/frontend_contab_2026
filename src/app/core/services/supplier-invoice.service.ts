@@ -68,14 +68,11 @@ export class SupplierInvoiceService {
   }
 
   reconcile(id: string): Observable<SupplierInvoice> {
-    return this.http.patch<SupplierInvoice>(`${this.base}/${id}/status?status=RECONCILED`, null);
+    return this.http.patch<SupplierInvoice>(`${this.base}/${id}/reconcile`, null);
   }
 
   dispute(id: string, reason?: string): Observable<SupplierInvoice> {
-    const url = reason
-      ? `${this.base}/${id}/status?status=DISPUTED&reason=${encodeURIComponent(reason)}`
-      : `${this.base}/${id}/status?status=DISPUTED`;
-    return this.http.patch<SupplierInvoice>(url, null);
+    return this.http.patch<SupplierInvoice>(`${this.base}/${id}/dispute`, { reason });
   }
 
   reload(): void {

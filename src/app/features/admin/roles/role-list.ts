@@ -4,23 +4,39 @@ import { MatTableModule } from '@angular/material/table';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { RoleService } from '../../../core/services/role.service';
 import { RoleResponse } from '../../../core/models/user.model';
+import { RoleEditDialogComponent, RoleEditDialogData } from './role-edit-dialog/role-edit-dialog';
 
 @Component({
   selector: 'app-role-list',
-  imports: [DatePipe, MatTableModule, MatCardModule, MatProgressSpinnerModule, MatChipsModule],
+  imports: [
+    DatePipe,
+    MatTableModule,
+    MatCardModule,
+    MatProgressSpinnerModule,
+    MatChipsModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTooltipModule,
+    MatDialogModule,
+  ],
   templateUrl: './role-list.html',
   styleUrl: './role-list.css',
 })
 export class RoleListComponent {
   private readonly roleService = inject(RoleService);
+  private readonly dialog = inject(MatDialog);
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly roles = signal<RoleResponse[]>([]);
 
-  readonly displayedColumns = ['name', 'permissions', 'createdAt'];
+  readonly displayedColumns = ['name', 'permissions', 'createdAt', 'actions'];
 
   constructor() {
     this.loadRoles();
@@ -42,16 +58,27 @@ export class RoleListComponent {
     });
   }
 
+  openEditDialog(role: RoleResponse): void {
+    const ref = this.dialog.open<RoleEditDialogComponent, RoleEditDialogData, boolean>(
+      RoleEditDialogComponent,
+      {
+        width: '480px',
+        data: { role },
+      },
+    );
+
+    ref.afterClosed().subscribe((saved) => {
+      if (saved) {
+        this.loadRoles();
+      }
+    });
+  }
+
   formatPermissions(permissionsJson: string): string {
     try {
       const parsed = JSON.parse(permissionsJson);
-      if (typeof parsed === 'object' && parsed !== null) {
-        return Object.entries(parsed as Record<string, string[]>)
-          .map(([key, value]) => {
-            const label = key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-            return `${label}: ${Array.isArray(value) ? value.join(', ') : value}`;
-          })
-          .join('\n');
+      if (Array.isArray(parsed)) {
+        return parsed.join(', ');
       }
       return permissionsJson;
     } catch {

@@ -88,6 +88,8 @@ export class FacturaListComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.service.reload();
+
     this.searchControl.valueChanges
       .pipe(
         startWith(this.searchControl.getRawValue()),

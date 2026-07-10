@@ -1,0 +1,117 @@
+
+Sprint	Nombre	                                              Estado
+4-9     Core (POS, Inventario, Ventas, Admin, Compras, CXP)   Completos
+10	    Anticipos y Notas débito/crédito	                    Completo
+11	    Devoluciones POS + Intereses de mora	                Specs escritos, sin implementar
+12	    Presentaciones y Fórmulas/Combo	                      Sin empezar
+13	    Reportes (ventas, rentabilidad, clientes)	            Sin empezar
+14      Facturación Electrónica DIAN	                        Sin empezar
+15      Logística (recepciones, picking, despachos)           Completo
+16      Producción Avanzada (sub-recetas, órdenes)            Sin empezar
+17	    Contabilidad (asientos, ledger, retenciones)	        Parcial (journal_entries + plantillas + IVA ya hechos)
+
+
+---
+La siguiente funcionalidad lógica: Sprint 11 — Devoluciones POS + Intereses de mora
+Es el siguiente en secuencia y ya tiene specs escritos (19 requisitos, 28 escenarios). Incluye:
+1. Slice 1: Devoluciones POS — CREDIT_NOTE en SalesDocumentType, reversar inventario vía kardex, nota crédito con sourceDocumentId, actualizar CxC, migración V55 (CHECK constraint)
+2. Slice 2: Intereses de mora — Cálculo batch de intereses sobre CxC vencidas, scheduler @2AM, UI en company-config + cxc-list, migraciones V56-V57
+Esfuerzo estimado: 13-17 días (16 archivos backend, 7 frontend)
+
+Aquí está el estado real de Sprint 11 Devoluciones POS + Intereses de mora:
+Artefactos en disco
+Artefacto	Estado
+proposal.md	Escrito
+design.md	Escrito (8 decisiones de arquitectura)
+tasks.md	Escrito (21 tareas, NINGUNA completada, todas [ ])
+specs/pos-devoluciones/spec.md	9 requisitos, 16 escenarios
+specs/cxc-intereses/spec.md	10 requisitos, 12 escenarios
+
+
+Las 6 fases pendientes
+
+Fase	 Qué	                                            Tareas
+1	      Foundation DB migrations + domain models	     1.1-1.7 (3 migraciones V55-V57, 3 records Java, capa de persistencia)
+2	      Slice 1 Backend PosDevolutionUseCase	         2.1-2.4 (DT0s, use case, controller endpoints)
+3	      Slice 1 Frontend -PosDevolutionComponent	     3.1-3.4 (componente, servicio, ruta, habilitar menú)
+4	      Slice 2 Backend InterestCalculationService	   4.1-4.5 (batch @2AM, CXC extendida, CompanyConfig extendida)
+5	      Slice 2 Frontend Intereses UI	                 5.1-5.4 (Company Form +3 campos, CxcList +columna interés, botón calcular)
+6	      Testing Unit tests	                           6.1-6.3 (PosDevolutionUseCase, Interest CalculationService, frontend services)
+
+Perfecto. Ahora con todo el contexto, te explico cada fase conceptualmente — qué resuelve del negocio y cómo encaja:
+---
+Phase 1 — Foundation: DB & Domain Models
+Fundamento de datos para ambos slices.
+Actualmente la base de datos no acepta notas crédito ni tiene campos de interés. Esta fase prepara el terreno:
+- V55: La tabla sales_documents tiene un CHECK constraint que solo permite QUOTE, ORDER, INVOICE. Hay que romperlo y volverlo a crear agregando CREDIT_NOTE. Es la única migración riesgosa (DROP + ADD no es atómico), pero Flyway lo ejecuta en una sola transacción.
+- V56 y V57: Agregan 3 columnas a accounts_receivable (tasa individual por CxC, interés acumulado, última fecha de cálculo) y 3 columnas a company_config (tasa moratoria global, días de gracia, frecuencia de capitalización).
+- Records Java: SalesDocumentType gana CREDIT_NOTE. AccountsReceivable y CompanyConfig ganan sus 3 campos nuevos. La capa de persistencia (Entities, Mappers) se sincroniza.
+> Analogía: Es poner los cimientos antes de levantar las paredes. Sin esto, ningún use case compila.
+---
+Phase 2 — Slice 1 Backend: PosDevolutionUseCase
+El "checkout al revés". Es el corazón de las devoluciones.
+- PosDevolutionUseCase es el espejo inverso de PosCheckoutUseCase (que ya existe). En el checkout: tomás una orden → generás factura → sacás stock (EXIT). En la devolución: tomás una factura emitida → generás nota crédito → metés stock de vuelta (ENTRY).
+- Flujo:
+  1. Busca la factura por ID, valida que exista, esté ISSUED y no tenga ya una nota crédito asociada
+  2. Valida que los items a devolver pertenezcan a la factura y que la cantidad no exceda la original
+  3. Crea un SalesDocument tipo CREDIT_NOTE con montos negativos y sourceDocumentId apuntando a la factura
+  4. Por cada item devuelto → llama al mismo RecordMovementUseCase.record(ENTRY, DEVOLUTION) que ya usás para entradas de inventario
+  5. Si la venta original fue a crédito → reduce AccountsReceivable.outstanding y ThirdParty.currentBalance
+- Endpoints: POST /api/v1/pos/devolutions (crear devolución) y GET /api/v1/pos/devolutions?invoiceId= (consultar notas crédito de una factura).
+> Analogía: Es el botón "deshacer" de una factura POS, pero con trazabilidad completa (nota crédito + kardex + CxC).
+---
+Phase 3 — Slice 1 Frontend: PosDevolutionComponent
+La pantalla de devolución en el POS.
+- Flujo de usuario: Buscar factura por número → se carga la tabla de items con la cantidad original → el usuario digita cuántas unidades devolver por item → escribe el motivo → click en "Crear nota crédito" → Swal de confirmación.
+- Componente: Sigue el mismo patrón de PosVentaComponent (pantalla dividida: panel izquierdo de lectura/datos, panel derecho de acción). Pantalla única sin wizard — son solo 2 pasos lógicos.
+- Ruta y Shell: Se agrega /pos/devoluciones en app.routes.ts con lazy loading y se habilita el item "Devoluciones" en el menú POS (actualmente está disabled: true en shell.ts línea 79).
+> Nota: Esta fase depende de que el endpoint de Phase 2 esté funcionando, porque el componente llama al backend.
+---
+Phase 4 — Slice 2 Backend: InterestCalculationService
+El cobrador automático. Calcula intereses de mora sobre cuentas por cobrar vencidas.
+- InterestCalculationService.calculateOverdueInterest(): Es un batch que:
+  1. Busca todas las CxC en estado OVERDUE cuya dueDate + graceDays < today (ya pasaron el período de gracia)
+  2. Omite las que ya fueron calculadas hoy (lastInterestCalcDate == today → guardia anti doble-cálculo)
+  3. Para cada una, determina la tasa: si la CxC tiene interestRate propio lo usa, si no, usa company_config.moratoryInterestRate
+  4. Calcula interés compuesto mensual sobre el saldo pendiente
+  5. Actualiza interestAmount += nuevoInteres y lastInterestCalcDate = today
+- @Scheduled(cron="0 0 2 * * ?"): Se ejecuta automáticamente a las 2 AM todos los días. También se puede disparar manualmente desde el frontend.
+- Endpoints: POST /api/v1/cxc/calculate-interest (manual) y GET /api/v1/cxc/intereses?clientId= (consulta).
+- Integración: AccountsReceivableUseCase.markOverdue() también puede disparar el cálculo cuando una CxC pasa a vencida.
+> Analogía: El banco te cobra intereses diarios cuando te pasás del plazo. Esto es lo mismo pero para tus clientes.
+---
+Phase 5 — Slice 2 Frontend: Intereses UI
+Donde el usuario configura y ve los intereses.
+Dos componentes existentes se extienden:
+- CompanyFormComponent: Se agregan 3 campos al formulario de configuración de empresa:
+  - moratoryInterestRate → número (ej: 2.5%)
+  - interestGraceDays → número (ej: 5 días de gracia)
+  - interestCompoundFrequency → selector: NONE / DAILY / MONTHLY
+- CxcListComponent: Se agrega:
+  - Una columna "Interés acumulado" mostrando interestAmount en formato moneda
+  - Un botón "Calcular intereses" en la cabecera que dispara el batch manual
+  - El botón se deshabilita mientras la petición está en vuelo (anti doble-clic)
+  - Al completar, Swal muestra { affectedCount, totalInterestAccrued } y refresca la tabla
+> Nota: No hay nuevas rutas — se extienden componentes que ya existen en /administracion/empresa y /ventas/cxc.
+---
+## Phase 6 — Testing
+- **6.1** Unit test de `PosDevolutionUseCase`: factura no encontrada → 404, cantidades > original → 400, devolución total restaura stock, devolución parcial salta items no devueltos, venta a crédito reduce AR.outstanding.
+- **6.2** Unit test de `InterestCalculationService`: CxC sin tasa propia usa la de CompanyConfig, CxC con tasa propia prevalece, misma fecha → skip, graceDays respetado, batch procesa todas las elegibles.
+- **6.3** Unit test frontend: `DevolutionService.submit()` llama al POST correcto, `CxcService.calculateInterest()` llama al endpoint correcto.
+---
+Orden lógico
+Fase 1 (Foundation)
+    │
+    ├──▶ Fase 2 (Slice 1 Backend)
+    │        │
+    │        └──▶ Fase 3 (Slice 1 Frontend)
+    │
+    └──▶ Fase 4 (Slice 2 Backend)
+             │
+             └──▶ Fase 5 (Slice 2 Frontend)
+                     │
+                     └──▶ Fase 6 (Testing)
+Las fases 2-3 (Devoluciones) y 4-5 (Intereses) pueden ir secuenciales o en paralelo si hubiera dos developers. Las specs dicen que Devoluciones va primero porque modifica el schema core (CHECK constraint de sales_documents) y es el cambio de mayor riesgo.
+---
+¿Querés que arranquemos con Phase 1 o tenés alguna duda sobre alguna fase en particular?
+

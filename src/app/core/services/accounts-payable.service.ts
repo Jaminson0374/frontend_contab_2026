@@ -1,6 +1,7 @@
 import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, httpResource } from '@angular/common/http';
+import { PageResponse } from '../models/page.model';
 import { AccountsPayable, ApAgingResponse } from '../models/accounts-payable.model';
 
 @Injectable({ providedIn: 'root' })
@@ -9,7 +10,7 @@ export class AccountsPayableService {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly baseUrl = '/api/v1/accounts-payable';
 
-  readonly payables = httpResource<AccountsPayable[]>(() => {
+  readonly payables = httpResource<PageResponse<AccountsPayable>>(() => {
     if (!isPlatformBrowser(this.platformId)) return undefined;
     return this.baseUrl;
   });

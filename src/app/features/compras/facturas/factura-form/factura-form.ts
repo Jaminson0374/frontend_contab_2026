@@ -16,7 +16,8 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { DecimalPipe, SlicePipe } from '@angular/common';
-import { debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map, of, startWith, switchMap } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { SupplierInvoiceService } from '../../../../core/services/supplier-invoice.service';
 import { ThirdPartyService } from '../../../../core/services/third-party.service';
 import { PurchaseOrderService } from '../../../../core/services/purchase-order.service';
@@ -118,12 +119,18 @@ export class FacturaFormComponent implements OnInit {
   });
 
   // ── Auto-calculated total ─────────────────────────────────────────
-  readonly total = computed(() => {
-    const sub = this.form.controls.subtotal.getRawValue() ?? 0;
-    const iva = this.form.controls.ivaTotal.getRawValue() ?? 0;
-    const ret = this.form.controls.retentionTotal.getRawValue() ?? 0;
-    return sub + iva - ret;
-  });
+  readonly total = toSignal(
+    this.form.valueChanges.pipe(
+      startWith(null),
+      map(() => {
+        const sub = this.form.controls.subtotal.getRawValue() ?? 0;
+        const iva = this.form.controls.ivaTotal.getRawValue() ?? 0;
+        const ret = this.form.controls.retentionTotal.getRawValue() ?? 0;
+        return sub + iva - ret;
+      }),
+    ),
+    { initialValue: 0 },
+  );
 
   ngOnInit(): void {
     const ocId = this.route.snapshot.queryParamMap.get('ocId');

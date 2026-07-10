@@ -1,0 +1,100 @@
+<div class="wd-page">
+  <!-- Header -->
+  <div class="wd-header">
+    <a mat-button routerLink="/inventario/bodegas" class="wd-back-btn">
+      <mat-icon>arrow_back</mat-icon> Volver a Bodegas
+    </a>
+  </div>
+
+  @if (warehouse(); as wh) {
+    <div class="wd-warehouse-info">
+      <h2 class="wd-title">{{ wh.name }}</h2>
+      <div class="wd-meta">
+        <mat-chip class="type-chip">{{ typeLabels[wh.warehouseType] }}</mat-chip>
+        @if (wh.location) {
+          <span class="wd-location">
+            <mat-icon class="wd-loc-icon">location_on</mat-icon>
+            {{ wh.location }}
+          </span>
+        }
+        @if (!wh.active) {
+          <mat-chip class="inactive-chip">Inactiva</mat-chip>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="spinner-container">
+      <mat-spinner diameter="40" />
+    </div>
+  }
+
+  <!-- Error -->
+  @if (error()) {
+    <div class="error-msg">
+      <mat-icon>error_outline</mat-icon>
+      <span>Error cargando los datos. Intentá de nuevo.</span>
+    </div>
+  }
+
+  <!-- Table -->
+  @let rows = stockRows();
+  @if (rows && rows.length > 0) {
+    <div class="wd-table-wrapper">
+      <h3 class="wd-subtitle">Existencia actual ({{ rows.length }} productos)</h3>
+
+      <mat-table [dataSource]="rows" class="wd-table">
+        <ng-container matColumnDef="productCode">
+          <mat-header-cell *matHeaderCellDef>Código</mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            <span class="cell-mono">{{ row.productCode || '—' }}</span>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="description">
+          <mat-header-cell *matHeaderCellDef>Descripción</mat-header-cell>
+          <mat-cell *matCellDef="let row">{{ row.description || '—' }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="stock">
+          <mat-header-cell *matHeaderCellDef class="cell-num">Existencia</mat-header-cell>
+          <mat-cell *matCellDef="let row" class="cell-num">
+            {{ row.stock | number: '1.2-2' }}
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="unitOfMeasure">
+          <mat-header-cell *matHeaderCellDef>Unidad</mat-header-cell>
+          <mat-cell *matCellDef="let row">{{ row.unitOfMeasure || '—' }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="costPrice">
+          <mat-header-cell *matHeaderCellDef class="cell-num">P. Costo</mat-header-cell>
+          <mat-cell *matCellDef="let row" class="cell-num">
+            {{ row.costPrice | currency: 'COP' : 'symbol-narrow' : '1.0-2' : 'es-CO' }}
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="salePrice">
+          <mat-header-cell *matHeaderCellDef class="cell-num">P. Venta</mat-header-cell>
+          <mat-cell *matCellDef="let row" class="cell-num">
+            {{ row.salePrice | currency: 'COP' : 'symbol-narrow' : '1.0-2' : 'es-CO' }}
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns" />
+        <mat-row *matRowDef="let row; columns: displayedColumns" />
+      </mat-table>
+    </div>
+  }
+
+  <!-- Empty state -->
+  @if (rows && rows.length === 0 && !loading() && !error()) {
+    <div class="empty-state">
+      <mat-icon>inventory_2</mat-icon>
+      <p>No hay stock registrado en esta bodega.</p>
+    </div>
+  }
+</div>

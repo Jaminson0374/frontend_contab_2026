@@ -44,7 +44,7 @@
   <form [formGroup]="form" class="of-form" autocomplete="off">
     <div class="of-grid">
       <!-- Supplier autocomplete -->
-      <mat-form-field appearance="outline">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
         <mat-label>Proveedor</mat-label>
         <input
           type="text"
@@ -69,62 +69,62 @@
         </mat-autocomplete>
       </mat-form-field>
 
-      <!-- Supplier address -->
-      @if (supplierAddress()) {
-        <div class="of-supplier-address">
-          <mat-icon class="addr-icon">location_on</mat-icon>
-          <span>{{ supplierAddress() }}</span>
+      <!-- Supplier address & phone -->
+      @if (supplierAddress() || supplierPhone()) {
+        <div class="of-supplier-info">
+          @if (supplierAddress()) {
+            <div class="of-supplier-info-item">
+              <mat-icon class="ofi-icon">location_on</mat-icon>
+              <span class="ofi-text">{{ supplierAddress() }}</span>
+            </div>
+          }
+          @if (supplierPhone()) {
+            <div class="of-supplier-info-item">
+              <mat-icon class="ofi-icon">phone</mat-icon>
+              <span class="ofi-text">{{ supplierPhone() }}</span>
+            </div>
+          }
         </div>
       }
     </div>
 
-    <!-- Date fields -->
-    <div class="of-grid">
-      <mat-form-field appearance="outline">
+    <!-- Row 1: Fecha orden + Fecha vencimiento + Comprador -->
+    <div class="of-grid-3">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
         <mat-label>Fecha de orden</mat-label>
         <input matInput [matDatepicker]="picker1" formControlName="orderDate" />
         <mat-datepicker-toggle matIconSuffix [for]="picker1" />
         <mat-datepicker #picker1 />
       </mat-form-field>
 
-      <mat-form-field appearance="outline">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
         <mat-label>Fecha de vencimiento</mat-label>
         <input matInput [matDatepicker]="picker2" formControlName="dueDate" />
         <mat-datepicker-toggle matIconSuffix [for]="picker2" />
         <mat-datepicker #picker2 />
       </mat-form-field>
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Comprador</mat-label>
+        <input
+          type="text"
+          matInput
+          [formControl]="buyerDisplay"
+          [matAutocomplete]="buyerAuto"
+          (input)="buyerSearch.set($any($event.target).value)"
+          (blur)="syncBuyerDisplay()"
+        />
+        <mat-autocomplete #buyerAuto="matAutocomplete" (optionSelected)="onBuyerSelected($event)">
+          @for (emp of filteredEmployees(); track emp.id) {
+            <mat-option [value]="emp.id">{{ emp.name }} ({{ emp.numIdentification }})</mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
     </div>
 
-    <!-- Buyer (employee) autocomplete -->
-    <mat-form-field appearance="outline">
-      <mat-label>Comprador</mat-label>
-      <input
-        type="text"
-        matInput
-        [formControl]="buyerDisplay"
-        [matAutocomplete]="buyerAuto"
-        (input)="buyerSearch.set($any($event.target).value)"
-        (blur)="syncBuyerDisplay()"
-      />
-      <mat-autocomplete #buyerAuto="matAutocomplete" (optionSelected)="onBuyerSelected($event)">
-        @for (emp of filteredEmployees(); track emp.id) {
-          <mat-option [value]="emp.id">{{ emp.name }} ({{ emp.numIdentification }})</mat-option>
-        }
-      </mat-autocomplete>
-    </mat-form-field>
-
-    <!-- Payment method + Support document type -->
-    <div class="of-grid">
-      <mat-form-field appearance="outline">
-        <mat-label>Forma de pago</mat-label>
-        <mat-select formControlName="paymentMethod">
-          @for (m of paymentMethods; track m) {
-            <mat-option [value]="m">{{ m }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
+    <!-- Row 2: Documento soporte + No. documento + Moneda + Forma de pago -->
+    <div class="of-grid-4">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
         <mat-label>Documento soporte</mat-label>
         <mat-select formControlName="supportDocumentType">
           @for (d of supportDocumentTypes; track d) {
@@ -132,16 +132,13 @@
           }
         </mat-select>
       </mat-form-field>
-    </div>
 
-    <!-- Support document number + currency -->
-    <div class="of-grid">
-      <mat-form-field appearance="outline">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
         <mat-label>No. documento soporte</mat-label>
         <input matInput formControlName="supportDocumentNumber" />
       </mat-form-field>
 
-      <mat-form-field appearance="outline">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
         <mat-label>Moneda</mat-label>
         <mat-select formControlName="currency">
           @for (c of currencies; track c) {
@@ -149,16 +146,29 @@
           }
         </mat-select>
       </mat-form-field>
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Forma de pago</mat-label>
+        <mat-select formControlName="paymentMethod">
+          @for (m of paymentMethods; track m) {
+            <mat-option [value]="m">{{ m }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
     </div>
 
     <!-- Notes -->
-    <mat-form-field appearance="outline" class="of-full-width">
+    <mat-form-field appearance="outline" class="of-full-width" subscriptSizing="dynamic">
       <mat-label>Notas</mat-label>
       <textarea matInput formControlName="notes" rows="3" maxlength="500"></textarea>
     </mat-form-field>
 
-    <!-- Lines section -->
-    <h3 class="of-section-title">Líneas de la orden</h3>
+    <!-- Divider -->
+    <div class="of-divider">
+      <span class="of-divider-line"></span>
+      <span class="of-divider-title">Ítems de la orden</span>
+      <span class="of-divider-line"></span>
+    </div>
 
     <div class="of-lines" formArrayName="linesArray">
       @for (line of linesArray.controls; track $index; let i = $index) {
@@ -199,11 +209,32 @@
 
           <!-- Ordered qty -->
           <mat-form-field appearance="outline" class="of-line-qty">
-            <mat-label>Cantidad</mat-label>
+            <mat-label
+              >Cantidad{{ lineUnitMap()[i] ? ' (' + lineUnitMap()[i] + ')' : '' }}</mat-label
+            >
             <input matInput type="number" min="0.001" step="0.001" formControlName="orderedQty" />
           </mat-form-field>
 
-          <!-- Unit cost -->
+          <!-- Discount % -->
+          <mat-form-field appearance="outline" class="of-line-discount">
+            <mat-label>% Desc.</mat-label>
+            <input
+              matInput
+              type="number"
+              min="0"
+              max="100"
+              step="0.01"
+              formControlName="discountPct"
+            />
+          </mat-form-field>
+
+          <!-- IVA (readonly, auto from product) -->
+          <mat-form-field appearance="outline" class="of-line-tax">
+            <mat-label>IVA</mat-label>
+            <input matInput [value]="taxLabel(line.controls.taxType.getRawValue())" readonly />
+          </mat-form-field>
+
+          <!-- Unit cost (auto-filled from product, editable) -->
           <mat-form-field appearance="outline" class="of-line-cost">
             <mat-label>Costo unitario</mat-label>
             <input matInput type="number" min="0" step="0.01" formControlName="unitCost" />
@@ -231,10 +262,42 @@
       <mat-icon>add</mat-icon> Agregar Item
     </button>
 
-    <!-- Order total -->
-    <div class="of-total-bar">
-      <span class="of-total-label">Total de la orden:</span>
-      <span class="of-total-value">{{ formatCurrency(orderTotal()) }}</span>
+    <!-- Order totals breakdown -->
+    <div class="of-totals-section">
+      <div class="of-total-row">
+        <span class="of-total-label">Subtotal</span>
+        <span class="of-total-value">{{ formatCurrency(orderSubtotal()) }}</span>
+      </div>
+      <div class="of-total-row">
+        <span class="of-total-label">Descuento</span>
+        <span class="of-total-value of-discount">{{ formatCurrency(orderDiscount()) }}</span>
+      </div>
+      @if (applicableRetentions().length > 0) {
+        @for (ret of applicableRetentions(); track ret.name) {
+          <div class="of-total-row">
+            <span class="of-total-label">Retefuente {{ ret.name }} ({{ ret.rate }}%)</span>
+            <span class="of-total-value">{{ formatCurrency(ret.amount) }}</span>
+          </div>
+        }
+      } @else {
+        <div class="of-total-row">
+          <span class="of-total-label"
+            >Retefuente
+            @if (retentionConfigs().length === 0) {
+              (sin configurar)
+            } @else if (!supplierTaxRegime()) {
+              (seleccione proveedor)
+            } @else {
+              (no aplica)
+            }
+          </span>
+          <span class="of-total-value">{{ formatCurrency(0) }}</span>
+        </div>
+      }
+      <div class="of-total-row of-total-final">
+        <span class="of-total-label">Total</span>
+        <span class="of-total-value of-total-bold">{{ formatCurrency(orderTotal()) }}</span>
+      </div>
     </div>
   </form>
 </div>

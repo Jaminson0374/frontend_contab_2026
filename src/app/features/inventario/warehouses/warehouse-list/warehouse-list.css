@@ -25,6 +25,7 @@
 .warehouse-card {
   border-radius: 12px;
   transition: box-shadow 0.2s;
+  cursor: pointer;
 }
 
 .warehouse-card:hover {
@@ -49,5 +50,11 @@ mat-card-content {
   padding-top: 12px;
 }
 
-.type-chip   { background: #e0f2fe !important; color: #075985 !important; }
-.inactive-chip { background: #fee2e2 !important; color: #991b1b !important; }
+.type-chip {
+  background: #e0f2fe !important;
+  color: #075985 !important;
+}
+.inactive-chip {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+}

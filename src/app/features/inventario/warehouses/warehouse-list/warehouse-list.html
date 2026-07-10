@@ -15,7 +15,13 @@
 @if (warehouses) {
   <div class="warehouses-grid">
     @for (wh of warehouses; track wh.id) {
-      <mat-card class="warehouse-card" [class.inactive]="!wh.active">
+      <mat-card
+        class="warehouse-card"
+        [class.inactive]="!wh.active"
+        [routerLink]="[wh.id]"
+        role="link"
+        tabindex="0"
+      >
         <mat-card-header>
           <mat-icon mat-card-avatar class="warehouse-icon">
             {{ warehouseIcons[wh.warehouseType] }}

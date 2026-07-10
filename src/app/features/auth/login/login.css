@@ -61,3 +61,19 @@ mat-form-field {
 .w-full {
   width: 100%;
 }
+
+.login-forgot {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.login-forgot a {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.login-forgot a:hover {
+  color: #0284c7;
+  text-decoration: underline;
+}

@@ -31,7 +31,7 @@ export interface QuickCreatePriceListData {
   ],
   template: `
     <div cdkDrag cdkDragRootElement=".cdk-overlay-pane">
-        <h2 mat-dialog-title cdkDragHandle class="qcd-title">
+      <h2 mat-dialog-title cdkDragHandle class="qcd-title">
         <mat-icon>{{ isEditMode ? 'edit' : 'add_circle' }}</mat-icon>
         {{ isEditMode ? 'Editar lista de precios' : 'Crear lista de precios' }}
       </h2>
@@ -114,7 +114,10 @@ export class QuickCreatePriceListDialogComponent {
 
   readonly form = this.fb.group({
     code: [this.data?.priceList?.code ?? '', [Validators.required, Validators.maxLength(20)]],
-    name: [this.data?.priceList?.name ?? this.data?.initialName ?? '', [Validators.required, Validators.maxLength(100)]],
+    name: [
+      this.data?.priceList?.name ?? this.data?.initialName ?? '',
+      [Validators.required, Validators.maxLength(100)],
+    ],
     description: [this.data?.priceList?.description ?? '', Validators.maxLength(255)],
   });
 
@@ -128,9 +131,15 @@ export class QuickCreatePriceListDialogComponent {
     this.error.set(null);
 
     const value = this.form.getRawValue();
-    const request$ = this.isEditMode && this.data.priceList
-      ? this.service.update(this.data.priceList.id, value.code!, value.name!, value.description || undefined)
-      : this.service.create(value.code!, value.name!, value.description || undefined);
+    const request$ =
+      this.isEditMode && this.data.priceList
+        ? this.service.update(
+            this.data.priceList.id,
+            value.code!,
+            value.name!,
+            value.description || undefined,
+          )
+        : this.service.create(value.code!, value.name!, value.description || undefined);
 
     request$.subscribe({
       next: (priceList: PriceList) => {
@@ -141,8 +150,8 @@ export class QuickCreatePriceListDialogComponent {
       error: (err: { error?: { message?: string } }) => {
         this.saving.set(false);
         this.error.set(
-          err?.error?.message
-            ?? (this.isEditMode
+          err?.error?.message ??
+            (this.isEditMode
               ? 'Error al actualizar la lista de precios.'
               : 'Error al crear la lista de precios.'),
         );

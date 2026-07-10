@@ -14,6 +14,8 @@ export interface Batch {
   ocId?: string;
   createdBy: string;
   createdAt: string;
+  updatedBy: string | null;
+  updatedAt: string;
 }
 
 export interface BatchRequest {

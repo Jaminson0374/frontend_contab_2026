@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, signal, effect } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
@@ -32,7 +32,6 @@ import Swal from 'sweetalert2';
 })
 export class CxpListComponent {
   readonly service = inject(AccountsPayableService);
-  private readonly destroyRef = inject(DestroyRef);
 
   readonly displayedColumns = [
     'supplierName',
@@ -44,26 +43,11 @@ export class CxpListComponent {
     'actions',
   ];
 
-  readonly payables = signal<AccountsPayable[]>([]);
-  readonly loading = signal(false);
-  readonly error = signal<string | null>(null);
+  readonly payables = computed(() => this.service.payables.value()?.content ?? []);
+  readonly isLoading = computed(() => this.service.payables.isLoading());
+  readonly err = computed(() => this.service.payables.error());
   readonly aging = signal<ApAgingResponse | null>(null);
   readonly agingLoading = signal(false);
-
-  constructor() {
-    effect(() => {
-      const apList = this.service.payables.value();
-      if (apList) {
-        this.payables.set(apList);
-        this.loading.set(false);
-      }
-    });
-  }
-
-  loadPayables(): void {
-    this.loading.set(true);
-    this.error.set(null);
-  }
 
   loadAging(): void {
     this.agingLoading.set(true);

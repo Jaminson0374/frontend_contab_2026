@@ -20,6 +20,51 @@
     </div>
   }
 
+  @if (!loading() && !oc() && !loadError()) {
+    <mat-card class="oc-selector-card">
+      <mat-card-content>
+        <p class="oc-selector-title">Buscá la orden de compra para registrar la recepción</p>
+        <mat-form-field appearance="outline" class="oc-search-field">
+          <mat-label>Buscar orden de compra</mat-label>
+          <input
+            matInput
+            [formControl]="ocSearchControl"
+            [matAutocomplete]="autoOc"
+            placeholder="Escribí el número de la OC..."
+          />
+          <mat-icon matSuffix>search</mat-icon>
+          <mat-autocomplete
+            #autoOc="matAutocomplete"
+            [displayWith]="displayOcOption"
+            (optionSelected)="onOcSelected($event)"
+          >
+            @for (order of ocSearchResults(); track order.id) {
+              <mat-option [value]="order">
+                <div class="oc-option">
+                  <span class="oc-option-number">{{ order.documentNumber }}</span>
+                  <span class="oc-option-supplier">{{ order.supplierName }}</span>
+                  <span class="oc-option-date">{{ order.orderDate }}</span>
+                  <span class="oc-option-status">{{ order.status }}</span>
+                </div>
+              </mat-option>
+            }
+            @if (ocSearching()) {
+              <mat-option disabled><mat-spinner diameter="16" /> Buscando...</mat-option>
+            }
+            @if (
+              !ocSearching() &&
+              ocSearchControl.value &&
+              ocSearchControl.value.length >= 2 &&
+              ocSearchResults().length === 0
+            ) {
+              <mat-option disabled>Sin resultados</mat-option>
+            }
+          </mat-autocomplete>
+        </mat-form-field>
+      </mat-card-content>
+    </mat-card>
+  }
+
   @if (oc(); as order) {
     <!-- OC Summary Card -->
     <mat-card class="oc-summary">

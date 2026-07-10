@@ -85,7 +85,9 @@ export interface Product {
   accountingTemplateId: string | null;
   active: boolean;
   version: number;
+  createdBy: string;
   createdAt: string;
+  updatedBy: string | null;
   updatedAt: string;
   warehouses: ProductWarehouse[];
   suppliers: ProductSupplier[];
