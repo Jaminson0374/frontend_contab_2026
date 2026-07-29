@@ -144,6 +144,13 @@
                   </mat-hint>
                 }
               </mat-form-field>
+
+              @if (isLinePerishable(i)) {
+                <mat-form-field appearance="outline">
+                  <mat-label>Fecha de vencimiento</mat-label>
+                  <input matInput type="date" formControlName="expirationDate" />
+                </mat-form-field>
+              }
             </div>
           </div>
         } @empty {

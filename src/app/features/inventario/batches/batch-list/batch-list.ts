@@ -15,9 +15,14 @@ import { BatchFormComponent } from '../batch-form/batch-form';
   selector: 'app-batch-list',
   standalone: true,
   imports: [
-    MatTableModule, MatButtonModule, MatIconModule,
-    MatChipsModule, MatSelectModule, MatProgressSpinnerModule,
-    DatePipe, DecimalPipe,
+    MatTableModule,
+    MatButtonModule,
+    MatIconModule,
+    MatChipsModule,
+    MatSelectModule,
+    MatProgressSpinnerModule,
+    DatePipe,
+    DecimalPipe,
   ],
   templateUrl: './batch-list.html',
   styleUrl: './batch-list.css',
@@ -26,19 +31,29 @@ export class BatchListComponent {
   private readonly dialog = inject(MatDialog);
   readonly service = inject(BatchService);
 
-  readonly displayedColumns = ['entryDate', 'status', 'initialWeight', 'purchaseCost', 'notes', 'actions'];
+  readonly displayedColumns = [
+    'entryDate',
+    'productName',
+    'supplierName',
+    'status',
+    'initialWeight',
+    'purchaseCost',
+    'trazabilidad',
+    'notes',
+    'actions',
+  ];
 
   readonly statusOptions: { value: BatchStatus | null; label: string }[] = [
-    { value: null,         label: 'Todos' },
-    { value: 'OPEN',       label: 'Abierto' },
+    { value: null, label: 'Todos' },
+    { value: 'OPEN', label: 'Abierto' },
     { value: 'PROCESSING', label: 'En proceso' },
-    { value: 'CLOSED',     label: 'Cerrado' },
+    { value: 'CLOSED', label: 'Cerrado' },
   ];
 
   readonly statusLabels: Record<BatchStatus, string> = {
-    OPEN:       'Abierto',
+    OPEN: 'Abierto',
     PROCESSING: 'En proceso',
-    CLOSED:     'Cerrado',
+    CLOSED: 'Cerrado',
   };
 
   onStatusChange(value: BatchStatus | null): void {
@@ -48,7 +63,7 @@ export class BatchListComponent {
 
   openForm(): void {
     const ref = this.dialog.open(BatchFormComponent, { width: '600px' });
-    ref.afterClosed().subscribe(saved => {
+    ref.afterClosed().subscribe((saved) => {
       if (saved) this.service.reload();
     });
   }
@@ -62,10 +77,10 @@ export class BatchListComponent {
   }
 
   nextPage(): void {
-    this.service.page.update(p => p + 1);
+    this.service.page.update((p) => p + 1);
   }
 
   prevPage(): void {
-    this.service.page.update(p => Math.max(0, p - 1));
+    this.service.page.update((p) => Math.max(0, p - 1));
   }
 }

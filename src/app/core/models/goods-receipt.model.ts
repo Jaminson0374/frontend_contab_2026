@@ -3,6 +3,7 @@ export interface ReceiptLineItemInput {
   warehouseId: string;
   receivedQty: number;
   actualCost: number;
+  expirationDate?: string | null;
 }
 
 export interface GoodsReceiptRequest {
@@ -22,6 +23,7 @@ export interface GoodsReceipt {
   ocId: string;
   receiptDate: string;
   batchIds: string[];
+  expirationDates: (string | null)[];
   deviations: Deviation[];
 }
 

@@ -24,6 +24,7 @@ import { debounceTime, distinctUntilChanged, filter } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PurchaseOrderService } from '../../../../core/services/purchase-order.service';
 import { GoodsReceiptService } from '../../../../core/services/goods-receipt.service';
+import { ProductService } from '../../../../core/services/product.service';
 import type {
   PurchaseLineItemResponse,
   PurchaseOrder,
@@ -38,6 +39,7 @@ type ReceiptLineForm = FormGroup<{
   warehouseId: FormControl<string>;
   receivedQty: FormControl<number>;
   actualCost: FormControl<number>;
+  expirationDate: FormControl<string | null>;
 }>;
 
 @Component({
@@ -63,6 +65,7 @@ export class RecepcionFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly purchaseOrderService = inject(PurchaseOrderService);
   private readonly goodsReceiptService = inject(GoodsReceiptService);
+  private readonly productService = inject(ProductService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly ocId = signal('');
@@ -78,6 +81,8 @@ export class RecepcionFormComponent implements OnInit {
   readonly submitSuccess = signal<ReceiptResponse | null>(null);
 
   readonly linesArray = this.fb.array<ReceiptLineForm>([]);
+
+  readonly perishableLines = signal<Record<number, boolean>>({});
 
   readonly ocSummary = computed(() => {
     const order = this.oc();
@@ -179,8 +184,18 @@ export class RecepcionFormComponent implements OnInit {
 
   private buildLinesFromOrder(order: PurchaseOrder): void {
     this.linesArray.clear();
-    (order.lines ?? []).forEach((line) => {
+    (order.lines ?? []).forEach((line, index) => {
       this.linesArray.push(this.createLineGroup(line));
+      // Check if product is perishable for conditional field visibility
+      if (line.productId) {
+        this.productService.getById(line.productId).subscribe({
+          next: (product) => {
+            if (product.perishable) {
+              this.perishableLines.update((map) => ({ ...map, [index]: true }));
+            }
+          },
+        });
+      }
     });
   }
 
@@ -204,6 +219,7 @@ export class RecepcionFormComponent implements OnInit {
         Validators.required,
         Validators.min(0),
       ]),
+      expirationDate: this.fb.control<string | null>(null),
     }) as unknown as ReceiptLineForm;
   }
 
@@ -263,6 +279,7 @@ export class RecepcionFormComponent implements OnInit {
           warehouseId: l.warehouseId as string,
           receivedQty: l.receivedQty as number,
           actualCost: l.actualCost as number,
+          expirationDate: (l.expirationDate as string) || null,
         })),
     };
 
@@ -308,6 +325,10 @@ export class RecepcionFormComponent implements OnInit {
 
   isDeviationWarning(index: number): boolean {
     return this.getLineDeviationPct(index) > 20;
+  }
+
+  isLinePerishable(index: number): boolean {
+    return this.perishableLines()[index] === true;
   }
 
   getLineDeviationClass(index: number): string {

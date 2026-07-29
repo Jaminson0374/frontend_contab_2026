@@ -3,6 +3,38 @@
 <mat-dialog-content>
   <form [formGroup]="form" class="form-grid">
     <mat-form-field appearance="outline">
+      <mat-label>Producto</mat-label>
+      <input
+        matInput
+        type="text"
+        formControlName="productSearch"
+        placeholder="Buscar producto..."
+        [matAutocomplete]="autoProduct"
+      />
+      <mat-autocomplete
+        #autoProduct="matAutocomplete"
+        [displayWith]="displayProduct"
+        (optionSelected)="onProductSelected($event.option.value)"
+      >
+        @if (searchingProducts()) {
+          <mat-option disabled>Cargando...</mat-option>
+        }
+        @for (p of filteredProducts(); track p.id) {
+          <mat-option [value]="p">
+            {{ p.name }} <small>({{ p.productCode }})</small>
+          </mat-option>
+        }
+        @if (
+          !searchingProducts() &&
+          filteredProducts().length === 0 &&
+          form.controls.productSearch.value
+        ) {
+          <mat-option disabled>Sin resultados</mat-option>
+        }
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
       <mat-label>Proveedor</mat-label>
       <mat-select formControlName="supplierId">
         @if (thirdPartyService.supplierOptions.isLoading()) {
@@ -53,6 +85,76 @@
       <mat-label>Notas</mat-label>
       <textarea matInput formControlName="notes" rows="3" maxlength="500"></textarea>
     </mat-form-field>
+
+    <!-- Documento Origen Section -->
+    <div class="form-section">
+      <h4>Documento Origen</h4>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Tipo de documento</mat-label>
+        <mat-select formControlName="sourceType" (selectionChange)="onSourceTypeChange()">
+          <mat-option value="NONE">Sin documento</mat-option>
+          <mat-option value="OC">Orden de Compra</mat-option>
+          <mat-option value="RECEIPT">Recepción Logística</mat-option>
+          <mat-option value="EXTERNAL">Documento Externo</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      @if (form.get('sourceType')?.value === 'OC') {
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Orden de Compra</mat-label>
+          <input
+            matInput
+            [matAutocomplete]="ocAuto"
+            [value]="ocSearch()"
+            (input)="onOcInput($event)"
+            placeholder="Buscar por número de OC..."
+          />
+          <mat-autocomplete
+            #ocAuto="matAutocomplete"
+            (optionSelected)="onOcSelected($event.option.value)"
+          >
+            @for (po of ocOptions(); track po.id) {
+              <mat-option [value]="po">{{ po.documentNumber }} — {{ po.supplierName }}</mat-option>
+            }
+            @if (searchingOc()) {
+              <mat-option disabled>Buscando...</mat-option>
+            }
+          </mat-autocomplete>
+        </mat-form-field>
+      }
+
+      @if (form.get('sourceType')?.value === 'RECEIPT') {
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Recepción Logística</mat-label>
+          <input
+            matInput
+            [matAutocomplete]="receiptAuto"
+            [value]="receiptSearch()"
+            (input)="onReceiptInput($event)"
+            placeholder="Buscar recepción..."
+          />
+          <mat-autocomplete
+            #receiptAuto="matAutocomplete"
+            (optionSelected)="onReceiptSelected($event.option.value)"
+          >
+            @for (r of receiptOptions(); track r.id) {
+              <mat-option [value]="r">{{ r.receiptNumber }} — {{ r.receiptDate }}</mat-option>
+            }
+            @if (searchingReceipt()) {
+              <mat-option disabled>Buscando...</mat-option>
+            }
+          </mat-autocomplete>
+        </mat-form-field>
+      }
+
+      @if (form.get('sourceType')?.value === 'EXTERNAL') {
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Número de documento</mat-label>
+          <input matInput formControlName="externalDocRef" placeholder="Ej: GUIA-123, REMITO-456" />
+        </mat-form-field>
+      }
+    </div>
   </form>
 </mat-dialog-content>
 
