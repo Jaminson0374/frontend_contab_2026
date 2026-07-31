@@ -24,6 +24,8 @@ import {
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -103,6 +105,7 @@ interface DesposteCutForm {
   warehouseId: FormControl<string>;
   weight: FormControl<number>;
   suggestedSalePrice: FormControl<number>;
+  expirationDate: FormControl<string | null>;
 }
 
 interface DesposteForm {
@@ -130,6 +133,7 @@ interface DesposteCutFormValue {
   warehouseId: string;
   weight: number;
   suggestedSalePrice: number;
+  expirationDate: string | null;
 }
 
 function trimmedRequiredValidator(): ValidatorFn {
@@ -226,6 +230,8 @@ function extractErrorMessage(error: unknown, fallback: string): string {
     MatButtonModule,
     MatCardModule,
     MatAutocompleteModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
@@ -651,6 +657,7 @@ ${result.cuts.map((c) => `- ${this.resultProductLabel(c.productId)}: ${c.weight}
         Validators.required,
         positiveNumberValidator(),
       ]),
+      expirationDate: this.fb.nonNullable.control<string | null>(null),
     });
 
     this.bindProductSearch(cut);
@@ -705,6 +712,7 @@ ${result.cuts.map((c) => `- ${this.resultProductLabel(c.productId)}: ${c.weight}
         warehouseId: cut.warehouseId,
         weight: cut.weight,
         suggestedSalePrice: cut.suggestedSalePrice,
+        expirationDate: cut.expirationDate ?? null,
       })),
     };
   }

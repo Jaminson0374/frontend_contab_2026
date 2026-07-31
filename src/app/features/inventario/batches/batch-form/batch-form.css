@@ -1,0 +1,287 @@
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  width: 100%;
+}
+
+.draggable-title {
+  cursor: move;
+  user-select: none;
+}
+
+.form-grid mat-form-field {
+  width: 100%;
+}
+
+.field-span-3 {
+  grid-column: 1 / -1;
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-section h4 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--mat-sys-on-surface-variant, #666);
+}
+
+/* Sub-grid de 2 columnas dentro de la sección documento origen */
+.doc-origin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.form-section mat-form-field {
+  width: 100%;
+}
+
+/* ── Product search panel ──────────────────────────────────── */
+
+.product-field-wrapper {
+  position: relative;
+}
+
+.product-panel-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 998;
+}
+
+.product-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  background: var(--mat-sys-surface, #fff);
+  border-radius: 10px;
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.07),
+    0 10px 30px rgba(0, 0, 0, 0.15);
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+
+.product-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 0.5rem 0.625rem 0.875rem;
+  background: var(--mat-sys-surface-container, #f5f5f5);
+  border-bottom: 1px solid var(--mat-sys-outline-variant, #e0e0e0);
+}
+
+.panel-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.panel-header-icon {
+  font-size: 1.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--mat-sys-primary, #1976d2);
+}
+
+.panel-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--mat-sys-on-surface, #212121);
+}
+
+.panel-count {
+  font-size: 0.75rem;
+  color: var(--mat-sys-on-surface-variant, #757575);
+  background: var(--mat-sys-surface-container-highest, #e8e8e8);
+  padding: 0.125rem 0.5rem;
+  border-radius: 10px;
+}
+
+.panel-close-btn {
+  flex-shrink: 0;
+}
+
+/* ── Loading & empty ────────────────────────────────────── */
+
+.panel-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2.5rem 1rem;
+  color: var(--mat-sys-on-surface-variant, #757575);
+  font-size: 0.875rem;
+}
+
+.panel-no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2.5rem 1rem;
+  color: var(--mat-sys-on-surface-variant, #757575);
+}
+
+.panel-no-results mat-icon {
+  font-size: 2.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  opacity: 0.4;
+}
+
+/* ── Table wrapper ──────────────────────────────────────── */
+
+.panel-table-wrapper {
+  max-height: 340px;
+  overflow: auto;
+}
+
+.product-panel-table {
+  width: 100%;
+}
+
+/* ── Column widths ──────────────────────────────────────── */
+
+.product-panel-table .col-code {
+  width: 110px;
+  min-width: 90px;
+}
+
+.product-panel-table .col-name {
+  flex: 1;
+  min-width: 180px;
+}
+
+.product-panel-table .col-stock {
+  width: 90px;
+  min-width: 75px;
+  text-align: right;
+  justify-content: flex-end;
+}
+
+.product-panel-table .col-price {
+  width: 130px;
+  min-width: 110px;
+  text-align: right;
+  justify-content: flex-end;
+}
+
+/* ── Header cells ───────────────────────────────────────── */
+
+.product-panel-table .mat-mdc-header-cell {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--mat-sys-on-surface-variant, #616161);
+  background: var(--mat-sys-surface-container-low, #fafafa);
+  border-bottom: 2px solid var(--mat-sys-outline-variant, #e0e0e0);
+  padding: 0 0.75rem;
+}
+
+/* ── Row styles ─────────────────────────────────────────── */
+
+.product-panel-table .mat-mdc-row {
+  cursor: pointer;
+  min-height: 44px;
+  transition: background-color 120ms ease;
+}
+
+.product-panel-table .mat-mdc-row:nth-child(even) {
+  background: var(--mat-sys-surface-container-lowest, #fafbfc);
+}
+
+.product-panel-table .mat-mdc-row:nth-child(odd) {
+  background: transparent;
+}
+
+.product-panel-table .mat-mdc-row:hover {
+  background: var(--mat-sys-surface-container, #f0f0f5) !important;
+}
+
+/* ── Focus ring ─────────────────────────────────────────── */
+
+.product-panel-table .mat-mdc-row:focus {
+  outline: none;
+  box-shadow: inset 3px 0 0 var(--mat-sys-primary, #1976d2);
+  background: var(--mat-sys-primary-container, #d9e9ff) !important;
+}
+
+/* ── Selected row ───────────────────────────────────────── */
+
+.product-panel-table .selected-row {
+  background: var(--mat-sys-secondary-container, #e8f5e9) !important;
+  box-shadow: inset 3px 0 0 var(--mat-sys-secondary, #388e3c);
+}
+
+/* ── Cell content ───────────────────────────────────────── */
+
+.product-panel-table .mat-mdc-cell {
+  font-size: 0.8125rem;
+  padding: 0 0.75rem;
+  color: var(--mat-sys-on-surface, #212121);
+}
+
+.code-badge {
+  font-family: 'JetBrains Mono', 'Cascadia Code', 'Courier New', monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--mat-sys-primary, #1976d2);
+  background: var(--mat-sys-primary-container, #e3f2fd);
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+}
+
+.product-name-cell {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.product-name {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-barcode {
+  font-size: 0.7rem;
+  color: var(--mat-sys-on-surface-variant, #999);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Stock indicators ───────────────────────────────────── */
+
+.stock-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.stock-ok {
+  color: var(--mat-sys-tertiary, #2e7d32);
+}
+
+.stock-low {
+  color: var(--mat-sys-error, #c62828);
+}
+
+/* ── Paginator ──────────────────────────────────────────── */
+
+.product-panel .mat-mdc-paginator {
+  border-top: 1px solid var(--mat-sys-outline-variant, #e0e0e0);
+  font-size: 0.8125rem;
+}

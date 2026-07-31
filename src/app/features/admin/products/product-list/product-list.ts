@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, OnInit, signal } from '@angular/core';
 import { CurrencyPipe, DecimalPipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -52,7 +52,6 @@ export class ProductListComponent implements OnInit {
   readonly displayedColumns = [
     'index',
     'productCode',
-    'name',
     'barcode',
     'totalStock',
     'salePrice',
@@ -66,6 +65,8 @@ export class ProductListComponent implements OnInit {
   readonly data = signal<PageResponse<Product> | null>(null);
   readonly searchControl = new FormControl('', { nonNullable: true });
   readonly filterControl = new FormControl<ProductListFilter[]>([], { nonNullable: true });
+  readonly filterPanelOpen = signal(false);
+  readonly viewMode = signal<'list' | 'card'>('list');
   readonly filterOptions: ReadonlyArray<{ value: ProductListFilter; label: string }> = [
     { value: 'exempt', label: 'Exentos' },
     { value: 'active', label: 'Activos' },
@@ -73,7 +74,59 @@ export class ProductListComponent implements OnInit {
     { value: 'no-stock', label: 'Sin stock' },
     { value: 'below-min-stock', label: 'Por debajo del stock' },
   ];
-  selectedFilters: ProductListFilter[] = [];
+  readonly selectedFilters = signal<ProductListFilter[]>([]);
+
+  readonly summaryCards = computed(() => {
+    const rows = this.filteredRows();
+    const pageData = this.data();
+    const total = pageData?.totalElements ?? 0;
+    const active = rows.filter((product) => product.active).length;
+    const lowStock = rows.filter((product) => product.totalStock <= product.minStock).length;
+    const inventoryValue = rows.reduce(
+      (sum, product) => sum + product.costPrice * (product.totalStock ?? 0),
+      0,
+    );
+
+    const activePercent = total > 0 ? Math.round((active / total) * 100) : 0;
+    const lowStockPercent = rows.length > 0 ? Math.round((lowStock / rows.length) * 100) : 0;
+
+    const currency = new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      maximumFractionDigits: 0,
+    });
+
+    return [
+      {
+        icon: 'inventory_2',
+        label: 'Total artículos',
+        value: `${total}`,
+        caption: 'registros',
+        tone: 'blue',
+      },
+      {
+        icon: 'check_circle',
+        label: 'Activos',
+        value: `${active}`,
+        caption: `${activePercent}% del total`,
+        tone: 'green',
+      },
+      {
+        icon: 'warning',
+        label: 'Bajo stock',
+        value: `${lowStock}`,
+        caption: `${lowStockPercent}% del total`,
+        tone: 'orange',
+      },
+      {
+        icon: 'payments',
+        label: 'Valor inventario',
+        value: currency.format(inventoryValue),
+        caption: 'Total existencia',
+        tone: 'violet',
+      },
+    ];
+  });
 
   filteredRows(): Product[] {
     const pageData = this.data();
@@ -81,20 +134,44 @@ export class ProductListComponent implements OnInit {
       return [];
     }
 
-    if (this.selectedFilters.length === 0) {
+    if (this.selectedFilters().length === 0) {
       return pageData.content;
     }
 
     return pageData.content.filter((product) =>
-      this.selectedFilters.every((filter) => this.matchesFilter(product, filter)),
+      this.selectedFilters().every((filter) => this.matchesFilter(product, filter)),
     );
   }
 
   selectedFilterLabels(): string[] {
-    const selectedFilters = new Set(this.selectedFilters);
+    const selectedFilters = new Set(this.selectedFilters());
     return this.filterOptions
       .filter((option) => selectedFilters.has(option.value))
       .map((option) => option.label);
+  }
+
+  toggleFilterPanel(): void {
+    this.filterPanelOpen.update((open) => !open);
+  }
+
+  closeFilterPanel(): void {
+    this.filterPanelOpen.set(false);
+  }
+
+  toggleFilterValue(value: ProductListFilter): void {
+    const next = new Set(this.selectedFilters());
+    if (next.has(value)) {
+      next.delete(value);
+    } else {
+      next.add(value);
+    }
+
+    this.selectedFilters.set(Array.from(next));
+    this.filterControl.setValue(this.selectedFilters(), { emitEvent: false });
+  }
+
+  setViewMode(mode: 'list' | 'card'): void {
+    this.viewMode.set(mode);
   }
 
   ngOnInit(): void {
@@ -117,7 +194,7 @@ export class ProductListComponent implements OnInit {
     this.filterControl.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((filters) => {
-        this.selectedFilters = filters ?? [];
+        this.selectedFilters.set(filters ?? []);
       });
   }
 
@@ -181,6 +258,10 @@ export class ProductListComponent implements OnInit {
     if (stock < product.minStock) return 'stock-low';
     if (stock <= product.minStock * 1.5) return 'stock-warn';
     return 'stock-ok';
+  }
+
+  getProductThumbnail(product: Product): string | null {
+    return product.images?.[0]?.imageUrl ?? null;
   }
 
   openNew(): void {

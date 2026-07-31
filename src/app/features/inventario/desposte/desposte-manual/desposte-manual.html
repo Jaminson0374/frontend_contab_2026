@@ -138,6 +138,18 @@
             <strong>{{ result.totalAllocatedCost | number: '1.0-2' }}</strong>
             <p>{{ result.cuts.length }} cortes valorizados</p>
           </div>
+
+          @if (result.childBatchIds?.length) {
+            <div class="result-metric">
+              <span class="summary-label">Lotes hijo creados</span>
+              <strong>{{ result.childBatchIds!.length }}</strong>
+              <p>
+                @for (id of result.childBatchIds!; track id; let last = $last) {
+                  {{ shortId(id) }}{{ !last ? ', ' : '' }}
+                }
+              </p>
+            </div>
+          }
         </div>
 
         @if (resultCutsPreview().length > 0) {
@@ -305,6 +317,7 @@
                   <th>Bodega</th>
                   <th>Peso (kg)</th>
                   <th>Precio sugerido</th>
+                  <th>Vencimiento</th>
                   <th class="actions-column"></th>
                 </tr>
               </thead>
@@ -414,6 +427,19 @@
                         ) {
                           <mat-error>El precio sugerido debe ser mayor a cero.</mat-error>
                         }
+                      </mat-form-field>
+                    </td>
+
+                    <td>
+                      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                        <mat-label>Vencimiento</mat-label>
+                        <input
+                          matInput
+                          [matDatepicker]="expPicker"
+                          formControlName="expirationDate"
+                        />
+                        <mat-datepicker-toggle matIconSuffix [for]="expPicker" />
+                        <mat-datepicker #expPicker />
                       </mat-form-field>
                     </td>
 

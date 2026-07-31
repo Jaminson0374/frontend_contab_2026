@@ -23,7 +23,11 @@
   padding: 3rem 1rem;
   color: var(--mat-sys-on-surface-variant);
 
-  mat-icon { font-size: 48px; width: 48px; height: 48px; }
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+  }
 }
 
 .spinner-container {
@@ -41,4 +45,45 @@
 .low-stock {
   color: var(--mat-sys-error);
   font-weight: 600;
+}
+
+/* ── Product cell ────────────────────────────────────────── */
+
+.product-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.product-name {
+  font-weight: 500;
+}
+
+.product-code {
+  font-size: 0.75rem;
+  color: var(--mat-sys-primary, #1976d2);
+  font-family: 'Courier New', monospace;
+}
+
+/* ── Batch cell ──────────────────────────────────────────── */
+
+.batch-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.batch-id {
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  color: var(--mat-sys-on-surface-variant, #666);
+}
+
+.batch-type-tag {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  background: var(--mat-sys-secondary-container, #e8f5e9);
+  color: var(--mat-sys-on-secondary-container, #1b5e20);
 }

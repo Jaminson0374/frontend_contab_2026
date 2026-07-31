@@ -21,6 +21,10 @@
   width: 160px;
 }
 
+.type-filter {
+  width: 170px;
+}
+
 .spinner-container {
   display: flex;
   justify-content: center;
@@ -41,6 +45,71 @@
   padding: 0.75rem 0;
 }
 
-.chip-status-open       { --mdc-chip-label-text-color: #15803d; background: #dcfce7; }
-.chip-status-in_process { --mdc-chip-label-text-color: #92400e; background: #fef3c7; }
-.chip-status-closed     { --mdc-chip-label-text-color: #475569; background: #f1f5f9; }
+/* --- Status chips --- */
+.chip-status-open {
+  --mdc-chip-label-text-color: #15803d;
+  background: #dcfce7;
+}
+.chip-status-processing {
+  --mdc-chip-label-text-color: #92400e;
+  background: #fef3c7;
+}
+.chip-status-closed {
+  --mdc-chip-label-text-color: #475569;
+  background: #f1f5f9;
+}
+
+/* --- Batch type chips --- */
+.chip-batchtype-parent {
+  --mdc-chip-label-text-color: #1e40af;
+  background: #dbeafe;
+}
+.chip-batchtype-child {
+  --mdc-chip-label-text-color: #92400e;
+  background: #fef3c7;
+}
+.chip-batchtype-standard {
+  --mdc-chip-label-text-color: #475569;
+  background: #f1f5f9;
+}
+
+/* --- Batch type cell layout --- */
+.batch-type-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* --- Expand button inside batchType cell (PARENT rows) --- */
+.expand-btn {
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  flex-shrink: 0;
+}
+
+.expand-btn mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+}
+
+/* --- CHILD indent spacer (inside batchType cell, aligns chip to PARENT chip position) --- */
+.batch-row-indent {
+  display: inline-block;
+  width: 24px;
+  flex-shrink: 0;
+}
+
+/* --- Parent reference text for CHILD batches --- */
+.parent-ref {
+  font-size: 0.75rem;
+  color: var(--mat-sys-outline);
+  white-space: nowrap;
+}
+
+/* --- Full row indentation for CHILD batches --- */
+.child-row td:first-child {
+  padding-left: 32px;
+}

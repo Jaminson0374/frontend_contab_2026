@@ -67,22 +67,31 @@ export class BatchService {
         const dedupedBatches = new Map<string, Batch>();
 
         pages.forEach((page) => {
-          page.content.forEach((batch) => {
-            if (!dedupedBatches.has(batch.id)) {
-              dedupedBatches.set(batch.id, batch);
-            }
-          });
+          page.content
+            .filter((b) => b.batchType !== 'CHILD')
+            .forEach((batch) => {
+              if (!dedupedBatches.has(batch.id)) {
+                dedupedBatches.set(batch.id, batch);
+              }
+            });
         });
 
-        return Array.from(dedupedBatches.values()).sort((left, right) =>
-          right.entryDate.localeCompare(left.entryDate),
-        );
+        return Array.from(dedupedBatches.values()).sort((a, b) => {
+          const expA = a.expirationDate ?? '9999-12-31';
+          const expB = b.expirationDate ?? '9999-12-31';
+          if (expA !== expB) return expA.localeCompare(expB);
+          return a.entryDate.localeCompare(b.entryDate);
+        });
       }),
     );
   }
 
   create(request: BatchRequest): Observable<Batch> {
     return this.http.post<Batch>(this.base, request);
+  }
+
+  listChildren(parentId: string): Observable<Batch[]> {
+    return this.http.get<Batch[]>(`${this.base}/${parentId}/children`);
   }
 
   updateStatus(id: string, status: BatchStatus): Observable<Batch> {

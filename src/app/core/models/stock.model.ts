@@ -8,4 +8,7 @@ export interface InventoryStock {
   availableQuantity: number;
   unitCost: number;
   updatedAt: string;
+  productName?: string;
+  productCode?: string;
+  batchType?: string;
 }

@@ -5,7 +5,8 @@
     [value]="stockService.selectedWarehouseId()"
     (selectionChange)="onWarehouseChange($event.value)"
     class="warehouse-filter"
-    placeholder="Seleccioná una bodega">
+    placeholder="Seleccioná una bodega"
+  >
     @for (w of activeWarehouses(); track w.id) {
       <mat-option [value]="w.id">{{ w.name }}</mat-option>
     }
@@ -33,36 +34,49 @@
 
 @if (stock && stock.length > 0) {
   <mat-table [dataSource]="stock" class="w-full">
-
-    <ng-container matColumnDef="productId">
-      <mat-header-cell *matHeaderCellDef>Producto (ID)</mat-header-cell>
-      <mat-cell *matCellDef="let row">{{ row.productId }}</mat-cell>
+    <ng-container matColumnDef="productName">
+      <mat-header-cell *matHeaderCellDef>Producto</mat-header-cell>
+      <mat-cell *matCellDef="let row">
+        <div class="product-cell">
+          <span class="product-name">{{ row.productName ?? '—' }}</span>
+          @if (row.productCode) {
+            <span class="product-code">{{ row.productCode }}</span>
+          }
+        </div>
+      </mat-cell>
     </ng-container>
 
     <ng-container matColumnDef="batchId">
-      <mat-header-cell *matHeaderCellDef>Lote (ID)</mat-header-cell>
-      <mat-cell *matCellDef="let row">{{ row.batchId }}</mat-cell>
+      <mat-header-cell *matHeaderCellDef>Lote</mat-header-cell>
+      <mat-cell *matCellDef="let row">
+        <div class="batch-cell">
+          <span class="batch-id" [title]="row.batchId">{{ row.batchId | slice: 0 : 8 }}...</span>
+          @if (row.batchType) {
+            <span class="batch-type-tag">{{ getBatchTypeLabel(row.batchType) }}</span>
+          }
+        </div>
+      </mat-cell>
     </ng-container>
 
     <ng-container matColumnDef="currentQuantity">
       <mat-header-cell *matHeaderCellDef>Stock actual (kg)</mat-header-cell>
-      <mat-cell *matCellDef="let row">{{ row.currentQuantity | number:'1.2-2' }}</mat-cell>
+      <mat-cell *matCellDef="let row">{{ row.currentQuantity | number: '1.2-2' }}</mat-cell>
     </ng-container>
 
     <ng-container matColumnDef="availableQuantity">
       <mat-header-cell *matHeaderCellDef>Disponible (kg)</mat-header-cell>
       <mat-cell *matCellDef="let row" [class.low-stock]="row.availableQuantity < 10">
-        {{ row.availableQuantity | number:'1.2-2' }}
+        {{ row.availableQuantity | number: '1.2-2' }}
       </mat-cell>
     </ng-container>
 
     <ng-container matColumnDef="unitCost">
       <mat-header-cell *matHeaderCellDef>Costo unitario ($)</mat-header-cell>
-      <mat-cell *matCellDef="let row">{{ row.unitCost | number:'1.2-2' }}</mat-cell>
+      <mat-cell *matCellDef="let row">{{ row.unitCost | number: '1.2-2' }}</mat-cell>
     </ng-container>
 
     <mat-header-row *matHeaderRowDef="displayedColumns" />
-    <mat-row *matRowDef="let row; columns: displayedColumns;" />
+    <mat-row *matRowDef="let row; columns: displayedColumns" />
   </mat-table>
 }
 

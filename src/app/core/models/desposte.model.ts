@@ -18,6 +18,7 @@ export interface ManualDesposteCutInput {
   warehouseId: string;
   weight: number;
   suggestedSalePrice: number;
+  expirationDate?: string | null;
 }
 
 export interface ManualDesposteRequest {
@@ -70,6 +71,7 @@ export interface ManualDesposteResult {
   cuts: readonly ManualDesposteCutResult[];
   stockUpserts: readonly StockUpsertDraft[];
   sourceBatchTransition: SourceBatchTransition;
+  childBatchIds?: string[];
   createdAt?: string;
   createdBy?: string;
 }

@@ -46,7 +46,9 @@ export class ProductService {
     searchType?: ProductSearchType,
   ): Observable<PageResponse<Product>> {
     const params = this.buildSearchParams(query, page, size, searchType);
-    return this.http.get<PageResponse<Product>>(`${this.base}?${params}`);
+    return this.http
+      .get<unknown>(`${this.base}?${params}`)
+      .pipe(map((response) => this.toPageResponse(response, page, size)));
   }
 
   private emptyPage(page: number, size: number): PageResponse<Product> {
@@ -86,6 +88,33 @@ export class ProductService {
       totalElements,
       totalPages,
       last: true,
+    };
+  }
+
+  private toPageResponse(response: unknown, page: number, size: number): PageResponse<Product> {
+    const pageResponse = response as Partial<PageResponse<Product>> & {
+      page?: { number?: number; size?: number; totalElements?: number; totalPages?: number };
+      content?: Product[];
+    };
+
+    const pageInfo = pageResponse.page;
+    const content = pageResponse.content ?? [];
+    const resolvedSize = pageInfo?.size ?? pageResponse.size ?? size;
+    const resolvedPage = pageInfo?.number ?? pageResponse.page ?? page;
+    const resolvedTotalElements =
+      pageInfo?.totalElements ?? pageResponse.totalElements ?? content.length;
+    const resolvedTotalPages =
+      pageInfo?.totalPages ??
+      pageResponse.totalPages ??
+      (resolvedSize > 0 ? Math.ceil(resolvedTotalElements / resolvedSize) : 0);
+
+    return {
+      content,
+      page: resolvedPage,
+      size: resolvedSize,
+      totalElements: resolvedTotalElements,
+      totalPages: resolvedTotalPages,
+      last: resolvedPage + 1 >= resolvedTotalPages,
     };
   }
 

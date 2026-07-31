@@ -213,6 +213,7 @@ describe('DesposteManualComponent', () => {
       notes: null,
       cuts: [
         {
+          expirationDate: null,
           productId: product.id,
           warehouseId: warehouse.id,
           weight: 118,

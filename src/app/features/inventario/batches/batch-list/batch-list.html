@@ -3,6 +3,16 @@
 
   <div class="page-actions">
     <mat-select
+      [value]="batchTypeFilter()"
+      (selectionChange)="onBatchTypeChange($event.value)"
+      class="type-filter"
+    >
+      @for (opt of batchTypeOptions; track opt.value) {
+        <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+      }
+    </mat-select>
+
+    <mat-select
       [value]="service.status()"
       (selectionChange)="onStatusChange($event.value)"
       class="status-filter"
@@ -16,20 +26,20 @@
   </div>
 </div>
 
-@if (service.batches.isLoading()) {
+@if (loading()) {
   <div class="spinner-container">
     <mat-spinner diameter="40" />
   </div>
 }
 
-@if (service.batches.error()) {
-  <p class="error-msg">Error cargando lotes. Intentá de nuevo.</p>
+@if (error()) {
+  <p class="error-msg">{{ error() }}</p>
 }
 
-@let data = service.batches.value();
+@let pageData = data();
 
-@if (data) {
-  <mat-table [dataSource]="data.content" class="w-full">
+@if (pageData) {
+  <mat-table [dataSource]="displayedBatches()" class="w-full">
     <ng-container matColumnDef="entryDate">
       <mat-header-cell *matHeaderCellDef>Fecha entrada</mat-header-cell>
       <mat-cell *matCellDef="let row">{{ row.entryDate | date: 'dd/MM/yyyy' }}</mat-cell>
@@ -79,6 +89,35 @@
       </mat-cell>
     </ng-container>
 
+    <ng-container matColumnDef="batchType">
+      <mat-header-cell *matHeaderCellDef>Tipo</mat-header-cell>
+      <mat-cell *matCellDef="let row">
+        <div class="batch-type-cell">
+          @if (isParentBatch(row)) {
+            <button
+              mat-icon-button
+              class="expand-btn"
+              (click)="toggleExpand(row)"
+              [attr.aria-label]="isExpanded(row.id) ? 'Colapsar hijos' : 'Expandir hijos'"
+            >
+              <mat-icon>{{ isExpanded(row.id) ? 'expand_more' : 'chevron_right' }}</mat-icon>
+            </button>
+          }
+          @if (isChildBatch(row)) {
+            <span class="batch-row-indent"></span>
+          }
+          <mat-chip [class]="'chip-batchtype-' + (row.batchType ?? 'standard').toLowerCase()">
+            {{ getBatchTypeLabel(row.batchType) }}
+          </mat-chip>
+          @if (isChildBatch(row) && row.parentBatchId) {
+            <span class="parent-ref" [title]="'Lote padre: ' + row.parentBatchId"
+              >← {{ getParentRef(row) }}</span
+            >
+          }
+        </div>
+      </mat-cell>
+    </ng-container>
+
     <ng-container matColumnDef="notes">
       <mat-header-cell *matHeaderCellDef>Notas</mat-header-cell>
       <mat-cell *matCellDef="let row">{{ row.notes ?? '—' }}</mat-cell>
@@ -101,15 +140,18 @@
     </ng-container>
 
     <mat-header-row *matHeaderRowDef="displayedColumns" />
-    <mat-row *matRowDef="let row; columns: displayedColumns" />
+    <mat-row
+      *matRowDef="let row; columns: displayedColumns"
+      [class.child-row]="isChildBatch(row)"
+    />
   </mat-table>
 
   <div class="pagination">
-    <button mat-icon-button [disabled]="data.page === 0" (click)="prevPage()">
+    <button mat-icon-button [disabled]="pageData.page === 0" (click)="prevPage()">
       <mat-icon>chevron_left</mat-icon>
     </button>
-    <span>{{ data.page + 1 }} / {{ data.totalPages }}</span>
-    <button mat-icon-button [disabled]="data.last" (click)="nextPage()">
+    <span>{{ pageData.page + 1 }} / {{ pageData.totalPages }}</span>
+    <button mat-icon-button [disabled]="pageData.last" (click)="nextPage()">
       <mat-icon>chevron_right</mat-icon>
     </button>
   </div>

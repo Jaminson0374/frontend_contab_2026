@@ -1,5 +1,7 @@
 export type BatchStatus = 'OPEN' | 'PROCESSING' | 'CLOSED';
 
+export type BatchType = 'STANDARD' | 'PARENT' | 'CHILD';
+
 export interface Batch {
   id: string;
   productId: string;
@@ -16,6 +18,10 @@ export interface Batch {
   productName: string;
   supplierName: string;
   warehouseName: string;
+  parentBatchId?: string | null;
+  batchType?: BatchType;
+  unitOfMeasureId?: string | null;
+  unitOfMeasureName?: string;
   createdBy: string;
   createdAt: string;
   updatedBy: string | null;
@@ -32,4 +38,7 @@ export interface BatchRequest {
   notes: string | null;
   sourceReceiptId?: string | null;
   ocId?: string | null;
+  expirationDate?: string | null;
+  batchType?: string;
+  unitOfMeasureId?: string | null;
 }

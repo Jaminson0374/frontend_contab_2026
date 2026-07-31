@@ -1,186 +1,363 @@
-@let pageData = service.products.value();
+@let pageData = data();
+@let stats = summaryCards();
 
-<div class="page-header">
-  <div class="page-header-left">
-    <h2 class="page-title">Artículos / Productos</h2>
-    <span class="page-badge">{{ pageData?.totalElements ?? 0 }} registros</span>
-  </div>
+<section class="page-shell">
+  <header class="page-hero">
+    <div class="page-hero-left">
+      <div class="hero-icon">
+        <mat-icon>inventory_2</mat-icon>
+      </div>
+      <div class="hero-copy">
+        <h2 class="page-title">Artículos / Productos</h2>
+        <p class="page-subtitle">Administra los artículos y materias primas de tu inventario.</p>
+      </div>
+    </div>
 
-  <div class="page-actions">
-    <mat-form-field appearance="outline" class="search-field">
-      <mat-label>Buscar código, barras o nombre</mat-label>
-      <input matInput [formControl]="searchControl" />
-      <mat-icon matSuffix class="search-icon">search</mat-icon>
-    </mat-form-field>
+    <div class="page-actions">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-icon matPrefix class="search-icon">search</mat-icon>
+        <input
+          matInput
+          [formControl]="searchControl"
+          placeholder="Código, barras o nombre..."
+        />
+      </mat-form-field>
 
-    <mat-form-field appearance="outline" class="filter-field">
-      <mat-label>Filtros</mat-label>
-      <mat-select [formControl]="filterControl" multiple>
-        <mat-select-trigger>
-          @if (selectedFilterLabels().length === 0) {
-            Todos
-          } @else {
-            {{ selectedFilterLabels().join(', ') }}
-          }
-        </mat-select-trigger>
-        @for (filterOption of filterOptions; track filterOption.value) {
-          <mat-option [value]="filterOption.value">{{ filterOption.label }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
+      <div class="filter-popover-wrap">
+        <button
+          mat-stroked-button
+          type="button"
+          class="filter-trigger"
+          (click)="toggleFilterPanel()"
+        >
+          <mat-icon>filter_alt</mat-icon>
+          <span>
+            @if (selectedFilterLabels().length === 0) {
+              Filtros
+            } @else {
+              {{ selectedFilterLabels().join(', ') }}
+            }
+          </span>
+          <mat-icon class="chevron-icon">expand_more</mat-icon>
+        </button>
 
-    <button mat-flat-button class="btn-new" (click)="openNew()">
-      <mat-icon>add</mat-icon> Nuevo artículo
-    </button>
-  </div>
-</div>
+        @if (filterPanelOpen()) {
+          <button
+            class="filter-backdrop"
+            type="button"
+            (click)="closeFilterPanel()"
+            aria-label="Cerrar filtros"
+          ></button>
 
-@if (service.products.isLoading()) {
-  <div class="loading-container">
-    <mat-spinner diameter="32" />
-    <span class="loading-text">Cargando artículos...</span>
-  </div>
-}
-
-@if (service.products.error()) {
-  <div class="error-container">
-    <mat-icon class="error-icon">error_outline</mat-icon>
-    <p class="error-msg">Error al cargar artículos. Intentá de nuevo.</p>
-    <button mat-stroked-button (click)="loadProducts()">Reintentar</button>
-  </div>
-}
-
-@if (pageData) {
-  <mat-card class="table-card" appearance="outlined">
-    @if (filteredRows().length > 0) {
-      <div class="table-container">
-        <mat-table [dataSource]="filteredRows()" class="product-table">
-          <ng-container matColumnDef="index">
-            <mat-header-cell *matHeaderCellDef class="col-index">#</mat-header-cell>
-            <mat-cell *matCellDef="let row; let i = index" class="col-index">
-              {{ pageData.page * pageData.size + i + 1 }}
-            </mat-cell>
-          </ng-container>
-
-          <ng-container matColumnDef="productCode">
-            <mat-header-cell *matHeaderCellDef class="col-code">Código</mat-header-cell>
-            <mat-cell *matCellDef="let row" class="col-code">
-              <span class="code-badge">{{ row.productCode }}</span>
-            </mat-cell>
-          </ng-container>
-
-          <ng-container matColumnDef="name">
-            <mat-header-cell *matHeaderCellDef class="col-name">Nombre</mat-header-cell>
-            <mat-cell *matCellDef="let row" class="col-name">
-              <span class="product-name">{{ row.name }}</span>
-            </mat-cell>
-          </ng-container>
-
-          <ng-container matColumnDef="barcode">
-            <mat-header-cell *matHeaderCellDef class="col-barcode">Cód. barras</mat-header-cell>
-            <mat-cell *matCellDef="let row" class="col-barcode">
-              @if (row.barcode) {
-                <span class="barcode-value">{{ row.barcode }}</span>
-              } @else {
-                <span class="text-muted">—</span>
-              }
-            </mat-cell>
-          </ng-container>
-
-          <ng-container matColumnDef="totalStock">
-            <mat-header-cell *matHeaderCellDef class="col-stock">Existencia</mat-header-cell>
-            <mat-cell *matCellDef="let row" class="col-stock">
-              <span [class]="stockClass(row)" class="stock-value">{{
-                row.totalStock ?? 0 | number: '1.0-2'
-              }}</span>
-            </mat-cell>
-          </ng-container>
-
-          <ng-container matColumnDef="salePrice">
-            <mat-header-cell *matHeaderCellDef class="col-price">Precio venta</mat-header-cell>
-            <mat-cell *matCellDef="let row" class="col-price">
-              <span class="price-value">
-                {{ row.salePrice | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO' }}
-              </span>
-            </mat-cell>
-          </ng-container>
-
-          <ng-container matColumnDef="taxType">
-            <mat-header-cell *matHeaderCellDef class="col-tax">IVA</mat-header-cell>
-            <mat-cell *matCellDef="let row" class="col-tax">
-              <span [class]="taxClass(row.taxType)" class="tax-chip">{{
-                taxLabel(row.taxType)
-              }}</span>
-            </mat-cell>
-          </ng-container>
-
-          <ng-container matColumnDef="active">
-            <mat-header-cell *matHeaderCellDef class="col-status">Estado</mat-header-cell>
-            <mat-cell *matCellDef="let row" class="col-status">
-              <span [class]="row.active ? 'status-active' : 'status-inactive'" class="status-chip">
-                <span
-                  class="status-dot"
-                  [class]="row.active ? 'dot-active' : 'dot-inactive'"
-                ></span>
-                {{ row.active ? 'Activo' : 'Inactivo' }}
-              </span>
-            </mat-cell>
-          </ng-container>
-
-          <ng-container matColumnDef="actions">
-            <mat-header-cell *matHeaderCellDef class="col-actions"></mat-header-cell>
-            <mat-cell *matCellDef="let row" class="col-actions">
-              <button
-                mat-icon-button
-                class="action-btn"
-                (click)="openEdit(row.id)"
-                aria-label="Editar"
-                matTooltip="Editar artículo"
-              >
-                <mat-icon>edit</mat-icon>
+          <div class="filter-panel">
+            <div class="filter-panel-header">
+              <span>Filtros</span>
+              <button mat-icon-button type="button" (click)="closeFilterPanel()">
+                <mat-icon>close</mat-icon>
               </button>
-            </mat-cell>
-          </ng-container>
+            </div>
 
-          <mat-header-row *matHeaderRowDef="displayedColumns" class="header-row" />
-          <mat-row
-            *matRowDef="let row; columns: displayedColumns"
-            class="data-row"
-            [class.row-inactive]="!row.active"
-          />
-        </mat-table>
-      </div>
-    } @else {
-      <div class="empty-state">
-        <div class="empty-icon-wrapper">
-          <mat-icon class="empty-icon">inventory_2</mat-icon>
-        </div>
-        <h3 class="empty-title">No se encontraron artículos</h3>
-        <p class="empty-subtitle">
-          @if (searchControl.value || selectedFilters.length > 0) {
-            No hay artículos que coincidan con los filtros.
-          } @else {
-            Comenzá creando tu primer artículo.
-          }
-        </p>
-        @if (!searchControl.value && selectedFilters.length === 0) {
-          <button mat-stroked-button class="btn-empty-new" (click)="openNew()">
-            <mat-icon>add</mat-icon> Nuevo artículo
-          </button>
+            <div class="filter-panel-options">
+              @for (filterOption of filterOptions; track filterOption.value) {
+                <button
+                  type="button"
+                  class="filter-option"
+                  [class.filter-option-active]="
+                    selectedFilters().includes(filterOption.value)
+                  "
+                  (click)="toggleFilterValue(filterOption.value)"
+                >
+                  <span>{{ filterOption.label }}</span>
+                  @if (selectedFilters().includes(filterOption.value)) {
+                    <mat-icon>check</mat-icon>
+                  }
+                </button>
+              }
+            </div>
+          </div>
         }
       </div>
-    }
-  </mat-card>
 
-  <mat-paginator
-    class="table-paginator"
-    [length]="pageData.totalElements"
-    [pageSize]="pageData.size"
-    [pageIndex]="pageData.page"
-    [pageSizeOptions]="pageSizeOptions"
-    showFirstLastButtons
-    (page)="onPageChange($event)"
-    aria-label="Paginación de artículos"
-  >
-  </mat-paginator>
-}
+      <button mat-flat-button class="btn-new" (click)="openNew()">
+        <mat-icon>add</mat-icon>
+        Nuevo artículo
+      </button>
+    </div>
+  </header>
+
+  <section class="stats-grid">
+    @for (card of stats; track card.label) {
+      <mat-card class="stat-card stat-{{ card.tone }}" appearance="outlined">
+        <div class="stat-icon">
+          <mat-icon>{{ card.icon }}</mat-icon>
+        </div>
+        <div class="stat-copy">
+          <strong class="stat-value">{{ card.value }}</strong>
+          <span class="stat-meta">{{ card.label }} · {{ card.caption }}</span>
+        </div>
+      </mat-card>
+    }
+  </section>
+
+  @if (loading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="32" />
+      <span class="loading-text">Cargando artículos...</span>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="error-container">
+      <mat-icon class="error-icon">error_outline</mat-icon>
+      <p class="error-msg">Error al cargar artículos. Intentá de nuevo.</p>
+      <button mat-stroked-button (click)="loadProducts()">Reintentar</button>
+    </div>
+  }
+
+  @if (pageData) {
+    <mat-card class="table-card" appearance="outlined">
+      @if (filteredRows().length > 0) {
+        <div class="table-toolbar">
+          <div class="toolbar-view-toggle" aria-label="Vista de tabla">
+            <button
+              mat-icon-button
+              type="button"
+              class="toggle-btn"
+              [class.toggle-active]="viewMode() === 'list'"
+              (click)="setViewMode('list')"
+              aria-label="Vista lista"
+            >
+              <mat-icon>view_list</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              type="button"
+              class="toggle-btn"
+              [class.toggle-active]="viewMode() === 'card'"
+              (click)="setViewMode('card')"
+              aria-label="Vista cuadrícula"
+            >
+              <mat-icon>grid_view</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        @if (viewMode() === 'list') {
+          <div class="table-container">
+            <mat-table [dataSource]="filteredRows()" class="product-table">
+              <ng-container matColumnDef="index">
+                <mat-header-cell *matHeaderCellDef class="col-index">#</mat-header-cell>
+                <mat-cell *matCellDef="let row; let i = index" class="col-index">
+                  {{ pageData.page * pageData.size + i + 1 }}
+                </mat-cell>
+              </ng-container>
+
+              <ng-container matColumnDef="productCode">
+                <mat-header-cell *matHeaderCellDef class="col-code">Artículo</mat-header-cell>
+                <mat-cell *matCellDef="let row" class="col-code">
+                  <div class="product-cell">
+                    <div class="product-avatar">
+                      @if (getProductThumbnail(row); as thumb) {
+                        <img [src]="thumb" [alt]="row.name" />
+                      } @else {
+                        <mat-icon>inventory_2</mat-icon>
+                      }
+                    </div>
+
+                    <div class="product-copy">
+                      <span class="product-name">{{ row.name }}</span>
+                      <div class="product-badges">
+                        <span class="badge badge-soft">{{
+                          row.inventoriable ? 'Inventariable' : 'No inventariable'
+                        }}</span>
+                        <span class="badge badge-soft badge-muted">
+                          {{ row.manufacturedInHouse ? 'Materia prima' : 'Artículo' }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </mat-cell>
+              </ng-container>
+
+              <ng-container matColumnDef="barcode">
+                <mat-header-cell *matHeaderCellDef class="col-barcode"
+                  >Código / Código de barras</mat-header-cell
+                >
+                <mat-cell *matCellDef="let row" class="col-barcode">
+                  <div class="code-stack">
+                    <span class="code-primary">{{ row.productCode }}</span>
+                    @if (row.barcode) {
+                      <span class="code-secondary">{{ row.barcode }}</span>
+                    } @else {
+                      <span class="code-secondary code-empty">Sin código</span>
+                    }
+                  </div>
+                </mat-cell>
+              </ng-container>
+
+              <ng-container matColumnDef="totalStock">
+                <mat-header-cell *matHeaderCellDef class="col-stock">Existencia</mat-header-cell>
+                <mat-cell *matCellDef="let row" class="col-stock">
+                  <div class="stock-stack">
+                    <span [class]="stockClass(row)" class="stock-value">
+                      {{ row.totalStock | number: '1.0-2' }}
+                    </span>
+                  </div>
+                </mat-cell>
+              </ng-container>
+
+              <ng-container matColumnDef="salePrice">
+                <mat-header-cell *matHeaderCellDef class="col-price"
+                  >Precio de venta</mat-header-cell
+                >
+                <mat-cell *matCellDef="let row" class="col-price">
+                  <span class="price-value">
+                    {{ row.salePrice | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO' }}
+                  </span>
+                </mat-cell>
+              </ng-container>
+
+              <ng-container matColumnDef="taxType">
+                <mat-header-cell *matHeaderCellDef class="col-tax">IVA</mat-header-cell>
+                <mat-cell *matCellDef="let row" class="col-tax">
+                  <span [class]="taxClass(row.taxType)" class="tax-chip">{{
+                    taxLabel(row.taxType)
+                  }}</span>
+                </mat-cell>
+              </ng-container>
+
+              <ng-container matColumnDef="active">
+                <mat-header-cell *matHeaderCellDef class="col-status">Estado</mat-header-cell>
+                <mat-cell *matCellDef="let row" class="col-status">
+                  <span
+                    [class]="row.active ? 'status-active' : 'status-inactive'"
+                    class="status-chip"
+                  >
+                    <span
+                      class="status-dot"
+                      [class]="row.active ? 'dot-active' : 'dot-inactive'"
+                    ></span>
+                    {{ row.active ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </mat-cell>
+              </ng-container>
+
+              <ng-container matColumnDef="actions">
+                <mat-header-cell *matHeaderCellDef class="col-actions">Acciones</mat-header-cell>
+                <mat-cell *matCellDef="let row" class="col-actions">
+                  <button
+                    mat-icon-button
+                    class="action-btn"
+                    (click)="openEdit(row.id)"
+                    aria-label="Editar"
+                    matTooltip="Editar artículo"
+                  >
+                    <mat-icon>more_vert</mat-icon>
+                  </button>
+                </mat-cell>
+              </ng-container>
+
+              <mat-header-row *matHeaderRowDef="displayedColumns" class="header-row" />
+              <mat-row
+                *matRowDef="let row; columns: displayedColumns"
+                class="data-row"
+                [class.row-inactive]="!row.active"
+              />
+            </mat-table>
+          </div>
+        } @else {
+          <div class="card-grid">
+            @for (row of filteredRows(); track row.id) {
+              <mat-card class="product-card" appearance="outlined">
+                <div class="product-card-head">
+                  <div class="product-avatar product-avatar-lg">
+                    @if (getProductThumbnail(row); as thumb) {
+                      <img [src]="thumb" [alt]="row.name" />
+                    } @else {
+                      <mat-icon>inventory_2</mat-icon>
+                    }
+                  </div>
+                  <div class="product-copy">
+                    <span class="product-name">{{ row.name }}</span>
+                    <div class="product-badges">
+                      <span class="badge badge-soft">{{ row.productCode }}</span>
+                      <span class="badge badge-soft badge-muted">{{
+                        row.active ? 'Activo' : 'Inactivo'
+                      }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="product-card-body">
+                  <div>
+                    <span class="card-label">Barras</span
+                    ><span class="card-value">{{ row.barcode ?? 'Sin código' }}</span>
+                  </div>
+                  <div>
+                    <span class="card-label">Stock</span
+                    ><span class="card-value"
+                      ><span [class]="stockClass(row)" class="stock-value">{{
+                        row.totalStock | number: '1.0-2'
+                      }}</span></span
+                    >
+                  </div>
+                  <div>
+                    <span class="card-label">Precio</span
+                    ><span class="card-value price-value">{{
+                      row.salePrice | currency: 'COP' : 'symbol-narrow' : '1.0-0' : 'es-CO'
+                    }}</span>
+                  </div>
+                  <div>
+                    <span class="card-label">IVA</span
+                    ><span class="card-value"
+                      ><span [class]="taxClass(row.taxType)" class="tax-chip">{{
+                        taxLabel(row.taxType)
+                      }}</span></span
+                    >
+                  </div>
+                </div>
+
+                <div class="product-card-actions">
+                  <button mat-stroked-button type="button" (click)="openEdit(row.id)">
+                    Editar
+                  </button>
+                </div>
+              </mat-card>
+            }
+          </div>
+        }
+      } @else {
+        <div class="empty-state">
+          <div class="empty-icon-wrapper">
+            <mat-icon class="empty-icon">inventory_2</mat-icon>
+          </div>
+          <h3 class="empty-title">No se encontraron artículos</h3>
+          <p class="empty-subtitle">
+            @if (searchControl.value || selectedFilters().length > 0) {
+              No hay artículos que coincidan con los filtros.
+            } @else {
+              Comenzá creando tu primer artículo.
+            }
+          </p>
+          @if (!searchControl.value && selectedFilters().length === 0) {
+            <button mat-stroked-button class="btn-empty-new" (click)="openNew()">
+              <mat-icon>add</mat-icon>
+              Nuevo artículo
+            </button>
+          }
+        </div>
+      }
+    </mat-card>
+
+    <mat-paginator
+      class="table-paginator"
+      [length]="pageData.totalElements"
+      [pageSize]="pageData.size"
+      [pageIndex]="pageData.page"
+      [pageSizeOptions]="pageSizeOptions"
+      showFirstLastButtons
+      (page)="onPageChange($event)"
+      aria-label="Paginación de artículos"
+    />
+  }
+</section>

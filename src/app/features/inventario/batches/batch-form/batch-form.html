@@ -1,170 +1,323 @@
-<h2 mat-dialog-title>Nuevo lote de entrada</h2>
+<div cdkDrag cdkDragRootElement=".cdk-overlay-pane">
+  <h2 mat-dialog-title cdkDragHandle class="draggable-title">Nuevo lote de entrada</h2>
 
-<mat-dialog-content>
-  <form [formGroup]="form" class="form-grid">
-    <mat-form-field appearance="outline">
-      <mat-label>Producto</mat-label>
-      <input
-        matInput
-        type="text"
-        formControlName="productSearch"
-        placeholder="Buscar producto..."
-        [matAutocomplete]="autoProduct"
-      />
-      <mat-autocomplete
-        #autoProduct="matAutocomplete"
-        [displayWith]="displayProduct"
-        (optionSelected)="onProductSelected($event.option.value)"
-      >
-        @if (searchingProducts()) {
-          <mat-option disabled>Cargando...</mat-option>
-        }
-        @for (p of filteredProducts(); track p.id) {
-          <mat-option [value]="p">
-            {{ p.name }} <small>({{ p.productCode }})</small>
-          </mat-option>
-        }
-        @if (
-          !searchingProducts() &&
-          filteredProducts().length === 0 &&
-          form.controls.productSearch.value
-        ) {
-          <mat-option disabled>Sin resultados</mat-option>
-        }
-      </mat-autocomplete>
-    </mat-form-field>
+  <mat-dialog-content>
+    <form [formGroup]="form" class="form-grid">
+      <div class="product-field-wrapper field-span-3">
+        <mat-form-field appearance="outline">
+          <mat-label>Producto</mat-label>
+          <input
+            matInput
+            type="text"
+            formControlName="productSearch"
+            placeholder="Buscar producto..."
+            (focus)="openProductPanel()"
+            (keydown.escape)="$event.preventDefault(); closeProductPanel()"
+            (keydown.enter)="$event.preventDefault(); focusFirstProductRow()"
+          />
+          @if (selectedProduct()) {
+            <button
+              matSuffix
+              mat-icon-button
+              aria-label="Limpiar producto"
+              type="button"
+              (click)="clearProductSelection(); $event.stopPropagation()"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          } @else {
+            <mat-icon matSuffix>search</mat-icon>
+          }
+        </mat-form-field>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Proveedor</mat-label>
-      <mat-select formControlName="supplierId">
-        @if (thirdPartyService.supplierOptions.isLoading()) {
-          <mat-option disabled>Cargando...</mat-option>
+        @if (showProductPanel()) {
+          <div class="product-panel-backdrop" (click)="closeProductPanel()"></div>
+          <div class="product-panel">
+            <div class="product-panel-header">
+              <div class="panel-header-left">
+                <mat-icon class="panel-header-icon">inventory_2</mat-icon>
+                <span class="panel-title">Seleccionar producto</span>
+                @if (!productPanelLoading() && productPanelData(); as data) {
+                  <span class="panel-count">{{ data.totalElements }} resultados</span>
+                }
+              </div>
+              <button
+                mat-icon-button
+                class="panel-close-btn"
+                type="button"
+                (click)="closeProductPanel()"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+
+            @if (productPanelLoading()) {
+              <div class="panel-loading">
+                <mat-spinner diameter="28" />
+                <span>Buscando productos...</span>
+              </div>
+            }
+
+            @if (!productPanelLoading() && productPanelData(); as data) {
+              @if (data.content.length > 0) {
+                <div class="panel-table-wrapper">
+                  <mat-table [dataSource]="data.content" class="product-panel-table">
+                    <ng-container matColumnDef="productCode">
+                      <mat-header-cell *matHeaderCellDef class="col-code">Código</mat-header-cell>
+                      <mat-cell
+                        *matCellDef="let row"
+                        (click)="selectProduct(row)"
+                        [class.selected-row]="isSelectedRow(row)"
+                        class="col-code"
+                      >
+                        <span class="code-badge">{{ row.productCode }}</span>
+                      </mat-cell>
+                    </ng-container>
+
+                    <ng-container matColumnDef="name">
+                      <mat-header-cell *matHeaderCellDef class="col-name">Nombre</mat-header-cell>
+                      <mat-cell
+                        *matCellDef="let row"
+                        (click)="selectProduct(row)"
+                        [class.selected-row]="isSelectedRow(row)"
+                        class="col-name"
+                      >
+                        <div class="product-name-cell">
+                          <span class="product-name">{{ row.name }}</span>
+                          @if (row.barcode) {
+                            <span class="product-barcode">{{ row.barcode }}</span>
+                          }
+                        </div>
+                      </mat-cell>
+                    </ng-container>
+
+                    <ng-container matColumnDef="totalStock">
+                      <mat-header-cell *matHeaderCellDef class="col-stock">Stock</mat-header-cell>
+                      <mat-cell
+                        *matCellDef="let row"
+                        (click)="selectProduct(row)"
+                        [class.selected-row]="isSelectedRow(row)"
+                        class="col-stock"
+                      >
+                        <span
+                          class="stock-value"
+                          [class.stock-low]="row.totalStock <= 0"
+                          [class.stock-ok]="row.totalStock > 0"
+                        >
+                          {{ row.totalStock | number: '1.0-3' }}
+                        </span>
+                      </mat-cell>
+                    </ng-container>
+
+                    <ng-container matColumnDef="salePrice">
+                      <mat-header-cell *matHeaderCellDef class="col-price"
+                        >Precio Venta</mat-header-cell
+                      >
+                      <mat-cell
+                        *matCellDef="let row"
+                        (click)="selectProduct(row)"
+                        [class.selected-row]="isSelectedRow(row)"
+                        class="col-price"
+                      >
+                        {{ row.salePrice | currency }}
+                      </mat-cell>
+                    </ng-container>
+
+                    <mat-header-row
+                      *matHeaderRowDef="productColumns; sticky: true"
+                    ></mat-header-row>
+                    <mat-row
+                      *matRowDef="let row; columns: productColumns"
+                      [class.selected-row]="isSelectedRow(row)"
+                      tabindex="0"
+                      (keydown)="onProductRowKeydown($event, row)"
+                    ></mat-row>
+                  </mat-table>
+                </div>
+
+                @if (data.totalElements > productPanelSize()) {
+                  <mat-paginator
+                    [length]="data.totalElements"
+                    [pageSize]="productPanelSize()"
+                    [pageIndex]="productPanelPage()"
+                    [pageSizeOptions]="[5, 10, 20, 50]"
+                    (page)="onProductPageChange($event)"
+                    showFirstLastButtons
+                  />
+                }
+              } @else {
+                <div class="panel-no-results">
+                  <mat-icon>search_off</mat-icon>
+                  <span>No se encontraron productos</span>
+                </div>
+              }
+            }
+          </div>
         }
-        @for (tp of suppliers(); track tp.id) {
-          <mat-option [value]="tp.id">{{ tp.name }} ({{ tp.numIdentification }})</mat-option>
-        }
-        @if (!thirdPartyService.supplierOptions.isLoading() && suppliers().length === 0) {
-          <mat-option disabled>No hay proveedores disponibles</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
+      </div>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Bodega (tipo CANAL)</mat-label>
-      <mat-select formControlName="warehouseId">
-        @if (warehouseService.warehouses.isLoading()) {
-          <mat-option disabled>Cargando...</mat-option>
-        }
-        @for (w of canalWarehouses(); track w.id) {
-          <mat-option [value]="w.id">{{ w.name }}</mat-option>
-        }
-        @if (!warehouseService.warehouses.isLoading() && canalWarehouses().length === 0) {
-          <mat-option disabled>No hay bodegas tipo CANAL activas</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Fecha de entrada</mat-label>
-      <input matInput [matDatepicker]="picker" formControlName="entryDate" />
-      <mat-datepicker-toggle matIconSuffix [for]="picker" />
-      <mat-datepicker #picker />
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Peso inicial (kg)</mat-label>
-      <input matInput type="number" min="0.001" step="0.001" formControlName="initialWeight" />
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Costo de compra ($)</mat-label>
-      <input matInput type="number" min="0" step="1" formControlName="purchaseCost" />
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Notas</mat-label>
-      <textarea matInput formControlName="notes" rows="3" maxlength="500"></textarea>
-    </mat-form-field>
-
-    <!-- Documento Origen Section -->
-    <div class="form-section">
-      <h4>Documento Origen</h4>
-
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Tipo de documento</mat-label>
-        <mat-select formControlName="sourceType" (selectionChange)="onSourceTypeChange()">
-          <mat-option value="NONE">Sin documento</mat-option>
-          <mat-option value="OC">Orden de Compra</mat-option>
-          <mat-option value="RECEIPT">Recepción Logística</mat-option>
-          <mat-option value="EXTERNAL">Documento Externo</mat-option>
+      <mat-form-field appearance="outline">
+        <mat-label>Proveedor</mat-label>
+        <mat-select formControlName="supplierId">
+          @if (thirdPartyService.supplierOptions.isLoading()) {
+            <mat-option disabled>Cargando...</mat-option>
+          }
+          @for (tp of suppliers(); track tp.id) {
+            <mat-option [value]="tp.id">{{ tp.name }} ({{ tp.numIdentification }})</mat-option>
+          }
+          @if (!thirdPartyService.supplierOptions.isLoading() && suppliers().length === 0) {
+            <mat-option disabled>No hay proveedores disponibles</mat-option>
+          }
         </mat-select>
       </mat-form-field>
 
-      @if (form.get('sourceType')?.value === 'OC') {
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Orden de Compra</mat-label>
-          <input
-            matInput
-            [matAutocomplete]="ocAuto"
-            [value]="ocSearch()"
-            (input)="onOcInput($event)"
-            placeholder="Buscar por número de OC..."
-          />
-          <mat-autocomplete
-            #ocAuto="matAutocomplete"
-            (optionSelected)="onOcSelected($event.option.value)"
-          >
-            @for (po of ocOptions(); track po.id) {
-              <mat-option [value]="po">{{ po.documentNumber }} — {{ po.supplierName }}</mat-option>
-            }
-            @if (searchingOc()) {
-              <mat-option disabled>Buscando...</mat-option>
-            }
-          </mat-autocomplete>
-        </mat-form-field>
-      }
+      <mat-form-field appearance="outline">
+        <mat-label>Bodega (tipo CANAL)</mat-label>
+        <mat-select formControlName="warehouseId">
+          @if (warehouseService.warehouses.isLoading()) {
+            <mat-option disabled>Cargando...</mat-option>
+          }
+          @for (w of canalWarehouses(); track w.id) {
+            <mat-option [value]="w.id">{{ w.name }}</mat-option>
+          }
+          @if (!warehouseService.warehouses.isLoading() && canalWarehouses().length === 0) {
+            <mat-option disabled>No hay bodegas tipo CANAL activas</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
 
-      @if (form.get('sourceType')?.value === 'RECEIPT') {
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Recepción Logística</mat-label>
-          <input
-            matInput
-            [matAutocomplete]="receiptAuto"
-            [value]="receiptSearch()"
-            (input)="onReceiptInput($event)"
-            placeholder="Buscar recepción..."
-          />
-          <mat-autocomplete
-            #receiptAuto="matAutocomplete"
-            (optionSelected)="onReceiptSelected($event.option.value)"
-          >
-            @for (r of receiptOptions(); track r.id) {
-              <mat-option [value]="r">{{ r.receiptNumber }} — {{ r.receiptDate }}</mat-option>
-            }
-            @if (searchingReceipt()) {
-              <mat-option disabled>Buscando...</mat-option>
-            }
-          </mat-autocomplete>
-        </mat-form-field>
-      }
+      <mat-form-field appearance="outline">
+        <mat-label>Fecha de entrada</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="entryDate" />
+        <mat-datepicker-toggle matIconSuffix [for]="picker" />
+        <mat-datepicker #picker />
+      </mat-form-field>
 
-      @if (form.get('sourceType')?.value === 'EXTERNAL') {
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Número de documento</mat-label>
-          <input matInput formControlName="externalDocRef" placeholder="Ej: GUIA-123, REMITO-456" />
-        </mat-form-field>
-      }
-    </div>
-  </form>
-</mat-dialog-content>
+      <mat-form-field appearance="outline">
+        <mat-label>Fecha de vencimiento</mat-label>
+        <input matInput [matDatepicker]="expPicker" formControlName="expirationDate" />
+        <mat-datepicker-toggle matIconSuffix [for]="expPicker" />
+        <mat-datepicker #expPicker />
+      </mat-form-field>
 
-<mat-dialog-actions align="end">
-  <button mat-button (click)="cancel()">Cancelar</button>
-  <button mat-flat-button [disabled]="form.invalid || saving()" (click)="save()">
-    @if (saving()) {
-      <mat-spinner diameter="18" />
-    } @else {
-      Registrar lote
-    }
-  </button>
-</mat-dialog-actions>
+      <mat-form-field appearance="outline">
+        <mat-label>Unidad de medida</mat-label>
+        <mat-select formControlName="unitOfMeasureId">
+          @if (unitOfMeasureService.units.isLoading()) {
+            <mat-option disabled>Cargando...</mat-option>
+          }
+          @for (uom of uomOptions(); track uom.id) {
+            <mat-option [value]="uom.id">{{ uom.code }} — {{ uom.name }}</mat-option>
+          }
+          @if (!unitOfMeasureService.units.isLoading() && uomOptions().length === 0) {
+            <mat-option disabled>No hay unidades disponibles</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Peso inicial (kg)</mat-label>
+        <input matInput type="number" min="0.001" step="0.001" formControlName="initialWeight" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Costo de compra ($)</mat-label>
+        <input matInput type="number" min="0" step="1" formControlName="purchaseCost" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="field-span-3">
+        <mat-label>Notas</mat-label>
+        <textarea matInput formControlName="notes" rows="3" maxlength="500"></textarea>
+      </mat-form-field>
+
+      <!-- Documento Origen Section -->
+      <div class="form-section field-span-3">
+        <h4>Documento Origen</h4>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Tipo de documento</mat-label>
+          <mat-select formControlName="sourceType" (selectionChange)="onSourceTypeChange()">
+            <mat-option value="NONE">Sin documento</mat-option>
+            <mat-option value="OC">Orden de Compra</mat-option>
+            <mat-option value="RECEIPT">Recepción Logística</mat-option>
+            <mat-option value="EXTERNAL">Documento Externo</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div class="doc-origin-grid">
+          @if (form.get('sourceType')?.value === 'OC') {
+            <mat-form-field appearance="outline">
+              <mat-label>Orden de Compra</mat-label>
+              <input
+                matInput
+                [matAutocomplete]="ocAuto"
+                [value]="ocSearch()"
+                (input)="onOcInput($event)"
+                placeholder="Buscar por número de OC..."
+              />
+              <mat-autocomplete
+                #ocAuto="matAutocomplete"
+                (optionSelected)="onOcSelected($event.option.value)"
+              >
+                @for (po of ocOptions(); track po.id) {
+                  <mat-option [value]="po"
+                    >{{ po.documentNumber }} — {{ po.supplierName }}</mat-option
+                  >
+                }
+                @if (searchingOc()) {
+                  <mat-option disabled>Buscando...</mat-option>
+                }
+              </mat-autocomplete>
+            </mat-form-field>
+          }
+
+          @if (form.get('sourceType')?.value === 'RECEIPT') {
+            <mat-form-field appearance="outline">
+              <mat-label>Recepción Logística</mat-label>
+              <input
+                matInput
+                [matAutocomplete]="receiptAuto"
+                [value]="receiptSearch()"
+                (input)="onReceiptInput($event)"
+                placeholder="Buscar recepción..."
+              />
+              <mat-autocomplete
+                #receiptAuto="matAutocomplete"
+                (optionSelected)="onReceiptSelected($event.option.value)"
+              >
+                @for (r of receiptOptions(); track r.id) {
+                  <mat-option [value]="r">{{ r.receiptNumber }} — {{ r.receiptDate }}</mat-option>
+                }
+                @if (searchingReceipt()) {
+                  <mat-option disabled>Buscando...</mat-option>
+                }
+              </mat-autocomplete>
+            </mat-form-field>
+          }
+
+          @if (form.get('sourceType')?.value === 'EXTERNAL') {
+            <mat-form-field appearance="outline">
+              <mat-label>Número de documento</mat-label>
+              <input
+                matInput
+                formControlName="externalDocRef"
+                placeholder="Ej: GUIA-123, REMITO-456"
+              />
+            </mat-form-field>
+          }
+        </div>
+      </div>
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()">Cancelar</button>
+    <button mat-flat-button [disabled]="form.invalid || saving()" (click)="save()">
+      @if (saving()) {
+        <mat-spinner diameter="18" />
+      } @else {
+        Registrar lote
+      }
+    </button>
+  </mat-dialog-actions>
+</div>

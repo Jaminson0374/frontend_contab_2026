@@ -6,10 +6,18 @@ import { provideRouter } from '@angular/router';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatDialogRef } from '@angular/material/dialog';
 import { BatchFormComponent } from './batch-form';
+import { UnitOfMeasureService } from '../../../../core/services/unit-of-measure.service';
+import { UnitOfMeasure } from '../../../../core/models/product-catalog.model';
 
 describe('BatchFormComponent — document origin', () => {
   let component: BatchFormComponent;
   let fixture: ComponentFixture<BatchFormComponent>;
+
+  const mockUoMs: UnitOfMeasure[] = [
+    { id: 'uom-1', code: 'KG', name: 'Kilogramos', baseUnit: null, active: true },
+    { id: 'uom-2', code: 'UN', name: 'Unidades', baseUnit: null, active: true },
+    { id: 'uom-3', code: 'LT', name: 'Litros', baseUnit: null, active: false },
+  ];
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -24,6 +32,11 @@ describe('BatchFormComponent — document origin', () => {
 
     fixture = TestBed.createComponent(BatchFormComponent);
     component = fixture.componentInstance;
+
+    // Provide mock UoM data to the service
+    const uomService = TestBed.inject(UnitOfMeasureService);
+    (uomService.units as { value: () => UnitOfMeasure[] }).value = () => mockUoMs;
+
     fixture.detectChanges();
   });
 
@@ -119,29 +132,29 @@ describe('BatchFormComponent — document origin', () => {
     expect(component.form.contains('notes')).toBe(true);
   });
 
-  // ── RED: Form has exactly 12 controls (8 original + 4 new) ─────
+  // ── RED: Form has exactly 14 controls (10 original + 4 doc origin) ─
 
-  it('should have exactly 12 form controls after adding document origin fields', () => {
+  it('should have exactly 14 form controls after adding document origin fields and expirationDate/UoM', () => {
     const controls = Object.keys(component.form.controls);
-    expect(controls.length).toBe(12);
+    expect(controls.length).toBe(14);
   });
 
   // ── RED: onSourceTypeChange should clear non-selected fields ────
 
-  it('should clear ocId when sourceType changes from OC to NONE', () => {
+  it('should clear ocId when sourceType changes from OC to RECEIPT', () => {
     component.form.get('sourceType')?.setValue('OC');
     component.form.get('ocId')?.setValue('oc-123');
-    // Now change to NONE
-    component.form.get('sourceType')?.setValue('NONE');
+    // Now change to RECEIPT
+    component.form.get('sourceType')?.setValue('RECEIPT');
     component.onSourceTypeChange();
     expect(component.form.get('ocId')?.value).toBeNull();
   });
 
-  it('should clear sourceReceiptId when sourceType changes from RECEIPT to NONE', () => {
+  it('should clear sourceReceiptId when sourceType changes from RECEIPT to OC', () => {
     component.form.get('sourceType')?.setValue('RECEIPT');
     component.form.get('sourceReceiptId')?.setValue('rcpt-456');
-    // Now change to NONE
-    component.form.get('sourceType')?.setValue('NONE');
+    // Now change to OC
+    component.form.get('sourceType')?.setValue('OC');
     component.onSourceTypeChange();
     expect(component.form.get('sourceReceiptId')?.value).toBeNull();
   });
@@ -167,8 +180,8 @@ describe('BatchFormComponent — document origin', () => {
   it('should clear externalDocRef when sourceType is not EXTERNAL', () => {
     component.form.get('sourceType')?.setValue('EXTERNAL');
     component.form.get('externalDocRef')?.setValue('Factura #123');
-    // Switch to NONE
-    component.form.get('sourceType')?.setValue('NONE');
+    // Switch to OC
+    component.form.get('sourceType')?.setValue('OC');
     component.onSourceTypeChange();
     expect(component.form.get('externalDocRef')?.value).toBe('');
   });
@@ -232,8 +245,8 @@ describe('BatchFormComponent — document origin', () => {
     expect(html).toContain('formcontrolname="externalDocRef"');
   });
 
-  it('should NOT render externalDocRef when sourceType is NONE', () => {
-    component.form.get('sourceType')?.setValue('NONE');
+  it('should NOT render externalDocRef when sourceType is OC', () => {
+    component.form.get('sourceType')?.setValue('OC');
     fixture.detectChanges();
     const html = fixture.nativeElement.innerHTML;
     expect(html).not.toContain('formcontrolname="externalDocRef"');
@@ -241,11 +254,12 @@ describe('BatchFormComponent — document origin', () => {
 
   // ── RED: save() includes document origin fields ─────────────────
 
-  it('should mark form as valid when all required fields are set (without doc origin)', () => {
+  it('should mark form as valid when all required fields are set', () => {
     component.form.get('supplierId')?.setValue('supplier-1');
     component.form.get('warehouseId')?.setValue('warehouse-1');
     component.form.get('productId')?.setValue('product-1');
     component.form.get('entryDate')?.setValue(new Date());
+    component.form.get('sourceType')?.setValue('OC');
     component.form.get('initialWeight')?.setValue(100);
     component.form.get('purchaseCost')?.setValue(5000);
     expect(component.form.valid).toBe(true);
@@ -290,23 +304,23 @@ describe('BatchFormComponent — document origin', () => {
 
   // ── TRIANGULATE: onSourceTypeChange resets search signals ────────
 
-  it('should clear ocSearch signal when sourceType changes from OC to NONE', () => {
+  it('should clear ocSearch signal when sourceType changes from OC to EXTERNAL', () => {
     component.form.get('sourceType')?.setValue('OC');
     component.ocSearch.set('OC-2026');
     component.ocOptions.set([{ id: 'po-1', supplierName: 'A', documentNumber: 'OC-1' } as any]);
-    component.form.get('sourceType')?.setValue('NONE');
+    component.form.get('sourceType')?.setValue('EXTERNAL');
     component.onSourceTypeChange();
     expect(component.ocSearch()).toBe('');
     expect(component.ocOptions()).toEqual([]);
   });
 
-  it('should clear receiptSearch signal when sourceType changes from RECEIPT to NONE', () => {
+  it('should clear receiptSearch signal when sourceType changes from RECEIPT to EXTERNAL', () => {
     component.form.get('sourceType')?.setValue('RECEIPT');
     component.receiptSearch.set('REC-001');
     component.receiptOptions.set([
       { id: 'r-1', receiptNumber: 'REC-1', receiptDate: '2026-01-01' } as any,
     ]);
-    component.form.get('sourceType')?.setValue('NONE');
+    component.form.get('sourceType')?.setValue('EXTERNAL');
     component.onSourceTypeChange();
     expect(component.receiptSearch()).toBe('');
     expect(component.receiptOptions()).toEqual([]);
@@ -352,5 +366,142 @@ describe('BatchFormComponent — document origin', () => {
     } as any;
     component.onReceiptSelected(receipt);
     expect(component.receiptSearch()).toBe('REC-999');
+  });
+
+  // ── Phase 5: expirationDate form control ─────────────────────────
+
+  it('should have expirationDate form control with default null', () => {
+    expect(component.form.contains('expirationDate')).toBe(true);
+    expect(component.form.get('expirationDate')?.value).toBeNull();
+  });
+
+  // ── Phase 5: unitOfMeasureId form control ────────────────────────
+
+  it('should have unitOfMeasureId form control with default null', () => {
+    expect(component.form.contains('unitOfMeasureId')).toBe(true);
+    expect(component.form.get('unitOfMeasureId')?.value).toBeNull();
+  });
+
+  // ── Phase 5: product panel signals ────────────────────────────────
+
+  it('should have showProductPanel signal initialized to false', () => {
+    expect(component.showProductPanel).toBeDefined();
+    expect(component.showProductPanel()).toBe(false);
+  });
+
+  it('should have productPanelData signal initialized to null', () => {
+    expect(component.productPanelData).toBeDefined();
+    expect(component.productPanelData()).toBeNull();
+  });
+
+  it('should have productPanelLoading signal initialized to false', () => {
+    expect(component.productPanelLoading).toBeDefined();
+    expect(component.productPanelLoading()).toBe(false);
+  });
+
+  it('should have productColumns defined with expected columns', () => {
+    expect(component.productColumns).toEqual(['productCode', 'name', 'totalStock', 'salePrice']);
+  });
+
+  it('should open product panel via openProductPanel', () => {
+    component.openProductPanel();
+    expect(component.showProductPanel()).toBe(true);
+  });
+
+  it('should close product panel via closeProductPanel', () => {
+    component.showProductPanel.set(true);
+    component.productPanelData.set({
+      content: [],
+      page: 0,
+      size: 10,
+      totalElements: 0,
+      totalPages: 0,
+      last: true,
+    });
+    component.closeProductPanel();
+    expect(component.showProductPanel()).toBe(false);
+    expect(component.productPanelData()).toBeNull();
+  });
+
+  // ── Phase 5: selectProduct replaces onProductSelected ─────────────
+
+  it('should set productId and unitOfMeasureId via selectProduct', () => {
+    const product = {
+      id: 'prod-1',
+      name: 'Test Product',
+      productCode: 'TP-001',
+      unitOfMeasureId: 'uom-1',
+    } as any;
+    component.selectProduct(product);
+    expect(component.form.get('productId')?.value).toBe('prod-1');
+    expect(component.form.get('unitOfMeasureId')?.value).toBe('uom-1');
+    expect(component.form.get('productSearch')?.value).toBe('Test Product (TP-001)');
+    expect(component.showProductPanel()).toBe(false);
+  });
+
+  it('should not set unitOfMeasureId when product has no unitOfMeasureId via selectProduct', () => {
+    component.form.get('unitOfMeasureId')?.setValue(null);
+    const product = {
+      id: 'prod-2',
+      name: 'Test Product 2',
+      productCode: 'TP-002',
+      unitOfMeasureId: null,
+    } as any;
+    component.selectProduct(product);
+    expect(component.form.get('unitOfMeasureId')?.value).toBeNull();
+  });
+
+  it('should clear product selection via clearProductSelection', () => {
+    component.form.get('productId')?.setValue('prod-1');
+    component.form.get('productSearch')?.setValue('Test');
+    component.form.get('unitOfMeasureId')?.setValue('uom-1');
+    component.selectedProduct.set({ id: 'prod-1', name: 'Test', productCode: 'TP' } as any);
+    component.clearProductSelection();
+    expect(component.form.get('productId')?.value).toBe('');
+    expect(component.form.get('productSearch')?.value).toBe('');
+    expect(component.form.get('unitOfMeasureId')?.value).toBeNull();
+    expect(component.selectedProduct()).toBeNull();
+  });
+
+  it('isSelectedRow should return true for the selected product', () => {
+    const product = { id: 'prod-3', name: 'P3', productCode: 'P3' } as any;
+    component.selectedProduct.set(product);
+    expect(component.isSelectedRow(product)).toBe(true);
+  });
+
+  it('isSelectedRow should return false for a different product', () => {
+    component.selectedProduct.set({ id: 'prod-3', name: 'P3', productCode: 'P3' } as any);
+    expect(component.isSelectedRow({ id: 'prod-9', name: 'Other', productCode: 'O' } as any)).toBe(
+      false,
+    );
+  });
+
+  // ── Phase 5: sourceType defaults to NONE ────────────────────────
+
+  it('should have sourceType initialized to NONE (no Validators.required)', () => {
+    expect(component.form.get('sourceType')?.value).toBe('NONE');
+    expect(component.form.get('sourceType')?.valid).toBe(true);
+  });
+
+  it('should mark sourceType as valid when set to NONE', () => {
+    component.form.get('sourceType')?.setValue('NONE');
+    expect(component.form.get('sourceType')?.valid).toBe(true);
+  });
+
+  // ── Phase 5: NONE is the default option in sourceType dropdown ───
+
+  it('should contain NONE option in sourceType dropdown', () => {
+    component.form.get('sourceType')?.setValue('NONE');
+    fixture.detectChanges();
+    const html = fixture.nativeElement.innerHTML;
+    expect(html).toContain('Sin documento');
+  });
+
+  // ── Phase 5: uomOptions filters active UoMs ──────────────────────
+
+  it('should filter active UoMs in uomOptions', () => {
+    const options = component.uomOptions();
+    expect(options.length).toBe(2); // KG and UN only, LT is inactive
+    expect(options.map((u) => u.code)).toEqual(['KG', 'UN']);
   });
 });
